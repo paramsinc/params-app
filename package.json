@@ -1,0 +1,20 @@
+{
+  "name": "solito-blank",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/react": "^18.2.21",
+    "eslint": "^8.21.0",
+    "react-native": "0.74.5",
+    "turbo": "^1.4.2",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "native": "cd apps/expo && yarn start",
+    "web": "cd apps/next && yarn next"
+  },
+  "packageManager": "yarn@4.5.0"
+}

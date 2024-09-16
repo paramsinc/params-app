@@ -1,0 +1,108 @@
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+    /* filter: blur(5px); */
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    /* filter: blur(0px); */
+  }
+}
+
+.dropdown-menu-content-frame {
+  box-shadow: rgba(25, 16, 16, 0.2) 0px 4px 24px;
+  -webkit-backdrop-filter: blur(10px) saturate(190%) contrast(70%) brightness(80%);
+  backdrop-filter: blur(10px) saturate(190%) contrast(70%) brightness(80%);
+  border-radius: 8px;
+  overflow: auto;
+  max-height: calc(var(--radix-dropdown-menu-content-available-height) - 6px) !important;
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+  animation: scaleIn 120ms ease-out;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+}
+
+.t_light .dropdown-menu-content-frame {
+  box-shadow: rgba(229, 229, 229, 0.2) 0px 4px 24px;
+  backdrop-filter: blur(10px) saturate(190%);
+  -webkit-backdrop-filter: blur(10px) saturate(190%);
+}
+
+.dropdown-menu-content-frame.sub-menu {
+  animation: none;
+}
+
+[data-side='top'] .dropdown-menu-content-frame.sub-menu {
+  animation-name: slideUp;
+}
+[data-side='bottom'] .dropdown-menu-content-frame.sub-menu {
+  animation-name: slideDown;
+}
+
+[data-side='left'] .dropdown-menu-content-frame.sub-menu {
+  animation-name: slideLeft;
+}
+
+[data-side='right'] .dropdown-menu-content-frame.sub-menu {
+  animation-name: slideRight;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+[data-radix-collection-item]:hover .dropdown-menu-item-frame-focus-indicator {
+  /* focus doesn't fire properly in modals, so we need to do this */
+  opacity: 1 !important;
+}
+
+[data-radix-collection-item][data-state='open'] .dropdown-menu-item-frame-focus-indicator {
+  opacity: 1 !important;
+}
+
+[data-radix-popper-content-wrapper] {
+  /* display on top of web modals... */
+  z-index: 10000000 !important;
+}

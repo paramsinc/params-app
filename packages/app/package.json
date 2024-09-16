@@ -1,0 +1,28 @@
+{
+  "version": "0.0.0",
+  "name": "app",
+  "main": "index.ts",
+  "dependencies": {
+    "@react-navigation/native": "^6.1.7",
+    "@react-navigation/native-stack": "^6.9.13",
+    "@tamagui/animations-css": "1.111.6",
+    "@tamagui/animations-moti": "1.111.6",
+    "@tamagui/colors": "1.111.6",
+    "@tamagui/font-inter": "1.111.6",
+    "@tamagui/lucide-icons": "1.111.6",
+    "@tamagui/shorthands": "1.111.6",
+    "@tamagui/themes": "1.111.6",
+    "burnt": "0.12.2",
+    "dripsy": "^4.3.3",
+    "moti": "latest",
+    "radash": "^12.1.0",
+    "react-hotkeys-hook": "^4.5.0",
+    "solito": "4.0.1",
+    "tamagui": "1.111.6",
+    "zeego": "^1.10.0",
+    "zustand": "^4.5.2"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

@@ -1,0 +1,1 @@
+export { useThemeName } from 'tamagui'

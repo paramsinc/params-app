@@ -35,8 +35,8 @@ const darkTransparent = 'rgba(10,10,10,0)'
 const palettes = {
   light: [
     lightTransparent, // transparent
-    mauve.mauve1,
-    mauve.mauve2,
+    slate.slate1,
+    slate.slate2,
     slate.slate3,
     slate.slate4,
     slate.slate5,
@@ -53,8 +53,8 @@ const palettes = {
   ],
   dark: [
     darkTransparent,
-    mauveDark.mauve1,
-    mauveDark.mauve2,
+    slateDark.slate1,
+    slateDark.slate2,
     slateDark.slate3,
     slateDark.slate4,
     slateDark.slate5,

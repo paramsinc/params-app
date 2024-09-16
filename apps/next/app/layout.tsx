@@ -1,6 +1,7 @@
 import { StylesProvider } from './styles-provider'
 import './globals.css'
 import { Provider } from 'app/provider'
+import { TamaguiProvider } from 'app/ds/tamagui/provider'
 
 export const metadata = {
   title: '(params)',
@@ -15,7 +16,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <StylesProvider>
-          <Provider>{children}</Provider>
+          <TamaguiProvider>
+            <Provider>{children}</Provider>
+          </TamaguiProvider>
         </StylesProvider>
       </body>
     </html>

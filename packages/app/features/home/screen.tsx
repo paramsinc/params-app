@@ -1,7 +1,15 @@
 import { Link } from 'app/ds/Link'
 import { Text } from 'app/ds/Text'
+import { TextLink } from 'app/ds/TextLink'
 import { View } from 'app/ds/View'
+import { styled } from 'app/ds/styled'
 import { Platform } from 'react-native'
+
+const H1 = styled(Text, {
+  fontSize: 24,
+  fontWeight: '500',
+  fontFamily: 'circular std',
+})
 
 export function HomeScreen(props: {
   templates?: Array<{
@@ -11,33 +19,61 @@ export function HomeScreen(props: {
 }) {
   return (
     <View>
-      <View p="$3" bbw={1} boc="$borderColor" row jbtwn ai="center">
+      {/* <View p="$3" bbw={1} boc="$borderColor" row jbtwn ai="center">
         <Text>(params)</Text>
 
         <Text>Login</Text>
-      </View>
+      </View> */}
       <View pt={100} maw={900} w="100%" als="center" px="$3" gap="$4">
+        <Text>(params)</Text>
         <View gap="$1">
-          <h1>Params</h1>
-          <Text>{`A curated collection of machine learning starter templates.`}</Text>
+          <H1>{`Discover curated machine learning starters`}</H1>
+          <H1>{`& get advice from the experts who built them.`}</H1>
         </View>
-        {props.templates?.map((template, i) => {
-          return (
-            <View key={template.name}>
-              <Link href={template.html_url} target="_blank">
-                <Text>
-                  <Text
-                    textDecorationLine="underline"
-                    textDecorationColor="transparent"
-                  >{`00${i + 1} `}</Text>
-                  <Text textDecorationLine="underline" bold>
-                    {template.name}
-                  </Text>
+        <View>
+          {props.templates?.map((template, i) => {
+            return (
+              <View key={template.name}>
+                <Text
+                  textDecorationLine="underline"
+                  textDecorationColor="transparent"
+                >
+                  <Text color="$color11">{`#00${i + 1} `}</Text>
+                  <TextLink href={template.html_url} target="_blank">
+                    <Text textDecorationLine="underline" bold color="blue">
+                      {template.name}
+                    </Text>
+                  </TextLink>{' '}
+                  by{' '}
+                  <TextLink href="https://twitter.com/fchollet" target="_blank">
+                    <Text
+                      textDecorationLine="underline"
+                      gap="$1"
+                      dsp="inline-flex"
+                    >
+                      <span>Francois Chollet</span>
+                      <img
+                        style={{
+                          width: 20,
+                          height: 20,
+                          display: 'inline-flex',
+                          margin: 0,
+                          borderRadius: 6,
+                          alignSelf: 'center',
+                        }}
+                        src="https://pbs.twimg.com/profile_images/1611009368765468673/lLWbGjjj_400x400.jpg"
+                      />
+                    </Text>
+                  </TextLink>
                 </Text>
-              </Link>
-            </View>
-          )
-        })}
+              </View>
+            )
+          })}
+        </View>
+
+        {/* <View row ai="center" gap="$2">
+          <Text color="$color11">Become a Contributor</Text>
+        </View> */}
       </View>
     </View>
   )

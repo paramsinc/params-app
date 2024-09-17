@@ -14,7 +14,8 @@ export const TamaguiProvider = ({
   const [rootTheme] = useRootTheme()
   const themeSetting = useThemeSetting()
   const isHydrated = useDidFinishSSR()
-  const defaultTheme = isHydrated && isWeb ? themeSetting.resolvedTheme || 'light' : rootTheme
+  const defaultTheme =
+    isHydrated && isWeb ? themeSetting.resolvedTheme || 'light' : rootTheme
 
   return (
     <Provider
@@ -22,6 +23,7 @@ export const TamaguiProvider = ({
       disableInjectCSS
       disableRootThemeClass
       defaultTheme={defaultTheme}
+      // defaultTheme=
       {...overrideProps}
     >
       {children}
@@ -37,5 +39,10 @@ function Toast() {
     setMounted(true)
   }, [])
   if (!mounted) return null
-  return <Toaster theme={themeSetting.resolvedTheme !== 'dark' ? 'dark' : 'light'} closeButton />
+  return (
+    <Toaster
+      theme={themeSetting.resolvedTheme !== 'dark' ? 'dark' : 'light'}
+      closeButton
+    />
+  )
 }

@@ -1,3 +1,4 @@
+import { Auth } from 'app/auth'
 import { Link } from 'app/ds/Link'
 import { Text } from 'app/ds/Text'
 import { TextLink } from 'app/ds/TextLink'
@@ -17,13 +18,11 @@ export function HomeScreen(props: {
     html_url: string
   }>
 }) {
+  const auth = Auth.useUser()
+  const signOut = Auth.useSignOut()
+
   return (
     <View>
-      {/* <View p="$3" bbw={1} boc="$borderColor" row jbtwn ai="center">
-        <Text>(params)</Text>
-
-        <Text>Login</Text>
-      </View> */}
       <View pt={100} maw={900} w="100%" als="center" px="$3" gap="$4">
         <Text>(params)</Text>
         <View gap="$1">
@@ -70,6 +69,12 @@ export function HomeScreen(props: {
             )
           })}
         </View>
+
+        {auth.hasLoaded && auth.isSignedIn && (
+          <>
+            <Auth.UserButton />
+          </>
+        )}
 
         {/* <View row ai="center" gap="$2">
           <Text color="$color11">Become a Contributor</Text>

@@ -1,6 +1,7 @@
 import { Link } from 'app/ds/Link'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
+import { Platform } from 'react-native'
 
 export function HomeScreen(props: {
   templates?: Array<{
@@ -9,20 +10,35 @@ export function HomeScreen(props: {
   }>
 }) {
   return (
-    <View pt={100} maw={900} w="100%" als="center" px="$3" gap="$4">
-      <Text>Find your next machine learning model with Params.</Text>
+    <View>
+      <View p="$3" bbw={1} boc="$borderColor" row jbtwn ai="center">
+        <Text>(params)</Text>
 
-      {props.templates?.map((template) => {
-        return (
-          <View key={template.name}>
-            <Link href={template.html_url} target="_blank">
-              <Text textDecorationLine="underline" bold>
-                {template.name}
-              </Text>
-            </Link>
-          </View>
-        )
-      })}
+        <Text>Login</Text>
+      </View>
+      <View pt={100} maw={900} w="100%" als="center" px="$3" gap="$4">
+        <View gap="$1">
+          <h1>Params</h1>
+          <Text>{`A curated collection of machine learning starter templates.`}</Text>
+        </View>
+        {props.templates?.map((template, i) => {
+          return (
+            <View key={template.name}>
+              <Link href={template.html_url} target="_blank">
+                <Text>
+                  <Text
+                    textDecorationLine="underline"
+                    textDecorationColor="transparent"
+                  >{`00${i + 1} `}</Text>
+                  <Text textDecorationLine="underline" bold>
+                    {template.name}
+                  </Text>
+                </Text>
+              </Link>
+            </View>
+          )
+        })}
+      </View>
     </View>
   )
 }

@@ -46286,47 +46286,49 @@ var allThemes = addChildren(baseThemes, (name, theme) => {
   const isLight = name === "light";
   const inverseName = isLight ? "dark" : "light";
   const transparent = /* @__PURE__ */ __name((hsl, opacity = 0) => hsl.replace(`%)`, `%, ${opacity})`).replace(`hsl(`, `hsla(`), "transparent");
-  const [colorThemes] = [colorTokens[name], colorTokens[inverseName]].map((colorSet) => {
-    return Object.fromEntries(
-      keys(colorSet).map((color3) => {
-        const colorPalette = Object.values(colorSet[color3]);
-        const [head, tail] = [colorPalette.slice(0, 6), colorPalette.slice(6)];
-        const contrasts = {
-          blue: "white",
-          gray: "white",
-          green: "white",
-          orange: "white",
-          pink: "white",
-          purple: "white",
-          red: "white",
-          yellow: "black"
-        };
-        const palette = [
-          transparent(colorPalette[0]),
-          ...head,
-          ...tail,
-          theme.color,
-          transparent(colorPalette[colorPalette.length - 1]),
-          contrasts[color3],
-          // contrastColor
-          isLight ? "white" : "black"
-          // backgroundStrong
-        ];
-        const colorTheme = createTheme2(
-          palette,
-          isLight ? {
-            ...lightTemplate,
-            // light color themes are a bit less sensitive
-            borderColor: 4,
-            borderColorHover: 5,
-            borderColorFocus: 4,
-            borderColorPress: 4
-          } : darkTemplate
-        );
-        return [color3, colorTheme];
-      })
-    );
-  });
+  const [colorThemes] = [colorTokens[name], colorTokens[inverseName]].map(
+    (colorSet) => {
+      return Object.fromEntries(
+        keys(colorSet).map((color3) => {
+          const colorPalette = Object.values(colorSet[color3]);
+          const [head, tail] = [colorPalette.slice(0, 6), colorPalette.slice(6)];
+          const contrasts = {
+            blue: "white",
+            gray: "white",
+            green: "white",
+            orange: "white",
+            pink: "white",
+            purple: "white",
+            red: "white",
+            yellow: "black"
+          };
+          const palette = [
+            transparent(colorPalette[0]),
+            ...head,
+            ...tail,
+            theme.color,
+            transparent(colorPalette[colorPalette.length - 1]),
+            contrasts[color3],
+            // contrastColor
+            isLight ? "white" : "black"
+            // backgroundStrong
+          ];
+          const colorTheme = createTheme2(
+            palette,
+            isLight ? {
+              ...lightTemplate,
+              // light color themes are a bit less sensitive
+              borderColor: 4,
+              borderColorHover: 5,
+              borderColorFocus: 4,
+              borderColorPress: 4
+            } : darkTemplate
+          );
+          return [color3, colorTheme];
+        })
+      );
+    }
+  );
   return {
     ...colorThemes
   };

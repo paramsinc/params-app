@@ -10,11 +10,14 @@
     "eslint": "^8.21.0",
     "react-native": "0.74.5",
     "turbo": "^1.4.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.6.2"
   },
   "scripts": {
     "native": "cd apps/expo && yarn start",
     "web": "cd apps/next && yarn next"
   },
-  "packageManager": "yarn@4.5.0"
+  "packageManager": "yarn@4.1.0",
+  "resolutions": {
+    "typescript": "5.6.2"
+  }
 }

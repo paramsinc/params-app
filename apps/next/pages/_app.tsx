@@ -16,7 +16,7 @@ import type { SolitoAppProps } from 'solito'
 import { TamaguiProvider } from 'app/ds/tamagui/provider'
 
 if (process.env.NODE_ENV === 'production') {
-  require('../public/tamagui.css')
+  // require('../public/tamagui.css')
 }
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {

@@ -1,9 +1,35 @@
 'use client'
 import { makeAuth } from 'app/auth/make-auth'
-import { SignUp, useAuth, ClerkProvider, UserButton } from '@clerk/clerk-react'
+import {
+  SignUp,
+  useAuth,
+  ClerkProvider,
+  UserButton,
+  SignUpButton,
+  SignedOut,
+} from '@clerk/clerk-react'
+import { Clerk } from '@clerk/clerk-js'
 import { useLatestCallback } from 'app/helpers/use-latest-callback'
 import { env } from 'app/env'
 import { getConfig, getVariableValue } from 'tamagui'
+
+console.log('[clerk]', env)
+
+const clerk = new Clerk(env.CLERK_PUBLISHABLE_KEY!)
+
+const getToken = async (): Promise<string | null> => {
+  if (!clerk.loaded) {
+    await clerk.load()
+  }
+
+  const session = clerk.session
+
+  if (!session) {
+    return null
+  }
+
+  return session.getToken()
+}
 
 function Font({ children }: { children: React.ReactNode }) {
   const config = getConfig()
@@ -34,7 +60,7 @@ export default makeAuth({
   },
   Provider({ children }) {
     return (
-      <ClerkProvider publishableKey={env.CLERK_PUBLISHABLE_KEY!}>
+      <ClerkProvider publishableKey={env.CLERK_PUBLISHABLE_KEY!} Clerk={clerk}>
         {children}
       </ClerkProvider>
     )
@@ -47,7 +73,6 @@ export default makeAuth({
     )
   },
   useGetToken() {
-    const { getToken } = useAuth()
     return getToken
   },
   UserButton() {
@@ -57,4 +82,14 @@ export default makeAuth({
       </Font>
     )
   },
+  AuthFlowTrigger({ children }) {
+    return (
+      <SignedOut>
+        <Font>
+          <SignUpButton mode="modal">{children}</SignUpButton>
+        </Font>
+      </SignedOut>
+    )
+  },
+  getToken,
 })

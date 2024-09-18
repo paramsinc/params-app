@@ -4,6 +4,7 @@ import { Text } from 'app/ds/Text'
 import { TextLink } from 'app/ds/TextLink'
 import { View } from 'app/ds/View'
 import { styled } from 'app/ds/styled'
+import { trpc } from 'app/trpc/client'
 import { Platform } from 'react-native'
 
 const H1 = styled(Text, {
@@ -20,6 +21,7 @@ export function HomeScreen(props: {
 }) {
   const auth = Auth.useUser()
   const signOut = Auth.useSignOut()
+  const home = trpc.hello.useQuery()
 
   return (
     <View>
@@ -70,10 +72,14 @@ export function HomeScreen(props: {
           })}
         </View>
 
-        {auth.hasLoaded && auth.isSignedIn && (
+        {JSON.stringify(home.data)}
+
+        {auth.hasLoaded && auth.isSignedIn ? (
           <>
             <Auth.UserButton />
           </>
+        ) : (
+          <Auth.AuthFlowTrigger>Sign in</Auth.AuthFlowTrigger>
         )}
 
         {/* <View row ai="center" gap="$2">

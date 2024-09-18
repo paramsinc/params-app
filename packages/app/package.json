@@ -3,6 +3,7 @@
   "name": "app",
   "main": "index.ts",
   "dependencies": {
+    "@clerk/clerk-js": "^5.22.2",
     "@clerk/nextjs": "^5.5.5",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
@@ -13,6 +14,11 @@
     "@tamagui/lucide-icons": "1.111.6",
     "@tamagui/shorthands": "1.111.6",
     "@tamagui/themes": "1.111.6",
+    "@tanstack/react-query": "^5.56.2",
+    "@trpc/client": "^11.0.0-rc.502",
+    "@trpc/next": "^11.0.0-rc.502",
+    "@trpc/react-query": "^11.0.0-rc.502",
+    "@trpc/server": "^11.0.0-rc.502",
     "burnt": "0.12.2",
     "dripsy": "^4.3.3",
     "moti": "latest",
@@ -21,6 +27,7 @@
     "solito": "4.0.1",
     "tamagui": "1.111.6",
     "zeego": "^1.10.0",
+    "zod": "^3.23.8",
     "zustand": "^4.5.2"
   },
   "sideEffects": [

@@ -8,6 +8,7 @@ import {
 } from '@tamagui/next-theme'
 
 import { Provider } from 'app/provider'
+import { trpc } from 'app/trpc/client'
 
 import { NextPage } from 'next'
 import Head from 'next/head'
@@ -57,4 +58,4 @@ function ThemeProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export default MyApp
+export default trpc.withTRPC(MyApp)

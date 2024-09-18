@@ -26,7 +26,9 @@
     "**.native.ts, **.native.tsx, **.web.ts, **.web.tsx",
     "chart.js",
     "lodash",
-    "node_modules"
+    "node_modules",
+    "apps/next",
+    "app/trpc/nextjs"
   ],
   "editor.gotoLocation.multipleDefinitions": "goto",
   "editor.acceptSuggestionOnCommitCharacter": false

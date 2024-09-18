@@ -9,6 +9,8 @@ type AuthBase = {
   AuthFlow: React.ComponentType
   useGetToken: () => () => Promise<string | null>
   UserButton: React.ComponentType
+  AuthFlowTrigger: React.ComponentType<{ children: React.ReactNode }>
+  getToken: () => Promise<string | null>
 }
 
 export const makeAuth = <Auth extends AuthBase>(auth: Auth) => auth

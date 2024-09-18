@@ -6,7 +6,6 @@ type AuthBase = {
   useUser: () =>
     | { isSignedIn: boolean; hasLoaded: true; userId: string | null }
     | { hasLoaded: false }
-  AuthFlow: React.ComponentType
   useGetToken: () => () => Promise<string | null>
   UserButton: React.ComponentType
   AuthFlowTrigger: React.ComponentType<{ children: React.ReactNode }>

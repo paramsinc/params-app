@@ -30,6 +30,7 @@ export default createTRPCNext<AppRouter>({
             const headers: Record<string, string> = {}
 
             const token = await Auth.getToken()
+            console.log('[auth][trpc][token]', token)
             if (token) {
               headers.authorization = `Bearer ${token}`
             }

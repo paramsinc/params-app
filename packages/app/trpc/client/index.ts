@@ -1,1 +1,1 @@
-export { default as trpc } from './client'
+export { default as api } from './client'

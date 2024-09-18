@@ -4,7 +4,7 @@ import { Text } from 'app/ds/Text'
 import { TextLink } from 'app/ds/TextLink'
 import { View } from 'app/ds/View'
 import { styled } from 'app/ds/styled'
-import { trpc } from 'app/trpc/client'
+import { api } from 'app/trpc/client'
 import { Platform } from 'react-native'
 
 const H1 = styled(Text, {
@@ -21,7 +21,9 @@ export function HomeScreen(props: {
 }) {
   const auth = Auth.useUser()
   const signOut = Auth.useSignOut()
-  const home = trpc.hello.useQuery()
+  const home = api.hello.useQuery()
+  const createMe = api.createMe.useMutation()
+  const me = api.me.useQuery()
 
   return (
     <View>

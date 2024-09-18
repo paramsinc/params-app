@@ -5,6 +5,7 @@
   "dependencies": {
     "@clerk/clerk-js": "^5.22.2",
     "@clerk/nextjs": "^5.5.5",
+    "@neondatabase/serverless": "^0.9.5",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "@tamagui/animations-css": "1.111.6",
@@ -21,16 +22,22 @@
     "@trpc/server": "^11.0.0-rc.502",
     "burnt": "0.12.2",
     "dripsy": "^4.3.3",
+    "drizzle-orm": "^0.33.0",
+    "drizzle-zod": "^0.5.1",
     "moti": "latest",
     "radash": "^12.1.0",
     "react-hotkeys-hook": "^4.5.0",
     "solito": "4.0.1",
     "tamagui": "1.111.6",
+    "ulid": "^2.3.0",
     "zeego": "^1.10.0",
     "zod": "^3.23.8",
     "zustand": "^4.5.2"
   },
   "sideEffects": [
     "*.css"
-  ]
+  ],
+  "devDependencies": {
+    "drizzle-kit": "^0.24.2"
+  }
 }

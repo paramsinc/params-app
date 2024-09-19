@@ -17,7 +17,12 @@ export const makeAuth = <Auth extends AuthBase>(auth: Auth) => auth
 type BackendAuthBase<Auth extends ReturnType<typeof makeAuth>> = {
   authenticateNextApiRequest: (
     req: NextApiRequest
-  ) => Promise<{ userId: string | null }>
+  ) => Promise<{
+    userId: string | null
+    userFirstName?: string
+    userEmail?: string
+    userLastName?: string
+  }>
 }
 
 export const makeBackendAuth = <Auth extends ReturnType<typeof makeAuth>>(

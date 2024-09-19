@@ -1,7 +1,7 @@
 import { select } from 'app/helpers/select'
 import { authedProcedure, publicProcedure, router } from './trpc'
 import { z } from 'zod'
-import { inserts, selects } from 'app/db/inserts-and-selects'
+import { Insert, inserts, selects } from 'app/db/inserts-and-selects'
 import { d, db, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
 import { keys } from 'app/helpers/object'
@@ -174,17 +174,51 @@ const profile = {
         input: { bio, github_username, image_vendor, image_vendor_id, name, slug },
         ctx,
       }) => {
-        const me = await db.query.users
+        const existingProfileBySlug = await db.query.profiles
           .findFirst({
-            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+            where: (profiles, { eq }) => eq(profiles.slug, slug),
           })
           .execute()
 
-        if (!me) {
+        if (existingProfileBySlug) {
           throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: 'Please create a user account first.',
+            code: 'CONFLICT',
+            message: `A profile with slug "${slug}" already exists. Please try editing the slug and resubmitting.`,
           })
+        }
+
+        let memberInsert:
+          | Pick<
+              z.infer<typeof inserts.profileMembers>,
+              'email' | 'first_name' | 'last_name' | 'user_id'
+            >
+          | undefined
+
+        if (ctx.auth.userEmail && ctx.auth.userFirstName && ctx.auth.userLastName) {
+          memberInsert = {
+            email: ctx.auth.userEmail,
+            first_name: ctx.auth.userFirstName,
+            last_name: ctx.auth.userLastName,
+            user_id: ctx.auth.userId,
+          }
+        } else {
+          const me = await db.query.users.findFirst({
+            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+          })
+
+          if (!me) {
+            throw new TRPCError({
+              code: 'UNAUTHORIZED',
+              message: `Please complete creating your account.`,
+            })
+          }
+
+          memberInsert = {
+            email: me.email,
+            first_name: me.first_name,
+            last_name: me.last_name,
+            user_id: me.id,
+          }
         }
 
         const [profile] = await db
@@ -210,11 +244,8 @@ const profile = {
         await db
           .insert(schema.profileMembers)
           .values({
+            ...memberInsert,
             profile_id: profile.id,
-            user_id: me.id,
-            first_name: me.first_name,
-            last_name: me.last_name,
-            email: me.email,
           })
           .execute()
 
@@ -339,6 +370,17 @@ const profileMember = {
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const existentUser = await db.query.users.findFirst({
+        where: (users, { eq }) => {
+          if (input.user_id) {
+            return eq(users.id, input.user_id)
+          }
+
+          return eq(users.email, input.email)
+        },
+      })
+      input.user_id = existentUser?.id
+
       const [profileMember] = await db
         .insert(schema.profileMembers)
         .values(input)
@@ -348,6 +390,8 @@ const profileMember = {
       if (!profileMember) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Profile member couldn't get created.` })
       }
+
+      // TODO send an email to the new member
 
       return profileMember
     }),
@@ -488,6 +532,13 @@ const repository = {
         .values(input)
         .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
         .execute()
+
+      if (!repository) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Repository couldn't get created.`,
+        })
+      }
 
       return repository
     }),

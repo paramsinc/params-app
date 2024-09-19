@@ -1,17 +1,11 @@
-import {
-  integer,
-  pgTable,
-  text,
-  timestamp,
-  unique,
-  pgEnum,
-} from 'drizzle-orm/pg-core'
+import { integer, pgTable, text, timestamp, unique, pgEnum } from 'drizzle-orm/pg-core'
 
 const timestampMixin = () => {
   return {
     created_at: timestamp('created_at').defaultNow(),
     last_updated_at: timestamp('updated_at')
       .notNull()
+      .defaultNow()
       .$onUpdate(() => new Date()),
   }
 }

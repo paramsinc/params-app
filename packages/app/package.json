@@ -28,6 +28,7 @@
     "radash": "^12.1.0",
     "react-hotkeys-hook": "^4.5.0",
     "solito": "4.0.1",
+    "stripe": "^16.12.0",
     "tamagui": "1.111.6",
     "ulid": "^2.3.0",
     "zeego": "^1.10.0",

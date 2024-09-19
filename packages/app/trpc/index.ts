@@ -4,10 +4,11 @@ import { z } from 'zod'
 import { inserts, selects } from 'app/db/inserts-and-selects'
 import { d, db, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
+import { keys } from 'app/helpers/object'
 
 const slugify = (str: string) => str.toLowerCase().replace(/\s+/g, '-')
 
-const customColumns = {
+const publicSchema = {
   users: {
     UserPublic: {
       id: true,
@@ -16,22 +17,17 @@ const customColumns = {
       last_name: true,
       created_at: true,
       last_updated_at: true,
-      email: false,
     },
   },
 } satisfies PublicColumns
 
-export const appRouter = router({
-  hello: publicProcedure.query(({ ctx }) => {
-    return 'hello there sir'
-  }),
-
+const user = {
   // me
   me: authedProcedure.query(async ({ ctx }) => {
     const user = await db.query.users
       .findFirst({
         where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-        columns: customColumns.users.UserPublic,
+        columns: publicSchema.users.UserPublic,
       })
       .execute()
 
@@ -47,8 +43,9 @@ export const appRouter = router({
         })
         .merge(inserts.users.pick({ slug: true }).partial())
     )
+    .output(selects.users.pick(publicSchema.users.UserPublic))
     .mutation(async ({ ctx, input }) => {
-      const user = await db
+      const [user] = await db
         .insert(schema.users)
         .values({
           ...input,
@@ -57,6 +54,7 @@ export const appRouter = router({
             slugify([input.first_name, input.last_name].join(' ')),
           id: ctx.auth.userId,
         })
+        .returning(returning('users', publicSchema.users.UserPublic))
         .execute()
 
       if (!user) {
@@ -121,6 +119,14 @@ export const appRouter = router({
 
       return users
     }),
+}
+
+export const appRouter = router({
+  hello: publicProcedure.query(({ ctx }) => {
+    return 'hello there sir'
+  }),
+
+  ...user,
 
   repoById: publicProcedure.query(({ ctx }) => {}),
   profileBySlug: publicProcedure
@@ -138,6 +144,31 @@ export type AppRouter = typeof appRouter
 
 type PublicColumns = Partial<{
   [key in keyof typeof selects]: {
-    [type: string]: Record<keyof z.infer<(typeof selects)[key]>, boolean>
+    [type: string]: Partial<Record<keyof z.infer<(typeof selects)[key]>, true>>
   }
 }>
+
+const returning = <
+  Table extends keyof typeof schema,
+  Columns extends Partial<Record<keyof (typeof schema)[Table], true>>
+>(
+  table: Table,
+  customSchema: Columns
+): {
+  [Column in Extract<
+    // loop over each column in the schema[Table]
+    keyof (typeof schema)[Table],
+    // but only include the ones in the sharedSchemaByTable[Table][Columns]
+    // if we just looped over this one, it didn't work for some reason
+    // so we use extract instead
+    keyof Columns
+  >]: (typeof schema)[Table][Column]
+} => {
+  return Object.fromEntries(
+    keys(customSchema).map((column) => [
+      column,
+      // @ts-ignore
+      schema[table][column],
+    ])
+  ) as any
+}

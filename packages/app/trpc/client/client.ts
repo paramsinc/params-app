@@ -2,6 +2,20 @@ import { httpBatchLink } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import { Auth } from 'app/auth'
 import { AppRouter } from 'app/trpc'
+import { QueryClient } from '@tanstack/react-query'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    mutations: {
+      onSuccess(data, variables, context) {
+        queryClient.invalidateQueries({
+          refetchType: 'active',
+        }) // refetch all active queries when mutation succeeds...
+      },
+    },
+  },
+})
+
 function getBaseUrl() {
   if (typeof window !== 'undefined')
     // browser should use relative path
@@ -39,6 +53,7 @@ export default createTRPCNext<AppRouter>({
           },
         }),
       ],
+      queryClient,
     }
   },
   /**

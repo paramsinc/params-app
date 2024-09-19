@@ -24,6 +24,7 @@ export function HomeScreen(props: {
   const home = api.hello.useQuery()
   const createMe = api.createMe.useMutation()
   const me = api.me.useQuery()
+  const deleteMe = api.deleteMe.useMutation()
 
   return (
     <View>
@@ -92,7 +93,9 @@ export function HomeScreen(props: {
               >
                 {createMe.isPending ? `Creating...` : `Create Me`}
               </button>
-            ) : null}
+            ) : (
+              <button onClick={() => deleteMe.mutate()}>Delete Me</button>
+            )}
           </>
         ) : (
           <Auth.AuthFlowTrigger>Sign in</Auth.AuthFlowTrigger>

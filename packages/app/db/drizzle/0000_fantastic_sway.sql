@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "profile_members" (
 	"profile_id" text NOT NULL,
 	"user_id" text,
 	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "profile_members_profile_id_user_id_unique" UNIQUE("profile_id","user_id")
 );
 --> statement-breakpoint
@@ -16,11 +16,11 @@ CREATE TABLE IF NOT EXISTS "profiles" (
 	"name" text NOT NULL,
 	"bio" text,
 	"github_username" text,
-	"image_vendor" "image_vendor",
+	"image_vendor" text,
 	"image_vendor_id" text,
-	"stripe_connect_account_id" text,
+	"stripe_connect_account_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "profiles_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS "repositories" (
 	"github_url" text,
 	"profile_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "repositories_profile_id_slug_unique" UNIQUE("profile_id","slug")
 );
 --> statement-breakpoint
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"last_name" text NOT NULL,
 	"email" text NOT NULL,
 	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_slug_unique" UNIQUE("slug"),
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );

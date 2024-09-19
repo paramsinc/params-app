@@ -1,4 +1,5 @@
 import { integer, pgTable, text, timestamp, unique, pgEnum } from 'drizzle-orm/pg-core'
+import { ulid } from 'ulid'
 
 const timestampMixin = () => {
   return {
@@ -10,7 +11,7 @@ const timestampMixin = () => {
   }
 }
 
-const imageVendor = pgEnum('image_vendor', ['cloudinary', 'raw'])
+// const imageVendor = pgEnum('image_vendor', ['cloudinary', 'raw'])
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -21,8 +22,6 @@ export const users = pgTable('users', {
   ...timestampMixin(),
 })
 
-import { ulid } from 'ulid'
-
 export const profiles = pgTable('profiles', {
   id: text('id')
     .primaryKey()
@@ -31,7 +30,7 @@ export const profiles = pgTable('profiles', {
   name: text('name').notNull(),
   bio: text('bio'),
   github_username: text('github_username'),
-  image_vendor: imageVendor('image_vendor'),
+  image_vendor: text('image_vendor'),
   image_vendor_id: text('image_vendor_id'),
   stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
   ...timestampMixin(),
@@ -68,7 +67,9 @@ export const profileMembers = pgTable(
     profile_id: text('profile_id')
       .notNull()
       .references(() => profiles.id),
-    user_id: text('user_id').references(() => users.id),
+    user_id: text('user_id').references(() => users.id, {
+      onDelete: 'cascade',
+    }),
     ...timestampMixin(),
   },
   (table) => ({

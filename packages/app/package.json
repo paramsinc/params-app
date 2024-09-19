@@ -20,6 +20,7 @@
     "@trpc/next": "^11.0.0-rc.502",
     "@trpc/react-query": "^11.0.0-rc.502",
     "@trpc/server": "^11.0.0-rc.502",
+    "bufferutil": "^4.0.8",
     "burnt": "0.12.2",
     "dripsy": "^4.3.3",
     "drizzle-orm": "^0.33.0",
@@ -30,7 +31,9 @@
     "solito": "4.0.1",
     "stripe": "^16.12.0",
     "tamagui": "1.111.6",
+    "trpc-openapi": "^1.2.0",
     "ulid": "^2.3.0",
+    "ws": "^8.18.0",
     "zeego": "^1.10.0",
     "zod": "^3.23.8",
     "zustand": "^4.5.2"
@@ -39,6 +42,7 @@
     "*.css"
   ],
   "devDependencies": {
+    "@types/ws": "^8",
     "drizzle-kit": "^0.24.2"
   }
 }

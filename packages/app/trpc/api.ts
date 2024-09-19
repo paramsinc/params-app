@@ -75,21 +75,26 @@ const user = {
   }),
   createMe: authedProcedure
     .input(
-      inserts.users
-        .pick({
-          first_name: true,
-          last_name: true,
-          email: true,
-        })
-        .merge(inserts.users.pick({ slug: true }).partial())
+      inserts.users.pick({ slug: true, first_name: true, last_name: true, email: true }).partial()
     )
     .output(selects.users.pick(publicSchema.users.UserPublic))
     .mutation(async ({ ctx, input }) => {
+      const firstName = input.first_name ?? ctx.auth.userFirstName
+      const lastName = input.last_name ?? ctx.auth.userLastName
+      const email = input.email ?? ctx.auth.userEmail
+      if (!firstName || !lastName || !email) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Please provide your first name, last name, and email.`,
+        })
+      }
       const [user] = await db
         .insert(schema.users)
         .values({
-          ...input,
-          slug: input.slug || slugify([input.first_name, input.last_name].join(' ')),
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          slug: input.slug || slugify([firstName, lastName].join(' ')),
           id: ctx.auth.userId,
         })
         .onConflictDoUpdate({
@@ -169,67 +174,59 @@ const profile = {
         image_vendor_id: true,
       })
     )
-    .mutation(
-      async ({
-        input: { bio, github_username, image_vendor, image_vendor_id, name, slug },
-        ctx,
-      }) => {
-        const existingProfileBySlug = await db.query.profiles
-          .findFirst({
-            where: (profiles, { eq }) => eq(profiles.slug, slug),
-          })
-          .execute()
+    .mutation(async ({ input, ctx }) => {
+      const existingProfileBySlug = await db.query.profiles
+        .findFirst({
+          where: (profiles, { eq }) => eq(profiles.slug, input.slug),
+        })
+        .execute()
 
-        if (existingProfileBySlug) {
+      if (existingProfileBySlug) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
+        })
+      }
+
+      let memberInsert:
+        | Pick<
+            z.infer<typeof inserts.profileMembers>,
+            'email' | 'first_name' | 'last_name' | 'user_id'
+          >
+        | undefined
+
+      if (ctx.auth.userEmail && ctx.auth.userFirstName && ctx.auth.userLastName) {
+        memberInsert = {
+          email: ctx.auth.userEmail,
+          first_name: ctx.auth.userFirstName,
+          last_name: ctx.auth.userLastName,
+          user_id: ctx.auth.userId,
+        }
+      } else {
+        const me = await db.query.users.findFirst({
+          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+        })
+
+        if (!me) {
           throw new TRPCError({
-            code: 'CONFLICT',
-            message: `A profile with slug "${slug}" already exists. Please try editing the slug and resubmitting.`,
+            code: 'UNAUTHORIZED',
+            message: `Please complete creating your account.`,
           })
         }
 
-        let memberInsert:
-          | Pick<
-              z.infer<typeof inserts.profileMembers>,
-              'email' | 'first_name' | 'last_name' | 'user_id'
-            >
-          | undefined
-
-        if (ctx.auth.userEmail && ctx.auth.userFirstName && ctx.auth.userLastName) {
-          memberInsert = {
-            email: ctx.auth.userEmail,
-            first_name: ctx.auth.userFirstName,
-            last_name: ctx.auth.userLastName,
-            user_id: ctx.auth.userId,
-          }
-        } else {
-          const me = await db.query.users.findFirst({
-            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-          })
-
-          if (!me) {
-            throw new TRPCError({
-              code: 'UNAUTHORIZED',
-              message: `Please complete creating your account.`,
-            })
-          }
-
-          memberInsert = {
-            email: me.email,
-            first_name: me.first_name,
-            last_name: me.last_name,
-            user_id: me.id,
-          }
+        memberInsert = {
+          email: me.email,
+          first_name: me.first_name,
+          last_name: me.last_name,
+          user_id: me.id,
         }
+      }
 
-        const [profile] = await db
+      const { profile, member } = await db.transaction(async (tx) => {
+        const [profile] = await tx
           .insert(schema.profiles)
           .values({
-            bio,
-            github_username,
-            image_vendor,
-            image_vendor_id,
-            name,
-            slug,
+            ...input,
             stripe_connect_account_id: await stripe.accounts.create().then((account) => account.id),
           })
           .returning(pick('profiles', publicSchema.profiles.ProfilePublic))
@@ -241,17 +238,20 @@ const profile = {
 
         // add this user as a member
 
-        await db
+        const [member] = await tx
           .insert(schema.profileMembers)
           .values({
             ...memberInsert,
             profile_id: profile.id,
           })
+          .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
           .execute()
 
-        return profile
-      }
-    ),
+        return { profile, member }
+      })
+
+      return { profile, member }
+    }),
   updateProfile: authedProcedure
     .input(
       z.object({

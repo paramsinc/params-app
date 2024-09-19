@@ -54,7 +54,11 @@ const user = {
             slugify([input.first_name, input.last_name].join(' ')),
           id: ctx.auth.userId,
         })
-        .returning(returning('users', publicSchema.users.UserPublic))
+        .onConflictDoUpdate({
+          target: schema.users.id,
+          set: input,
+        })
+        .returning(pick('users', publicSchema.users.UserPublic))
         .execute()
 
       if (!user) {
@@ -72,11 +76,9 @@ const user = {
     .mutation(async ({ ctx, input }) => {
       const [user] = await db
         .update(schema.users)
-        .set({
-          ...input,
-        })
+        .set(input)
         .where(d.eq(schema.users.id, ctx.auth.userId))
-        .returning()
+        .returning(pick('users', publicSchema.users.UserPublic))
         .execute()
 
       if (!user) {
@@ -148,7 +150,7 @@ type PublicColumns = Partial<{
   }
 }>
 
-const returning = <
+const pick = <
   Table extends keyof typeof schema,
   Columns extends Partial<Record<keyof (typeof schema)[Table], true>>
 >(

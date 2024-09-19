@@ -14,7 +14,8 @@
   },
   "scripts": {
     "native": "cd apps/expo && yarn start",
-    "web": "cd apps/next && yarn next"
+    "web": "cd apps/next && yarn next",
+    "db:migrate": "cd packages/app/db && doppler run -- npx drizzle-kit generate --config ./db/drizzle.config.ts"
   },
   "packageManager": "yarn@4.1.0",
   "resolutions": {

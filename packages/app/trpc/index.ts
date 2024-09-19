@@ -7,23 +7,36 @@ import { TRPCError } from '@trpc/server'
 
 const slugify = (str: string) => str.toLowerCase().replace(/\s+/g, '-')
 
+const customColumns = {
+  users: {
+    UserPublic: {
+      id: true,
+      slug: true,
+      first_name: true,
+      last_name: true,
+      created_at: true,
+      last_updated_at: true,
+      email: false,
+    },
+  },
+} satisfies PublicColumns
+
 export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
   }),
 
   // me
-  me: authedProcedure
-    .output(selects.users.nullable())
-    .query(async ({ ctx }) => {
-      const user = await db.query.users
-        .findFirst({
-          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-        })
-        .execute()
+  me: authedProcedure.query(async ({ ctx }) => {
+    const user = await db.query.users
+      .findFirst({
+        where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+        columns: customColumns.users.UserPublic,
+      })
+      .execute()
 
-      return user ?? null
-    }),
+    return user ?? null
+  }),
   createMe: authedProcedure
     .input(
       inserts.users
@@ -122,3 +135,9 @@ export const appRouter = router({
 })
 
 export type AppRouter = typeof appRouter
+
+type PublicColumns = Partial<{
+  [key in keyof typeof selects]: {
+    [type: string]: Record<keyof z.infer<(typeof selects)[key]>, boolean>
+  }
+}>

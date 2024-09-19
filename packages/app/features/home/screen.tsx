@@ -79,6 +79,20 @@ export function HomeScreen(props: {
         {auth.hasLoaded && auth.isSignedIn ? (
           <>
             <Auth.UserButton />
+            {me.data === null ? (
+              <button
+                onClick={() =>
+                  createMe.mutate({
+                    first_name: 'Fernando',
+                    last_name: 'Rojo',
+                    email: 'fernando@params.com',
+                    slug: 'fernando-rojo',
+                  })
+                }
+              >
+                {createMe.isPending ? `Creating...` : `Create Me`}
+              </button>
+            ) : null}
           </>
         ) : (
           <Auth.AuthFlowTrigger>Sign in</Auth.AuthFlowTrigger>

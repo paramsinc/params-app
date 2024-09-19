@@ -1,7 +1,7 @@
 import { httpBatchLink } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import { Auth } from 'app/auth'
-import { AppRouter } from 'app/trpc'
+import { AppRouter } from 'app/trpc/api'
 import { QueryClient } from '@tanstack/react-query'
 
 const queryClient = new QueryClient({

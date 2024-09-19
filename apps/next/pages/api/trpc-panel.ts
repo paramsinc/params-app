@@ -1,4 +1,4 @@
-import { appRouter } from 'app/trpc'
+import { appRouter } from 'app/trpc/api'
 import { NextApiHandler } from 'next'
 import { nextHandler } from 'trpc-playground/handlers/next'
 

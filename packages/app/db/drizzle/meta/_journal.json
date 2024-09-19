@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1726745755002,
-      "tag": "0000_loving_nebula",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1726745910969,
-      "tag": "0001_tan_loki",
+      "when": 1726761940683,
+      "tag": "0000_rich_warbound",
       "breakpoints": true
     }
   ]

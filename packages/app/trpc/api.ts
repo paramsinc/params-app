@@ -19,6 +19,17 @@ const publicSchema = {
       last_updated_at: true,
     },
   },
+  profiles: {
+    ProfilePublic: {
+      id: true,
+      slug: true,
+      name: true,
+      bio: true,
+      github_username: true,
+      image_vendor: true,
+      image_vendor_id: true,
+    },
+  },
 } satisfies PublicColumns
 
 const user = {
@@ -123,12 +134,56 @@ const user = {
     }),
 }
 
+const profile = {
+  createProfile: authedProcedure
+    .input(
+      inserts.profiles.pick({
+        name: true,
+        slug: true,
+        bio: true,
+        github_username: true,
+        image_vendor: true,
+        image_vendor_id: true,
+      })
+    )
+    .mutation(
+      async ({
+        ctx,
+        input: {
+          bio,
+          github_username,
+          image_vendor,
+          image_vendor_id,
+          name,
+          slug,
+        },
+      }) => {
+        const [profile] = await db
+          .insert(schema.profiles)
+          .values({
+            bio,
+            github_username,
+            image_vendor,
+            image_vendor_id,
+            name,
+            slug,
+            id: ctx.auth.userId,
+          })
+          .returning(pick('profiles', publicSchema.profiles.ProfilePublic))
+          .execute()
+
+        return profile
+      }
+    ),
+}
+
 export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
   }),
 
   ...user,
+  ...profile,
 
   repoById: publicProcedure.query(({ ctx }) => {}),
   profileBySlug: publicProcedure

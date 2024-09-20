@@ -336,7 +336,7 @@ const profile = {
 
       return true
     }),
-  profileBySlug: publicProcedure
+  profileBySlug_public: publicProcedure
     .input(
       z.object({
         slug: z.string(),
@@ -356,6 +356,16 @@ const profile = {
 
       return publicProfile
     }),
+  myProfiles: authedProcedure.query(async ({ ctx }) => {
+    const profiles = await db
+      .select(pick('profiles', publicSchema.profiles.ProfilePublic))
+      .from(schema.profiles)
+      .innerJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
+      .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
+      .execute()
+
+    return profiles
+  }),
 }
 
 const profileMember = {

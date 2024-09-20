@@ -15,7 +15,7 @@ const t = initTRPC.context<TrpcContext>().create()
 // check if the user is signed in, otherwise throw an UNAUTHORIZED code
 const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.auth.userId) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' })
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You should sign in.' })
   }
   return next({
     ctx: {

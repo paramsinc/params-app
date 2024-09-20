@@ -47,7 +47,9 @@ export const repositories = pgTable(
     github_url: text('github_url'),
     profile_id: text('profile_id')
       .notNull()
-      .references(() => profiles.id),
+      .references(() => profiles.id, {
+        onDelete: 'cascade',
+      }),
     ...timestampMixin(),
   },
   (table) => ({
@@ -66,7 +68,9 @@ export const profileMembers = pgTable(
     email: text('email').notNull(),
     profile_id: text('profile_id')
       .notNull()
-      .references(() => profiles.id),
+      .references(() => profiles.id, {
+        onDelete: 'cascade',
+      }),
     user_id: text('user_id').references(() => users.id, {
       onDelete: 'cascade',
     }),

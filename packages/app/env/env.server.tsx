@@ -11,10 +11,12 @@ export const serverEnv = z
     NEON_DATABASE_URL: z.string(),
     DATABASE_URL: z.string(),
     STRIPE_SECRET_KEY: z.string(),
+    CAL_COM_CLIENT_SECRET: z.string(),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     NEON_DATABASE_URL,
     DATABASE_URL,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    CAL_COM_CLIENT_SECRET: process.env.CAL_COM_CLIENT_SECRET,
   })

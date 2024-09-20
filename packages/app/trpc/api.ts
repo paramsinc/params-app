@@ -6,60 +6,11 @@ import { d, db, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
 import { keys } from 'app/helpers/object'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
+import { createCalcomAccount, deleteCalcomAccount, getCalcomUsers } from 'app/trpc/routes/cal-com'
+import { pick } from 'app/trpc/pick'
+import { publicSchema } from 'app/trpc/publicSchema'
 
 const slugify = (str: string) => str.toLowerCase().replace(/\s+/g, '-')
-
-const publicSchema = {
-  users: {
-    UserPublic: {
-      id: true,
-      slug: true,
-      first_name: true,
-      last_name: true,
-      created_at: true,
-      last_updated_at: true,
-    },
-  },
-  profiles: {
-    ProfilePublic: {
-      id: true,
-      slug: true,
-      name: true,
-      bio: true,
-      github_username: true,
-      image_vendor: true,
-      image_vendor_id: true,
-    },
-  },
-  profileMembers: {
-    ProfileMemberInternal: {
-      id: true,
-      profile_id: true,
-      user_id: true,
-      first_name: true,
-      last_name: true,
-      email: true,
-    },
-    ProfileMemberPublic: {
-      id: true,
-      profile_id: true,
-      user_id: true,
-      first_name: true,
-      last_name: true,
-    },
-  },
-  repositories: {
-    RepositoryPublic: {
-      id: true,
-      profile_id: true,
-      slug: true,
-      name: true,
-      created_at: true,
-      last_updated_at: true,
-      github_url: true,
-    },
-  },
-} satisfies PublicColumns
 
 const user = {
   // me
@@ -165,16 +116,26 @@ const user = {
 const profile = {
   createProfile: authedProcedure
     .input(
-      inserts.profiles.pick({
-        name: true,
-        slug: true,
-        bio: true,
-        github_username: true,
-        image_vendor: true,
-        image_vendor_id: true,
-      })
+      inserts.profiles
+        .pick({
+          name: true,
+          slug: true,
+          bio: true,
+          github_username: true,
+          image_vendor: true,
+          image_vendor_id: true,
+        })
+        .merge(
+          z.object({
+            timeFormat: z.enum(['12', '24']).optional(),
+            weekStart: z
+              .enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+              .optional(),
+            timeZone: z.string().optional(),
+          })
+        )
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: { timeFormat, weekStart, timeZone, ...input }, ctx }) => {
       const existingProfileBySlug = await db.query.profiles
         .findFirst({
           where: (profiles, { eq }) => eq(profiles.slug, input.slug),
@@ -222,14 +183,29 @@ const profile = {
         }
       }
 
+      const calcomProfile = await createCalcomAccount({
+        email: memberInsert.email,
+        name: [memberInsert.first_name, memberInsert.last_name].filter(Boolean).join(' '),
+        timeFormat,
+        weekStart,
+        timeZone,
+      })
+
+      console.log('[createProfile][calcomProfile]', calcomProfile)
+
       const { profile, member } = await db.transaction(async (tx) => {
         const [profile] = await tx
           .insert(schema.profiles)
           .values({
             ...input,
             stripe_connect_account_id: await stripe.accounts.create().then((account) => account.id),
+            ...(calcomProfile.status === 'success' && {
+              cal_com_account_id: calcomProfile.data.user.id,
+              cal_com_access_token: calcomProfile.data.accessToken,
+              cal_com_refresh_token: calcomProfile.data.refreshToken,
+            }),
           })
-          .returning(pick('profiles', publicSchema.profiles.ProfilePublic))
+          .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
           .execute()
 
         if (!profile) {
@@ -298,7 +274,7 @@ const profile = {
             slug,
           })
           .where(d.eq(schema.profiles.id, id))
-          .returning(pick('profiles', publicSchema.profiles.ProfilePublic))
+          .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
           .execute()
 
         if (!profile) {
@@ -313,7 +289,8 @@ const profile = {
     .mutation(async ({ ctx, input: { id } }) => {
       const profileMembers = await db.query.profileMembers
         .findMany({
-          where: (profileMembers, { eq }) => eq(profileMembers.profile_id, id),
+          where: (profileMembers, { eq, and }) =>
+            and(eq(profileMembers.profile_id, id), eq(profileMembers.user_id, ctx.auth.userId)),
         })
         .execute()
 
@@ -332,6 +309,10 @@ const profile = {
 
       if (!profile) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Profile not found.` })
+      }
+
+      if (profile.cal_com_account_id) {
+        await deleteCalcomAccount(profile.cal_com_account_id)
       }
 
       return true
@@ -356,9 +337,40 @@ const profile = {
 
       return publicProfile
     }),
+  profileBySlug: authedProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input: { slug } }) => {
+      const profile = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.slug, slug),
+        columns: publicSchema.profiles.ProfileInternal,
+      })
+
+      if (!profile) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Profile not found.` })
+      }
+
+      const amIMember = await db.query.profileMembers
+        .findFirst({
+          where: (profileMembers, { eq, and }) =>
+            and(
+              eq(profileMembers.profile_id, profile.id),
+              eq(profileMembers.user_id, ctx.auth.userId)
+            ),
+        })
+        .execute()
+
+      if (!amIMember) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      return profile
+    }),
   myProfiles: authedProcedure.query(async ({ ctx }) => {
     const profiles = await db
-      .select(pick('profiles', publicSchema.profiles.ProfilePublic))
+      .select(pick('profiles', publicSchema.profiles.ProfileInternal))
       .from(schema.profiles)
       .innerJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
       .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
@@ -565,34 +577,3 @@ export const appRouter = router({
 })
 
 export type AppRouter = typeof appRouter
-
-type PublicColumns = Partial<{
-  [key in keyof typeof selects]: {
-    [type: string]: Partial<Record<keyof z.infer<(typeof selects)[key]>, true>>
-  }
-}>
-
-const pick = <
-  Table extends keyof typeof schema,
-  Columns extends Partial<Record<keyof (typeof schema)[Table], true>>
->(
-  table: Table,
-  customSchema: Columns
-): {
-  [Column in Extract<
-    // loop over each column in the schema[Table]
-    keyof (typeof schema)[Table],
-    // but only include the ones in the sharedSchemaByTable[Table][Columns]
-    // if we just looped over this one, it didn't work for some reason
-    // so we use extract instead
-    keyof Columns
-  >]: (typeof schema)[Table][Column]
-} => {
-  return Object.fromEntries(
-    keys(customSchema).map((column) => [
-      column,
-      // @ts-ignore
-      schema[table][column],
-    ])
-  ) as any
-}

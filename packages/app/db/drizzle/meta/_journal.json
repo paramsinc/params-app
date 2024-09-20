@@ -15,6 +15,13 @@
       "when": 1726790677973,
       "tag": "0001_windy_felicia_hardy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1726856775054,
+      "tag": "0002_open_donald_blake",
+      "breakpoints": true
     }
   ]
 }

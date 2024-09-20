@@ -33,6 +33,11 @@ export const profiles = pgTable('profiles', {
   image_vendor: text('image_vendor'),
   image_vendor_id: text('image_vendor_id'),
   stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
+
+  cal_com_account_id: integer('cal_com_account_id'),
+  cal_com_access_token: text('cal_com_access_token'),
+  cal_com_refresh_token: text('cal_com_refresh_token'),
+
   ...timestampMixin(),
 })
 

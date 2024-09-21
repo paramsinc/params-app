@@ -2,7 +2,7 @@ import { shorthands } from '@tamagui/shorthands'
 import { createTokens, createTamagui, setupDev } from 'tamagui'
 
 import { animations } from './config/animations'
-import { bodyFont, headingFont } from './config/fonts'
+import { bodyFont, headingFont, monoFont } from './config/fonts'
 import { media, mediaQueryDefaultActive } from './config/media'
 import { color } from './themes/token-colors'
 import { radius } from './themes/token-radius'
@@ -20,9 +20,7 @@ setupDev({
  */
 
 const themes =
-  process.env.TAMAGUI_TARGET !== 'web' ||
-  process.env.TAMAGUI_IS_SERVER ||
-  process.env.STORYBOOK
+  process.env.TAMAGUI_TARGET !== 'web' || process.env.TAMAGUI_IS_SERVER || process.env.STORYBOOK
     ? themesNew
     : ({} as typeof themesNew)
 
@@ -30,7 +28,6 @@ const { bc, ...alias } = shorthands
 
 export const tamaguiConfig = createTamagui({
   themes,
-  defaultFont: 'body',
   animations,
   shouldAddPrefersColorThemes: true,
   themeClassNameOnRoot: true,
@@ -51,8 +48,9 @@ export const tamaguiConfig = createTamagui({
   } as const,
   fonts: {
     heading: headingFont,
-    body: bodyFont,
+    body: monoFont,
   },
+  defaultFont: 'body',
 
   tokens: createTokens({
     color,

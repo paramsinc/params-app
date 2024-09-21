@@ -42,7 +42,7 @@ async function createCalcomAccount({
     },
     body: JSON.stringify({
       email,
-      //   name,
+      name,
       //   timeFormat,
       //   weekStart,
       //   timeZone,

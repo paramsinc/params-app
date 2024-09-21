@@ -4,17 +4,49 @@ import { z } from 'zod'
 import { Insert, inserts, selects } from 'app/db/inserts-and-selects'
 import { d, db, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
-import { keys } from 'app/helpers/object'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
 import {
   createCalcomAccountAndSchedule,
   deleteCalcomAccount,
   getCalcomUser,
-  getCalcomUsers,
 } from 'app/trpc/routes/cal-com'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { slugify } from 'app/trpc/slugify'
+
+async function createUser(
+  insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
+    Partial<Pick<Zod.infer<typeof inserts.users>, 'slug'>>
+) {
+  const { first_name, last_name, email, id } = insert
+  let slugSearchCount = 0
+  const baseSlug =
+    insert.slug ||
+    slugify([first_name, last_name].filter(Boolean).join(' ')) ||
+    Math.round(Math.random() * 1000000).toString()
+  let slug = baseSlug
+  while (await db.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
+    slugSearchCount++
+    slug = `${baseSlug}-${slugSearchCount}`
+  }
+  const [user] = await db
+    .insert(schema.users)
+    .values({
+      first_name,
+      last_name,
+      email,
+      slug,
+      id,
+    })
+    .onConflictDoUpdate({
+      target: schema.users.id,
+      set: insert,
+    })
+    .returning(pick('users', publicSchema.users.UserPublic))
+    .execute()
+
+  return user
+}
 
 const user = {
   // me
@@ -43,21 +75,13 @@ const user = {
           message: `Please provide your first name, last name, and email.`,
         })
       }
-      const [user] = await db
-        .insert(schema.users)
-        .values({
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          slug: input.slug || slugify([firstName, lastName].join(' ')),
-          id: ctx.auth.userId,
-        })
-        .onConflictDoUpdate({
-          target: schema.users.id,
-          set: input,
-        })
-        .returning(pick('users', publicSchema.users.UserPublic))
-        .execute()
+      const user = await createUser({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        slug: input.slug,
+        id: ctx.auth.userId,
+      })
 
       if (!user) {
         throw new TRPCError({ code: 'UNAUTHORIZED' })

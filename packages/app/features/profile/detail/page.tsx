@@ -2,6 +2,7 @@ import { Calcom } from 'app/features/cal-com/cal-com'
 import { CalcomProvider } from 'app/features/cal-com/provider'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
+import { getConfig } from 'tamagui'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -10,6 +11,8 @@ export function ProfileDetailPage() {
 
   return <Content profileSlug={params.profileSlug} />
 }
+
+console.log('[tamagui-config]', getConfig())
 
 function Content({ profileSlug }: { profileSlug: string }) {
   const calUserQuery = api.calUserByProfileSlug.useQuery(

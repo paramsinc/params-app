@@ -34384,111 +34384,75 @@
         }
       },
       "body": {
-        "family": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+        "family": "var(--font-geist-mono)",
+        "letterSpacing": {},
         "lineHeight": {
-          "1": 17,
-          "2": 18,
-          "3": 19,
-          "4": 20,
-          "5": 23,
-          "6": 25,
-          "7": 27,
-          "8": 30,
-          "9": 38,
-          "10": 56,
+          "1": 13.2,
+          "2": 14.399999999999999,
+          "3": 15.6,
+          "4": 16.8,
+          "5": 19.2,
+          "6": 21.599999999999998,
+          "7": 24,
+          "8": 27.599999999999998,
+          "9": 36,
+          "10": 55.199999999999996,
           "11": 66,
-          "12": 73,
-          "13": 84,
-          "14": 106,
-          "15": 130,
-          "16": 152,
-          "true": 20
-        },
-        "weight": {
-          "1": "300",
-          "2": "300",
-          "3": "300",
-          "4": "300",
-          "5": "300",
-          "6": "300",
-          "7": "300",
-          "8": "300",
-          "9": "300",
-          "10": "300",
-          "11": "300",
-          "12": "300",
-          "13": "300",
-          "14": "300",
-          "15": "300",
-          "16": "300",
-          "true": "300"
-        },
-        "letterSpacing": {
-          "1": 0,
-          "2": 0,
-          "3": 0,
-          "4": 0,
-          "5": 0,
-          "6": 0,
-          "7": 0,
-          "8": 0,
-          "9": 0,
-          "10": 0,
-          "11": 0,
-          "12": 0,
-          "13": 0,
-          "14": 0,
-          "15": 0,
-          "16": 0,
-          "true": 0
-        },
-        "face": {
-          "100": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-          },
-          "200": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-          },
-          "300": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-          },
-          "400": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-          },
-          "500": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-          },
-          "600": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-          },
-          "700": {
-            "normal": "InterBold"
-          },
-          "800": {
-            "normal": "InterBold"
-          },
-          "900": {
-            "normal": "InterBold"
-          }
+          "12": 74.39999999999999,
+          "13": 86.39999999999999,
+          "14": 110.39999999999999,
+          "15": 136.79999999999998,
+          "16": 160.79999999999998,
+          "true": 160.79999999999998
         },
         "size": {
-          "1": 12,
-          "2": 13,
-          "3": 14,
-          "4": 15,
-          "5": 18,
-          "6": 20,
-          "7": 22,
-          "8": 25,
-          "9": 33,
-          "10": 51,
-          "11": 61,
-          "12": 68,
-          "13": 79,
-          "14": 101,
-          "15": 125,
-          "16": 147,
-          "true": 15
+          "1": 11,
+          "2": 12,
+          "3": 13,
+          "4": 14,
+          "5": 16,
+          "6": 18,
+          "7": 20,
+          "8": 23,
+          "9": 30,
+          "10": 46,
+          "11": 55,
+          "12": 62,
+          "13": 72,
+          "14": 92,
+          "15": 114,
+          "16": 134,
+          "true": 14
+        },
+        "weight": {},
+        "face": {
+          "100": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "200": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "300": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "400": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "500": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "600": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "700": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "800": {
+            "normal": "var(--font-geist-mono)"
+          },
+          "900": {
+            "normal": "var(--font-geist-mono)"
+          }
         }
       }
     },
@@ -35390,7 +35354,6 @@
         "id": "dark_yellow"
       }
     },
-    "defaultFont": "body",
     "shouldAddPrefersColorThemes": true,
     "themeClassNameOnRoot": true,
     "mediaQueryDefaultActive": {
@@ -35494,6 +35457,7 @@
       "weight": "fontWeight",
       "radius": "borderRadius"
     },
+    "defaultFont": "body",
     "tokens": {
       "color": {
         "white0": {

@@ -1,6 +1,8 @@
 import 'raf/polyfill'
 import '@tamagui/core/reset.css'
-import '@calcom/atoms/globals.min.css'
+// import '@calcom/atoms/globals.min.css'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 
 import { ColorScheme, NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
 
@@ -27,7 +29,10 @@ function MyApp({ Component, pageProps }: SolitoAppProps) {
   const getLayout = Component.getLayout || ((page) => page)
 
   return (
-    <>
+    <div
+      className={`${GeistSans.variable} ${GeistMono.variable} font_body`}
+      style={{ display: 'contents', fontFamily: 'var(--f-family)' }}
+    >
       <Head>
         <title>{APP_NAME}</title>
         <meta name="description" content={APP_NAME} />
@@ -38,7 +43,7 @@ function MyApp({ Component, pageProps }: SolitoAppProps) {
           <Provider>{getLayout(<Component {...pageProps} />)}</Provider>
         </TamaguiProvider>
       </ThemeProvider>
-    </>
+    </div>
   )
 }
 

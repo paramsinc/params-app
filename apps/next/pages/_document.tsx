@@ -35,7 +35,6 @@ html {
   height: 100%;
   color-scheme: dark;
 
-  font-family: 'geist mono';
 }
 body {
   display: flex;

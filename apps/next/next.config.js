@@ -5,8 +5,7 @@ const path = require('path')
 const { join } = require('path')
 
 const disableExtraction =
-  process.env.DISABLE_EXTRACTION === 'true' ??
-  process.env.NODE_ENV === 'development'
+  process.env.DISABLE_EXTRACTION === 'true' ?? process.env.NODE_ENV === 'development'
 
 const plugins = [
   withBundleAnalyzer({
@@ -103,6 +102,7 @@ let config = {
     'expo-image-picker',
     'expo-web-browser',
     'react-native-gesture-handler',
+    'geist',
   ],
   experimental: {
     scrollRestoration: true,

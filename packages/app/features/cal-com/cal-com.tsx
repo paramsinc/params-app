@@ -1,5 +1,7 @@
+'use client'
+'use dom'
+
 import { Connect, AvailabilitySettings, Booker, CalendarSettings } from '@calcom/atoms'
-import { styled } from 'app/ds/styled'
 import { CalcomProvider } from 'app/features/cal-com/provider'
 
 export const Calcom = {

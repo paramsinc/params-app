@@ -1,7 +1,7 @@
 import { CalProvider } from '@calcom/atoms'
 import { env } from 'app/env'
 import { api } from 'app/trpc/client'
-// import '@calcom/atoms/globals.min.css'
+import '@calcom/atoms/globals.min.css'
 
 export const CalcomProvider = ({
   children,
@@ -17,18 +17,20 @@ export const CalcomProvider = ({
     }
   )
   return (
-    <CalProvider
-      clientId={env.CAL_COM_CLIENT_ID}
-      accessToken={profile.data?.cal_com_access_token ?? undefined}
-      options={{
-        apiUrl: env.CAL_COM_API_URL,
-        refreshUrl: env.CAL_COM_REFRESH_URL,
-      }}
-      labels={{
-        availability: 'Avails',
-      }}
-    >
-      {profile.data && children}
-    </CalProvider>
+    <div style={{ display: 'contents', fontFamily: 'var(--f-family)' }}>
+      <CalProvider
+        clientId={env.CAL_COM_CLIENT_ID}
+        accessToken={profile.data?.cal_com_access_token ?? undefined}
+        options={{
+          apiUrl: env.CAL_COM_API_URL,
+          refreshUrl: env.CAL_COM_REFRESH_URL,
+        }}
+        labels={{
+          availability: 'Avails',
+        }}
+      >
+        {profile.data && children}
+      </CalProvider>
+    </div>
   )
 }

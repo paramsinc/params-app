@@ -37292,6 +37292,13 @@
           "name": "t-space-true",
           "val": 16,
           "variable": "var(--t-space-true)"
+        },
+        "marketingPageWidth": {
+          "isVar": true,
+          "key": "$marketingPageWidth",
+          "name": "t-space-marketingPageWidth",
+          "val": 900,
+          "variable": "var(--t-space-marketingPageWidth)"
         }
       },
       "size": {
@@ -39435,6 +39442,13 @@
         "name": "t-space-true",
         "val": 16,
         "variable": "var(--t-space-true)"
+      },
+      "$space.marketingPageWidth": {
+        "isVar": true,
+        "key": "$marketingPageWidth",
+        "name": "t-space-marketingPageWidth",
+        "val": 900,
+        "variable": "var(--t-space-marketingPageWidth)"
       },
       "$size.0": {
         "isVar": true,

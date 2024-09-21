@@ -76,6 +76,7 @@ export const tamaguiConfig = createTamagui({
       '-3': -16,
       '-4': -32,
       true: 16,
+      marketingPageWidth: 900,
     },
     size,
     // space: space,

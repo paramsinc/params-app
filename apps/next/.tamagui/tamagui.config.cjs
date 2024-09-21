@@ -46443,7 +46443,8 @@ var tamaguiConfig = createTamagui({
       "-2": -8,
       "-3": -16,
       "-4": -32,
-      true: 16
+      true: 16,
+      marketingPageWidth: 900
     },
     size: size5
     // space: space,

@@ -25,25 +25,52 @@ async function createUser(
     slugify([first_name, last_name].filter(Boolean).join(' ')) ||
     Math.round(Math.random() * 1000000).toString()
   let slug = baseSlug
+  // should this throw and just say that the slug is taken?
   while (await db.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
+    const maxSlugsCheck = 10
+    if (slugSearchCount >= maxSlugsCheck) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: `Couldn't create user, because the slug ${baseSlug} is already taken. Please try another one.`,
+      })
+    }
     slugSearchCount++
     slug = `${baseSlug}-${slugSearchCount}`
   }
-  const [user] = await db
-    .insert(schema.users)
-    .values({
-      first_name,
-      last_name,
-      email,
-      slug,
-      id,
-    })
-    .onConflictDoUpdate({
-      target: schema.users.id,
-      set: insert,
-    })
-    .returning(pick('users', publicSchema.users.UserPublic))
-    .execute()
+  const user = await db.transaction(async (tx) => {
+    const [user] = await tx
+      .insert(schema.users)
+      .values({
+        first_name,
+        last_name,
+        email,
+        slug,
+        id,
+      })
+      .onConflictDoUpdate({
+        target: schema.users.id,
+        set: insert,
+      })
+      .returning(pick('users', publicSchema.users.UserPublic))
+      .execute()
+
+    if (!user) {
+      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `Couldn't create user.` })
+    }
+
+    const addUserToProfilesWhereEmailMatches = await tx
+      .update(schema.profileMembers)
+      .set({
+        user_id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+      })
+      .where(d.eq(schema.profileMembers.email, email))
+      .returning()
+      .execute()
+
+    return user
+  })
 
   return user
 }

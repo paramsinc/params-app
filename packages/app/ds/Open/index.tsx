@@ -1,13 +1,23 @@
-import { cloneElement, createContext, useContext, useState } from 'react'
+import { cloneElement, createContext, useContext, useState, useId } from 'react'
 
-const Context = createContext({
-  open: false,
-  onOpenChange: (open: boolean) => {},
+const Context = createContext<{
+  states: {
+    [key in '__default' | (string & {})]: {
+      open: boolean
+      onOpenChange: (open: boolean) => void
+    }
+  }
+}>({
+  states: {
+    __default: { open: false, onOpenChange: (open: boolean) => {} },
+  },
 })
 
+type State = React.ContextType<typeof Context>['states'][string]
+
 export const Open = (
-  props: { children: React.ReactNode } & (
-    | (React.ContextType<typeof Context> & {
+  props: { children: React.ReactNode; id?: string } & (
+    | (State & {
         initialOpen?: never
       })
     | {
@@ -17,8 +27,11 @@ export const Open = (
       }
   )
 ) => {
+  const parentContext = useContext(Context)
   const [localOpen, setLocalOpen] = useState<boolean>()
-  let state: React.ContextType<typeof Context> = {
+  const localId = useId()
+  const id = props.id ?? localId
+  let state: React.ContextType<typeof Context>['states'][string] = {
     open: localOpen ?? props.initialOpen ?? false,
     onOpenChange: setLocalOpen,
   }
@@ -28,14 +41,49 @@ export const Open = (
       onOpenChange: props.onOpenChange,
     }
   }
-  return <Context.Provider value={state}>{props.children}</Context.Provider>
+  return (
+    <Context.Provider
+      value={{
+        states: {
+          ...parentContext.states,
+          [id]: state,
+          __default: state,
+        },
+      }}
+    >
+      {props.children}
+    </Context.Provider>
+  )
 }
 
-export const useOpen = () => useContext(Context)
+export const useOpen = (id: string | undefined) => {
+  const context = useContext(Context)
+
+  const state = id ? context.states[id] : context.states.__default
+
+  if (!state) {
+    error('Open: no state found for id', id)
+    return {
+      open: false,
+      onOpenChange: (open: boolean) => {},
+    }
+  }
+
+  return state
+}
+
+const error = (...args: (string | undefined)[]) => {
+  if (process.env.NODE_ENV !== 'production') {
+    throw new Error('[Open]' + args.join(' '))
+  }
+  console.error('[Open]', ...args)
+}
 
 export const OpenTrigger = ({
   children,
+  id,
 }: {
+  id?: string
   children:
     | React.ReactElement
     | (({
@@ -46,7 +94,7 @@ export const OpenTrigger = ({
         onOpenChange: (next: boolean) => void
       }) => React.ReactElement)
 }) => {
-  const { open, onOpenChange } = useOpen()
+  const { open, onOpenChange } = useOpen(id)
   if (typeof children === 'function') {
     return children({ isOpen: open, onOpenChange })
   }
@@ -58,7 +106,7 @@ export const OpenTrigger = ({
   })
 }
 
-export const OpenContent = ({ children }: { children: React.ReactNode }) => {
-  const { open } = useOpen()
+export const OpenContent = ({ children, id }: { children: React.ReactNode; id?: string }) => {
+  const { open } = useOpen(id)
   return open ? <>{children}</> : null
 }

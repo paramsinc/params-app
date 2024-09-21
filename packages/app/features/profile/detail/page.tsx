@@ -31,12 +31,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
       enabled: !!profileSlug,
     }
   )
-  const calUserQuery = api.calUserByProfileSlug.useQuery(
-    { profileSlug },
-    {
-      enabled: !!profileSlug,
-    }
-  )
   if (!profileQuery.data) {
     return null
   }

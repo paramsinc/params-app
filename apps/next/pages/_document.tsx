@@ -93,7 +93,7 @@ export default class Document extends NextDocument {
         <Head>
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         </Head>
-        <body>
+        <body className="font_body">
           <Main />
           <NextScript />
         </body>

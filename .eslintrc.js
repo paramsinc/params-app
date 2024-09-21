@@ -9,6 +9,7 @@ const eslint = {
   },
   rules: {
     'drizzle/enforce-update-with-where': 'error',
+    '@typescript-eslint/no-floating-promises': 'error',
   },
   root: true,
 }

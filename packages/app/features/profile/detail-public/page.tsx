@@ -1,3 +1,4 @@
+import { Modal, ModalBackdrop, ModalContent, ModalTrigger } from 'app/ds/Modal'
 import { Page } from 'app/ds/Page'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
@@ -50,9 +51,22 @@ function Content({ profileSlug }: { profileSlug: string }) {
         </View>
 
         <View h={2} bg="$borderColor" />
-        {calUserQuery.data && (
-          <Calcom.Booker eventSlug="sixty-minutes-video" username={calUserQuery.data?.username} />
-        )}
+        <Modal>
+          <ModalTrigger>
+            <Text>Book a call</Text>
+          </ModalTrigger>
+          <ModalContent>
+            <ModalBackdrop />
+            <View pointerEvents="box-none" grow center>
+              {calUserQuery.data && (
+                <Calcom.Booker
+                  eventSlug="sixty-minutes-video"
+                  username={calUserQuery.data?.username}
+                />
+              )}
+            </View>
+          </ModalContent>
+        </Modal>
       </View>
       <Calcom.CalendarSettings />
     </Calcom.Provider>

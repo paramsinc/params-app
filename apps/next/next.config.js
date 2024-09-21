@@ -38,7 +38,7 @@ const plugins = [
       'Touchable',
       'FlatList',
       'Animated',
-      'Modal',
+      // 'Modal',
     ],
   }),
   (nextConfig) => {

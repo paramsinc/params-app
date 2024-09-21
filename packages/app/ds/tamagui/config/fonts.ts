@@ -48,7 +48,18 @@ export const monoFont = createFont({
   },
 })
 
-export const headingFont = createInterFont(
+export const roundFont = createFont({
+  family: 'var(--font-round)',
+  letterSpacing: {},
+  lineHeight: lineHeights || {},
+  size: fontSizes,
+  weight: {},
+  face: {
+    // TODO native
+  },
+})
+
+const headingFontOld = createInterFont(
   {
     size: {
       6: 15,

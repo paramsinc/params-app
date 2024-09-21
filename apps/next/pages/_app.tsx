@@ -26,6 +26,7 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 }
 
 const headingFont = localFont({
+  variable: '--font-round',
   src: [
     {
       path: '../fonts/CircularStd-Bold.ttf',
@@ -83,7 +84,7 @@ function MyApp({ Component, pageProps }: SolitoAppProps) {
 
   return (
     <div
-      className={`${GeistSans.variable} ${GeistMono.variable} ${headingFont.className} font_body`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${headingFont.variable} font_body`}
       style={{ display: 'contents', fontFamily: 'var(--f-family)' }}
     >
       <Head>

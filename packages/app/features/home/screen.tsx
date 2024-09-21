@@ -10,7 +10,7 @@ import { cloneElement } from 'react'
 
 const Text = T
 
-const fancyFontFamily = 'circular std'
+const fancyFontFamily = '$heading' as const
 
 const H1 = styled(Text, {
   fontSize: 24,

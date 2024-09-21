@@ -2,7 +2,7 @@ import { shorthands } from '@tamagui/shorthands'
 import { createTokens, createTamagui, setupDev } from 'tamagui'
 
 import { animations } from './config/animations'
-import { bodyFont, headingFont, monoFont } from './config/fonts'
+import { bodyFont, monoFont, roundFont } from './config/fonts'
 import { media, mediaQueryDefaultActive } from './config/media'
 import { color } from './themes/token-colors'
 import { radius } from './themes/token-radius'
@@ -47,7 +47,7 @@ export const tamaguiConfig = createTamagui({
     radius: 'borderRadius',
   } as const,
   fonts: {
-    heading: headingFont,
+    heading: roundFont,
     body: monoFont,
   },
   defaultFont: 'body',

@@ -125,6 +125,12 @@ let config = {
   env: {
     NEXT_PUBLIC_IS_ELECTRON: process.env.IS_ELECTRON ? 'true' : 'false',
   },
+  rewrites: () => [
+    {
+      source: '/@:profileSlug',
+      destination: '/profiles/:profileSlug',
+    },
+  ],
 }
 
 for (const plugin of plugins) {

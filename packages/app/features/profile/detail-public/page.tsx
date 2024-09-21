@@ -8,7 +8,7 @@ import { getConfig } from 'tamagui'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
-export function ProfileDetailPage() {
+export function ProfileDetailPublicPage() {
   const { params } = useParams()
 
   return (
@@ -25,7 +25,7 @@ export function ProfileDetailPage() {
 console.log('[tamagui-config]', getConfig())
 
 function Content({ profileSlug }: { profileSlug: string }) {
-  const profileQuery = api.profileBySlug.useQuery(
+  const profileQuery = api.profileBySlug_public.useQuery(
     { slug: profileSlug },
     {
       enabled: !!profileSlug,
@@ -50,26 +50,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
         </View>
 
         <View h={2} bg="$borderColor" />
-        <Calcom.AvailabilitySettings
-          enableOverrides={true}
-          customClassNames={{
-            subtitlesClassName: 'text-red-500',
-            ctaClassName: 'border p-4 rounded-md',
-            editableHeadingClassName: 'underline font-semibold',
-          }}
-          onUpdateSuccess={() => {
-            console.log('Updated successfully')
-          }}
-          onUpdateError={() => {
-            console.log('update error')
-          }}
-          onDeleteError={() => {
-            console.log('delete error')
-          }}
-          onDeleteSuccess={() => {
-            console.log('Deleted successfully')
-          }}
-        />
+        {calUserQuery.data && (
+          <Calcom.Booker eventSlug="sixty-minutes-video" username={calUserQuery.data?.username} />
+        )}
       </View>
       <Calcom.CalendarSettings />
     </Calcom.Provider>

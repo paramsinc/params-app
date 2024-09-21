@@ -69,7 +69,7 @@ export async function refreshCalcomTokenAndUpdateProfile(
   }
 
   // Make a request to Cal.com to refresh the token
-  const response = await fetch(`${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/refresh`, {
+  let response = await fetch(`${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/refresh`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -82,12 +82,26 @@ export async function refreshCalcomTokenAndUpdateProfile(
     }),
   })
 
-  if (!response.ok) {
-    console.error('Failed to refresh token:', await response.text())
-    return null
+  if (!response.ok && profile.cal_com_account_id) {
+    response = await fetch(
+      `${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/users/${profile.cal_com_account_id}/force-refresh`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
+        },
+      }
+    )
   }
 
-  const calResponse = await response.json()
+  const calResponse: {
+    status: 'success'
+    data: {
+      accessToken: string
+      refreshToken: string
+    }
+  } = await response.json()
 
   console.log('[calcom][refreshToken][calResponse]', calResponse.data)
 
@@ -105,7 +119,7 @@ export async function refreshCalcomTokenAndUpdateProfile(
     .where(d.eq(schema.profiles.id, profile.id))
     .execute()
 
-  return { accessToken: calResponse.accessToken }
+  return { accessToken: calResponse.data.accessToken }
 }
 
 export function deleteCalcomAccount(userId: number) {
@@ -115,11 +129,42 @@ export function deleteCalcomAccount(userId: number) {
       'Content-Type': 'application/json',
       'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
     },
-  })
+  }).then((res) => res.json())
 }
 
-export function getCalcomUsers() {
+export async function getCalcomUsers(): Promise<{
+  status: 'success'
+  data: {
+    users: {
+      id: number
+      email: string
+      username: string
+    }[]
+  }
+}> {
   return fetch(`${env.CAL_COM_API_URL}/oauth-clients/${env.CAL_COM_CLIENT_ID}/users`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
+    },
+  }).then((res) => res.json())
+}
+
+export async function getCalcomUser(userId: number): Promise<
+  | {
+      status: 'success'
+      data: {
+        id: number
+        email: string
+        username: string
+      }
+    }
+  | {
+      status: 'error'
+      error: string
+    }
+> {
+  return fetch(`${env.CAL_COM_API_URL}/oauth-clients/${env.CAL_COM_CLIENT_ID}/users/${userId}`, {
     headers: {
       'Content-Type': 'application/json',
       'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,

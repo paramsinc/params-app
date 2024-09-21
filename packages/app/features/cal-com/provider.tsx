@@ -1,7 +1,7 @@
 import { CalProvider } from '@calcom/atoms'
 import { env } from 'app/env'
 import { api } from 'app/trpc/client'
-import '@calcom/atoms/globals.min.css'
+// import '@calcom/atoms/globals.min.css'
 
 export const CalcomProvider = ({
   children,

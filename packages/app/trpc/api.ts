@@ -6,11 +6,15 @@ import { d, db, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
 import { keys } from 'app/helpers/object'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
-import { createCalcomAccount, deleteCalcomAccount, getCalcomUsers } from 'app/trpc/routes/cal-com'
+import {
+  createCalcomAccount,
+  deleteCalcomAccount,
+  getCalcomUser,
+  getCalcomUsers,
+} from 'app/trpc/routes/cal-com'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
-
-const slugify = (str: string) => str.toLowerCase().replace(/\s+/g, '-')
+import { slugify } from 'app/trpc/slugify'
 
 const user = {
   // me
@@ -378,6 +382,32 @@ const profile = {
 
     return profiles
   }),
+
+  calUserByProfileSlug: authedProcedure
+    .input(z.object({ profileSlug: z.string() }))
+    .query(async ({ ctx, input: { profileSlug } }) => {
+      const profile = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.slug, profileSlug),
+      })
+
+      if (!profile?.cal_com_account_id) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      const calUser = await getCalcomUser(profile.cal_com_account_id)
+
+      if (calUser.status !== 'success') {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Couldn't get cal user.`,
+        })
+      }
+
+      return calUser.data
+    }),
 }
 
 const profileMember = {

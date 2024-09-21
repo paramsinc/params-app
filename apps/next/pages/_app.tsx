@@ -1,11 +1,8 @@
 import 'raf/polyfill'
 import '@tamagui/core/reset.css'
+import '@calcom/atoms/globals.min.css'
 
-import {
-  ColorScheme,
-  NextThemeProvider,
-  useRootTheme,
-} from '@tamagui/next-theme'
+import { ColorScheme, NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
 
 import { Provider } from 'app/provider'
 import { api } from 'app/trpc/client'

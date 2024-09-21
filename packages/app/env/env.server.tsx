@@ -12,6 +12,7 @@ export const serverEnv = z
     DATABASE_URL: z.string(),
     STRIPE_SECRET_KEY: z.string(),
     CAL_COM_CLIENT_SECRET: z.string(),
+    CLERK_WEBHOOK_SECRET: z.string(),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
@@ -19,4 +20,5 @@ export const serverEnv = z
     DATABASE_URL,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     CAL_COM_CLIENT_SECRET: process.env.CAL_COM_CLIENT_SECRET,
+    CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
   })

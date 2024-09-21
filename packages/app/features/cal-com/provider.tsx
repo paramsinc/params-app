@@ -24,8 +24,11 @@ export const CalcomProvider = ({
         apiUrl: env.CAL_COM_API_URL,
         refreshUrl: env.CAL_COM_REFRESH_URL,
       }}
+      labels={{
+        availability: 'Avails',
+      }}
     >
-      {children}
+      {profile.data && children}
     </CalProvider>
   )
 }

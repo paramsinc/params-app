@@ -7,7 +7,7 @@ import { TRPCError } from '@trpc/server'
 import { keys } from 'app/helpers/object'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
 import {
-  createCalcomAccount,
+  createCalcomAccountAndSchedule,
   deleteCalcomAccount,
   getCalcomUser,
   getCalcomUsers,
@@ -187,7 +187,7 @@ const profile = {
         }
       }
 
-      const calcomProfile = await createCalcomAccount({
+      const { calcomAccount } = await createCalcomAccountAndSchedule({
         email: memberInsert.email,
         name: [memberInsert.first_name, memberInsert.last_name].filter(Boolean).join(' '),
         timeFormat,
@@ -195,7 +195,7 @@ const profile = {
         timeZone,
       })
 
-      console.log('[createProfile][calcomProfile]', calcomProfile)
+      console.log('[createProfile][calcomProfile]', calcomAccount)
 
       const { profile, member } = await db.transaction(async (tx) => {
         const [profile] = await tx
@@ -203,10 +203,10 @@ const profile = {
           .values({
             ...input,
             stripe_connect_account_id: await stripe.accounts.create().then((account) => account.id),
-            ...(calcomProfile.status === 'success' && {
-              cal_com_account_id: calcomProfile.data.user.id,
-              cal_com_access_token: calcomProfile.data.accessToken,
-              cal_com_refresh_token: calcomProfile.data.refreshToken,
+            ...(calcomAccount.status === 'success' && {
+              cal_com_account_id: calcomAccount.data.user.id,
+              cal_com_access_token: calcomAccount.data.accessToken,
+              cal_com_refresh_token: calcomAccount.data.refreshToken,
             }),
           })
           .returning(pick('profiles', publicSchema.profiles.ProfileInternal))

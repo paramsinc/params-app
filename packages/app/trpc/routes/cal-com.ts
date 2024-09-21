@@ -5,7 +5,7 @@ import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-export async function createCalcomAccount({
+async function createCalcomAccount({
   email,
   name,
   timeFormat = '12',
@@ -48,6 +48,65 @@ export async function createCalcomAccount({
       //   timeZone,
     }),
   }).then((res) => res.json())
+}
+
+/**
+ * From the OpenAPI spec (but not the docs lol):
+ * 
+ * The point of creating schedules is for event types to be available at specific times.
+
+  First goal of schedules is to have a default schedule. If you are platform customer and created managed users, then it is important to note that each managed user should have a default schedule.
+  1. If you passed `timeZone` when creating managed user, then the default schedule from Monday to Friday from 9AM to 5PM will be created with that timezone. Managed user can then change the default schedule via `AvailabilitySettings` atom.
+  2. If you did not, then we assume you want that user has specific schedule right away. You should create default schedule by specifying
+  `"isDefault": true` in the request body. Until the user has a default schedule that user can't be booked or manage his / her schedule via the AvailabilitySettings atom.
+
+  Second goal is to create other schedules that event types can point to, so that when that event is booked availability is not checked against the default schedule but against that specific schedule.
+  After creating a non default schedule you can update event type to point to that schedule via the PATCH `event-types/{eventTypeId}` endpoint.
+
+  When specifying start time and end time for each day use 24 hour format e.g. 08:00, 15:00 etc.
+ */
+async function createCalcomScheduleForAccount({ accessToken }: { accessToken: string }): Promise<{
+  name: string
+  timeZone: string
+  isDefault: boolean
+}> {
+  return fetch(`${env.CAL_COM_API_URL}/schedules`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'cal-api-version': '2024-06-11',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      name: 'Default Schedule',
+      timeZone: 'America/New_York',
+      isDefault: true,
+    }),
+  }).then((res) => res.json())
+}
+
+/**
+ * This should get exported.
+ */
+export async function createCalcomAccountAndSchedule(
+  props: Parameters<typeof createCalcomAccount>[0]
+) {
+  const calcomAccount = await createCalcomAccount(props)
+
+  if (calcomAccount.status !== 'success') {
+    throw new Error('Failed to create cal account')
+  }
+
+  const calcomSchedule = await createCalcomScheduleForAccount({
+    accessToken: calcomAccount.data.accessToken,
+  })
+
+  console.log(
+    '[calcom][createCalcomAccountAndSchedule][calcomSchedule]',
+    JSON.stringify(calcomSchedule, null, 2)
+  )
+
+  return { calcomAccount, calcomSchedule }
 }
 
 export async function refreshCalcomTokenAndUpdateProfile(

@@ -20,10 +20,15 @@ function Content({ profileSlug }: { profileSlug: string }) {
   )
   return (
     <Calcom.Provider profileSlug={profileSlug}>
-      {/* {calUserQuery.data && (
-        <Calcom.Booker eventSlug="sixty-minutes-video" username={calUserQuery.data.username} />
-      )} */}
+      {calUserQuery.data && (
+        <Calcom.Booker
+          eventSlug="sixty-minutes-video"
+          username={calUserQuery.data.username}
+          hideBranding
+        />
+      )}
       <Calcom.AvailabilitySettings
+        enableOverrides={true}
         customClassNames={{
           subtitlesClassName: 'text-red-500',
           ctaClassName: 'border p-4 rounded-md',
@@ -42,6 +47,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
           console.log('Deleted successfully')
         }}
       />
+      <Calcom.CalendarSettings />
     </Calcom.Provider>
   )
 }

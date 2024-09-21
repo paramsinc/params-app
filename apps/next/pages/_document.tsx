@@ -34,6 +34,8 @@ html {
   -webkit-text-size-adjust: 100%;
   height: 100%;
   color-scheme: dark;
+
+  font-family: 'geist mono';
 }
 body {
   display: flex;
@@ -57,9 +59,7 @@ button:focus, input, div:focus {
   }`
 
 export default class Document extends NextDocument {
-  static async getInitialProps(
-    ctx: DocumentContext
-  ): Promise<DocumentInitialProps> {
+  static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
     AppRegistry.registerComponent('Main', () => Main)
     const page = await ctx.renderPage()
 

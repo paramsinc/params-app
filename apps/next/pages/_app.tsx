@@ -29,7 +29,7 @@ const headingFont = localFont({
   variable: '--font-round',
   src: [
     {
-      path: '../fonts/CircularStd-Bold.ttf',
+      path: '../fonts/CircularStd-Book.ttf',
       weight: '400',
       style: 'normal',
     },

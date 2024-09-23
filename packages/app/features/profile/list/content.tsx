@@ -1,3 +1,5 @@
+import { Button, ButtonText } from 'app/ds/Button'
+import { LinkButton } from 'app/ds/Button/link'
 import { Empty, EmptyCard, EmptyCardDescription, EmptyCardTitle } from 'app/ds/Empty'
 import { Link } from 'app/ds/Link'
 import { Scroll } from 'app/ds/Scroll'
@@ -8,6 +10,7 @@ import {
   NewProfileModalContent,
   NewProfileModalTrigger,
 } from 'app/features/profile/new/modal'
+import { UpdateProfileModal } from 'app/features/profile/update/modal'
 import { api } from 'app/trpc/client'
 
 export function ProfilesListContent() {
@@ -34,16 +37,39 @@ export function ProfilesListContent() {
 
   return (
     <Scroll>
+      <View py="$2" px="$3" bbw={1} boc="$borderColor">
+        <NewProfileModal>
+          <NewProfileModalTrigger>
+            <Button als="flex-end" themeInverse>
+              <ButtonText>New Profile</ButtonText>
+            </Button>
+          </NewProfileModalTrigger>
+          <NewProfileModalContent />
+        </NewProfileModal>
+      </View>
       {myProfiles.data?.map((profile) => {
         return (
-          <Link key={profile.id} href={`/@${profile.slug}`}>
+          <View key={profile.id}>
             <View row gap="$3" p="$3" bbw={1} boc="$borderColor">
-              <View>
+              <View grow>
                 <Text bold>{profile.name}</Text>
                 <Text color="$color11">@{profile.slug}</Text>
               </View>
+              <View row gap="$2">
+                <LinkButton href={`/@${profile.slug}`}>
+                  <ButtonText>View</ButtonText>
+                </LinkButton>
+                <UpdateProfileModal>
+                  <UpdateProfileModal.Trigger>
+                    <Button>
+                      <ButtonText>Manage</ButtonText>
+                    </Button>
+                  </UpdateProfileModal.Trigger>
+                  <UpdateProfileModal.Content profileSlug={profile.slug} />
+                </UpdateProfileModal>
+              </View>
             </View>
-          </Link>
+          </View>
         )
       })}
     </Scroll>

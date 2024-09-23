@@ -301,14 +301,17 @@ const profile = {
     .input(
       z.object({
         id: z.string(),
-        patch: inserts.profiles.partial().pick({
-          name: true,
-          slug: true,
-          bio: true,
-          github_username: true,
-          image_vendor: true,
-          image_vendor_id: true,
-        }),
+        patch: inserts.profiles
+          .partial()
+          .pick({
+            name: true,
+            slug: true,
+            bio: true,
+            github_username: true,
+            image_vendor: true,
+            image_vendor_id: true,
+          })
+          .partial(),
       })
     )
     .mutation(

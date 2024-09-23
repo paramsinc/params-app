@@ -59,7 +59,7 @@ export const Open = (
 export const useOpen = (id: string | undefined) => {
   const context = useContext(Context)
 
-  const state = id ? context.states[id] : context.states.__default
+  const state = id ? context.states[id] || context.states.__default : context.states.__default
 
   if (!state) {
     error('Open: no state found for id', id)

@@ -23,6 +23,9 @@ const Frame = styled(View, {
         cursor: 'not-allowed',
         opacity: 0.5,
       },
+      false: {
+        opacity: 1,
+      },
     },
     disabled: {
       true: {
@@ -36,6 +39,7 @@ const Frame = styled(View, {
   } as const,
   defaultVariants: {
     disabled: false,
+    loading: false,
   },
   jc: 'center',
   row: true,
@@ -45,10 +49,14 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
   const { children, ...rest } = props
 
   return (
-    <Frame {...rest} disabled={props.loading ?? props.disabled ?? false}>
+    <Frame
+      {...rest}
+      disabled={props.loading ?? props.disabled ?? false}
+      loading={props.loading ?? false}
+    >
       {children}
       {props.loading && (
-        <View stretch>
+        <View stretch center>
           <LoadingSpinner color="$color12" />
         </View>
       )}
@@ -72,6 +80,9 @@ export const ButtonText = styled(Text, {
       },
     },
   } as const,
+  defaultVariants: {
+    loading: false,
+  },
 })
 
 export const Button = withStaticProperties(ButtonFrame, {

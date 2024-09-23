@@ -40,7 +40,7 @@ const Trigger = function (props: React.ComponentProps<typeof OpenTrigger>) {
 }
 
 const Backdrop = View.styleable<{ id?: string }>(function Backdrop({ id, ...props }) {
-  const { onOpenChange } = useOpen(makeId(id))
+  const { onOpenChange } = useOpen(undefined)
   return (
     <View
       stretch

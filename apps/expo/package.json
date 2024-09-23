@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@shopify/flash-list": "^1.7.1",
     "app": "*",
     "burnt": "0.12.2",
     "expo": "^51.0.0",

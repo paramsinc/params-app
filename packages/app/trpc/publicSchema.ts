@@ -1,4 +1,4 @@
-import { selects } from 'app/db/inserts-and-selects'
+import type { selects } from 'app/db/inserts-and-selects'
 
 export const publicSchema = {
   users: {
@@ -67,7 +67,7 @@ export const publicSchema = {
     },
   },
 } satisfies Partial<{
-  [key in keyof typeof selects]: {
+  [table in keyof typeof selects]: {
     [type: string]: Partial<Record<keyof Zod.infer<(typeof selects)[key]>, true>>
   }
 }>

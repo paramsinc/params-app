@@ -5,6 +5,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 
 import { ColorScheme, NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
+import { Fragment } from 'react'
 
 import { Provider } from 'app/provider'
 import { api } from 'app/trpc/client'
@@ -16,6 +17,7 @@ import type { SolitoAppProps } from 'solito'
 import { TamaguiProvider } from 'app/ds/tamagui/provider'
 import { GlobalWebLayout } from 'app/features/web-layout/global'
 import localFont from 'next/font/local'
+import { DashboardLayout } from 'app/features/web-layout/dashboard'
 
 if (process.env.NODE_ENV === 'production') {
   // require('../public/tamagui.css')
@@ -79,8 +81,10 @@ console.log({ headingFont })
 
 const APP_NAME = 'Params'
 
-function MyApp({ Component, pageProps }: SolitoAppProps) {
+function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   const getLayout = Component.getLayout || ((page) => page)
+
+  const Layout = router.pathname.startsWith('/dashboard') ? DashboardLayout : Fragment
 
   return (
     <div
@@ -94,9 +98,11 @@ function MyApp({ Component, pageProps }: SolitoAppProps) {
       </Head>
       <ThemeProvider>
         <TamaguiProvider>
-          <GlobalWebLayout>
-            <Provider>{getLayout(<Component {...pageProps} />)}</Provider>
-          </GlobalWebLayout>
+          <Provider>
+            <GlobalWebLayout>
+              <Layout>{getLayout(<Component {...pageProps} />)}</Layout>
+            </GlobalWebLayout>
+          </Provider>
         </TamaguiProvider>
       </ThemeProvider>
     </div>

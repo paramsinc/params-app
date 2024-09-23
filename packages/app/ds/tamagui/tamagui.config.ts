@@ -29,7 +29,7 @@ const { bc, ...alias } = shorthands
 export const tamaguiConfig = createTamagui({
   themes,
   animations,
-  shouldAddPrefersColorThemes: true,
+  shouldAddPrefersColorThemes: false,
   themeClassNameOnRoot: true,
   mediaQueryDefaultActive,
   selectionStyles: (theme) => {

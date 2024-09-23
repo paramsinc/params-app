@@ -14,4 +14,7 @@ export const inserts = Object.fromEntries(
   [key in keyof typeof schema]: ReturnType<typeof createInsertSchema<(typeof schema)[key]>>
 }
 
-export type { BuildInsertSchema as Insert } from 'drizzle-zod'
+export type {
+  BuildInsertSchema as Insert,
+  createSelectSchema as CreateSelectSchema,
+} from 'drizzle-zod'

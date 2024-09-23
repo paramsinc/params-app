@@ -6,8 +6,10 @@ import {
   ModalDialogHeader,
   ModalDialogHeaderTitle,
   ModalTrigger,
+  useModalState,
 } from 'app/ds/Modal'
 import { Text } from 'app/ds/Text'
+import useToast from 'app/ds/Toast'
 import { NewProfileForm } from 'app/features/profile/new/form'
 
 const id = 'new-profile'
@@ -16,7 +18,11 @@ export const NewProfileModal = (props: React.ComponentProps<typeof Modal>) => {
   return <Modal {...props} id={id} />
 }
 
-export const NewProfileModalContent = (props: React.ComponentProps<typeof NewProfileForm>) => {
+export const NewProfileModalContent = (
+  props: Partial<React.ComponentProps<typeof NewProfileForm>>
+) => {
+  const { toast } = useToast()
+  const { onOpenChange } = useModalState(id)
   return (
     <ModalContent id={id}>
       <ModalBackdrop id={id} />
@@ -24,7 +30,15 @@ export const NewProfileModalContent = (props: React.ComponentProps<typeof NewPro
         <ModalDialogHeader>
           <ModalDialogHeaderTitle>New Profile</ModalDialogHeaderTitle>
         </ModalDialogHeader>
-        <NewProfileForm />
+        <NewProfileForm
+          {...props}
+          onDidCreateProfile={() => {
+            toast({
+              title: 'Profile created.',
+            })
+            onOpenChange(false)
+          }}
+        />
       </ModalDialog>
     </ModalContent>
   )

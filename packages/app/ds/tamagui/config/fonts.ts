@@ -39,7 +39,7 @@ const lineHeights = Object.keys(fontSizesBase).reduce((acc, next) => {
 
 export const monoFont = createFont({
   // family: 'var(--font-geist-mono)',
-  family: fonts.heading,
+  family: fonts.mono,
   letterSpacing: {},
   lineHeight: lineHeights || {},
   size: fontSizes,

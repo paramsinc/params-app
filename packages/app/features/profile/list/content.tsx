@@ -1,4 +1,5 @@
 import { Empty, EmptyCard, EmptyCardDescription, EmptyCardTitle } from 'app/ds/Empty'
+import { Link } from 'app/ds/Link'
 import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
@@ -35,11 +36,14 @@ export function ProfilesListContent() {
     <Scroll>
       {myProfiles.data?.map((profile) => {
         return (
-          <View key={profile.id} p="$3">
-            <View row>
-              <Text bold>{profile.name}</Text>
+          <Link key={profile.id} href={`/@${profile.slug}`}>
+            <View row gap="$3" p="$3" bbw={1} boc="$borderColor">
+              <View>
+                <Text bold>{profile.name}</Text>
+                <Text color="$color11">@{profile.slug}</Text>
+              </View>
             </View>
-          </View>
+          </Link>
         )
       })}
     </Scroll>

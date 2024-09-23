@@ -63,6 +63,7 @@ export const ModalContent = Content
 
 export const ModalTrigger = Trigger
 export const ModalBackdrop = Backdrop
+export const useModalState = (id: string | undefined) => useOpen(makeId(id))
 
 export const ModalDialog = styled(View, {
   // TODO iOS height...hm need to handle safe area for non sheets

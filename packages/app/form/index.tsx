@@ -63,16 +63,16 @@ const makeForm = <FormState extends object>() => {
   }
   return {
     Controller: function CustomController<Name extends Path<FormState> = Path<FormState>>({
-      scrollToError,
+      disableScrollToError: disableScrollToError,
       ...props
     }: ControllerProps<FormState, Name> & {
-      scrollToError?: boolean
+      disableScrollToError?: boolean
     }) {
       const { control } = useFormContext<FormState>()
       const controller = useController({ ...props, control })
 
       const { scrollTo } = useScrollTo()
-      useImperativeHandle(scrollToError ? controller.field.ref : undefined, () => {
+      useImperativeHandle(!disableScrollToError ? controller.field.ref : undefined, () => {
         return {
           focus() {
             // could this lead to infinite loops?
@@ -89,7 +89,7 @@ const makeForm = <FormState extends object>() => {
       })
 
       const ctr = <Controller<FormState, Name> {...props} />
-      return <>{scrollToError ? <Target name={props.name}>{ctr}</Target> : ctr}</>
+      return <>{!disableScrollToError ? <Target name={props.name}>{ctr}</Target> : ctr}</>
     },
     useFieldArray: <
       TFieldArrayName extends FieldArrayPath<FormState>,

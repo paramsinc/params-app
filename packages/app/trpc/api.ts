@@ -9,6 +9,7 @@ import {
   createCalcomAccountAndSchedule,
   deleteCalcomAccount,
   getCalcomUser,
+  getCalcomUsers,
 } from 'app/trpc/routes/cal-com'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
@@ -243,15 +244,16 @@ const profile = {
           }
         }
 
-        const { calcomAccount } = await createCalcomAccountAndSchedule({
-          email: memberInsert.email,
-          name: [memberInsert.first_name, memberInsert.last_name].filter(Boolean).join(' '),
-          timeFormat,
-          weekStart,
-          timeZone,
-        })
+        // TODO move this to the user...
+        // const { calcomAccount } = await createCalcomAccountAndSchedule({
+        //   email: memberInsert.email,
+        //   name: [memberInsert.first_name, memberInsert.last_name].filter(Boolean).join(' '),
+        //   timeFormat,
+        //   weekStart,
+        //   timeZone,
+        // })
 
-        console.log('[createProfile][calcomProfile]', calcomAccount)
+        // console.log('[createProfile][calcomProfile]', calcomAccount)
 
         const { profile, member } = await db.transaction(async (tx) => {
           const [profile] = await tx
@@ -261,11 +263,11 @@ const profile = {
               stripe_connect_account_id: await stripe.accounts
                 .create()
                 .then((account) => account.id),
-              ...(calcomAccount.status === 'success' && {
-                cal_com_account_id: calcomAccount.data.user.id,
-                cal_com_access_token: calcomAccount.data.accessToken,
-                cal_com_refresh_token: calcomAccount.data.refreshToken,
-              }),
+              // ...(calcomAccount.status === 'success' && {
+              //   cal_com_account_id: calcomAccount.data.user.id,
+              //   cal_com_access_token: calcomAccount.data.accessToken,
+              //   cal_com_refresh_token: calcomAccount.data.refreshToken,
+              // }),
             })
             .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
             .execute()
@@ -659,6 +661,19 @@ const repository = {
     }),
 }
 
+const calCom = {
+  // TODO admin only procedure...
+  cca: authedProcedure.query(async ({ ctx }) => {
+    const calComUsers = await getCalcomUsers()
+    return calComUsers
+  }),
+  dcca: authedProcedure.input(z.object({ userId: z.number() })).mutation(async ({ ctx, input }) => {
+    const calComUser = await deleteCalcomAccount(input.userId)
+
+    return calComUser
+  }),
+}
+
 export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
@@ -667,6 +682,7 @@ export const appRouter = router({
   ...user,
   ...profile,
   ...profileMember,
+  ...calCom,
 })
 
 export type AppRouter = typeof appRouter

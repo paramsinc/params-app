@@ -1,7 +1,10 @@
+import { Button, ButtonText } from 'app/ds/Button'
+import { ErrorCard } from 'app/ds/Error/card'
 import { Input } from 'app/ds/Input'
 import { Scroll } from 'app/ds/Scroll'
 import { styled } from 'app/ds/styled'
 import { Text } from 'app/ds/Text'
+import { TextArea } from 'app/ds/TextArea'
 import { View } from 'app/ds/View'
 import { withStaticProperties } from 'app/ds/withStaticProperties'
 import { env } from 'app/env'
@@ -13,8 +16,21 @@ const { useMutation } = api.createProfile
 
 const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
 
-export function NewProfileForm() {
+export function NewProfileForm({
+  onDidCreateProfile,
+}: {
+  onDidCreateProfile: NonNullable<Parameters<typeof useMutation>['0']>['onSuccess']
+}) {
   const me = api.me.useQuery()
+  const mutation = useMutation({
+    onSuccess: onDidCreateProfile,
+  })
+
+  // TODO loading state
+  if (me.data === undefined) return null
+
+  // TODO if me.data is undefined...throw
+
   return (
     <View grow>
       <Scroll>
@@ -23,9 +39,9 @@ export function NewProfileForm() {
             <Form.Controller
               name="name"
               rules={{ required: true }}
+              defaultValue={[me.data?.first_name, me.data?.last_name].filter(Boolean).join(' ')}
               render={({ field, fieldState }) => {
-                const nameValue =
-                  field.value ?? [me.data?.first_name, me.data?.last_name].filter(Boolean).join(' ')
+                const nameValue = field.value
                 return (
                   <>
                     <Card theme={fieldState.error ? 'red' : undefined}>
@@ -34,6 +50,7 @@ export function NewProfileForm() {
                         onChangeText={field.onChange}
                         value={nameValue}
                         placeholder="Developer Name"
+                        ref={field.ref}
                       />
 
                       <Card.Description>
@@ -44,7 +61,8 @@ export function NewProfileForm() {
 
                     <Form.Controller
                       name="slug"
-                      rules={{ required: true }}
+                      rules={{ required: 'Please enter a slug' }}
+                      defaultValue={slugify(nameValue)}
                       render={({ field, fieldState }) => (
                         <Card theme={fieldState.error ? 'red' : undefined}>
                           <Card.Title>Slug</Card.Title>
@@ -54,12 +72,13 @@ export function NewProfileForm() {
                               // TODO native pre-fabric...
                               onChangeText={(next) => field.onChange(slugify(next))}
                               onChange={(e) => e.preventDefault()}
-                              value={field.value ?? slugify(nameValue)}
-                              placeholder="developer-name"
+                              value={field.value ?? ''}
+                              placeholder="slug"
+                              ref={field.ref}
                             />
                           </View>
 
-                          <Card.Description>The public URL for your profile</Card.Description>
+                          <Card.Description>The public URL for your profile.</Card.Description>
                         </Card>
                       )}
                     />
@@ -67,8 +86,44 @@ export function NewProfileForm() {
                 )
               }}
             />
+
+            <Form.Controller
+              name="bio"
+              render={({ field, fieldState }) => (
+                <Card theme={fieldState.error ? 'red' : undefined}>
+                  <Card.Title>Bio (Markdown)</Card.Title>
+                  <TextArea
+                    onChangeText={field.onChange}
+                    value={field.value ?? ''}
+                    placeholder="Enter a bio..."
+                    styled
+                    ref={field.ref}
+                  />
+                </Card>
+              )}
+            />
+
+            <Form.Submit>
+              {({ isSubmitting, handleSubmit }) => (
+                <Button
+                  loading={isSubmitting || mutation.isPending}
+                  als="flex-start"
+                  onPress={handleSubmit(async ({ name, slug, bio }) => {
+                    mutation.mutate({
+                      name,
+                      slug,
+                      bio,
+                    })
+                  })}
+                >
+                  <ButtonText>Submit</ButtonText>
+                </Button>
+              )}
+            </Form.Submit>
           </Form.RootProvider>
         </View>
+
+        <ErrorCard error={mutation.error} />
       </Scroll>
     </View>
   )

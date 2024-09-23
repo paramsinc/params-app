@@ -95,16 +95,7 @@ export async function createCalcomAccountAndSchedule(
     throw new Error('Failed to create cal account' + JSON.stringify(calcomAccount, null, 2))
   }
 
-  const calcomSchedule = await createCalcomScheduleForAccount({
-    accessToken: calcomAccount.data.accessToken,
-  })
-
-  console.log(
-    '[calcom][createCalcomAccountAndSchedule][calcomSchedule]',
-    JSON.stringify(calcomSchedule, null, 2)
-  )
-
-  return { calcomAccount, calcomSchedule }
+  return { calcomAccount }
 }
 
 export async function refreshCalcomTokenAndUpdateProfile(

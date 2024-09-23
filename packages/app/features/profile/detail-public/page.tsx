@@ -1,5 +1,7 @@
+import { Button, ButtonText } from 'app/ds/Button'
 import { Modal, ModalBackdrop, ModalContent, ModalTrigger } from 'app/ds/Modal'
 import { Page } from 'app/ds/Page'
+import { styled } from 'app/ds/styled'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import { Calcom } from 'app/features/cal-com/cal-com'
@@ -35,7 +37,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const calUserQuery = api.calUserByProfileSlug.useQuery(
     { profileSlug },
     {
-      enabled: !!profileSlug,
+      enabled: false && !!profileSlug, // this will be orgs
     }
   )
   if (!profileQuery.data) {
@@ -45,30 +47,40 @@ function Content({ profileSlug }: { profileSlug: string }) {
   return (
     <Calcom.Provider profileSlug={profileSlug}>
       <View gap="$4">
-        <View>
-          <Text bold>{profile.name}</Text>
-          <Text>@{profile.slug}</Text>
-        </View>
-
-        <View h={2} bg="$borderColor" />
-        <Modal>
-          <ModalTrigger>
-            <Text>Book a call</Text>
-          </ModalTrigger>
-          <ModalContent>
-            <ModalBackdrop />
-            <View pointerEvents="box-none" grow center>
-              {calUserQuery.data && (
-                <Calcom.Booker
-                  eventSlug="sixty-minutes-video"
-                  username={calUserQuery.data?.username}
-                />
-              )}
+        <View gap="$3" $gtMd={{ row: true }}>
+          <View $gtMd={{ grow: true }}>
+            <View aspectRatio={16 / 9} bg="$borderColor"></View>
+          </View>
+          <View $gtMd={{ width: '40%' }} gap="$4">
+            <View>
+              <Text bold fontSize={24}>
+                {profile.name}
+              </Text>
             </View>
-          </ModalContent>
-        </Modal>
+
+            <Modal>
+              <ModalTrigger>
+                <Button themeInverse>
+                  <ButtonText>Book a Call ($425+)</ButtonText>
+                </Button>
+              </ModalTrigger>
+              <ModalContent>
+                <ModalBackdrop />
+                <View pointerEvents="box-none" grow center>
+                  {calUserQuery.data && (
+                    <Calcom.Booker
+                      eventSlug="sixty-minutes-video"
+                      username={calUserQuery.data?.username}
+                    />
+                  )}
+                </View>
+              </ModalContent>
+            </Modal>
+          </View>
+        </View>
       </View>
-      <Calcom.CalendarSettings />
     </Calcom.Provider>
   )
 }
+
+const Main = styled(View, {})

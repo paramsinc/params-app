@@ -24,7 +24,7 @@ export const publicSchema = {
       cal_com_account_id: true,
       created_at: true,
       last_updated_at: true,
-      // cal_com_refresh_token: true,
+      cal_com_refresh_token: true,
     },
     ProfilePublic: {
       id: true,

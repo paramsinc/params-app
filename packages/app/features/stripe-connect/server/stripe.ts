@@ -1,4 +1,3 @@
-import { env } from 'app/env'
 import { serverEnv } from 'app/env/env.server'
 import S from 'stripe'
 

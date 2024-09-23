@@ -1,8 +1,6 @@
 import { d, db, schema } from 'app/db/db'
 import { env } from 'app/env'
 import { serverEnv } from 'app/env/env.server'
-import { pick } from 'app/trpc/pick'
-import { publicSchema } from 'app/trpc/publicSchema'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 async function createCalcomAccount({
@@ -43,9 +41,9 @@ async function createCalcomAccount({
     body: JSON.stringify({
       email,
       name,
-      //   timeFormat,
-      //   weekStart,
-      //   timeZone,
+      timeFormat,
+      weekStart,
+      timeZone,
     }),
   }).then((res) => res.json())
 }
@@ -94,7 +92,7 @@ export async function createCalcomAccountAndSchedule(
   const calcomAccount = await createCalcomAccount(props)
 
   if (calcomAccount.status !== 'success') {
-    throw new Error('Failed to create cal account')
+    throw new Error('Failed to create cal account' + JSON.stringify(calcomAccount, null, 2))
   }
 
   const calcomSchedule = await createCalcomScheduleForAccount({
@@ -135,13 +133,11 @@ export async function refreshCalcomTokenAndUpdateProfile(
       'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
     },
     body: JSON.stringify({
-      clientId: env.CAL_COM_CLIENT_ID,
-      clientSecret: serverEnv.CAL_COM_CLIENT_SECRET,
       refreshToken: profile.cal_com_refresh_token,
     }),
   })
 
-  if (!response.ok && profile.cal_com_account_id) {
+  if (!response.ok && profile.cal_com_account_id != null) {
     response = await fetch(
       `${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/users/${profile.cal_com_account_id}/force-refresh`,
       {

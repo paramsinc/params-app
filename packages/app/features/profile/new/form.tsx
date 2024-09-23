@@ -93,6 +93,7 @@ export function NewProfileForm({
                       bio,
                     })
                   })}
+                  themeInverse
                 >
                   <ButtonText>Submit</ButtonText>
                 </Button>

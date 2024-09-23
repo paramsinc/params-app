@@ -54,6 +54,7 @@ const Backdrop = View.styleable<{ id?: string }>(function Backdrop({ id, ...prop
         onOpenChange(false)
         props.onPress?.(e)
       }}
+      focusable={false}
       cursor="pointer"
     />
   )

@@ -15,37 +15,35 @@ import { api } from 'app/trpc/client'
 
 export function ProfilesListContent() {
   const myProfiles = api.myProfiles.useQuery()
+  const newProfileButton = (
+    <NewProfileModal>
+      <NewProfileModalTrigger>
+        <Button themeInverse>
+          <ButtonText>New Profile</ButtonText>
+        </Button>
+      </NewProfileModalTrigger>
+      <NewProfileModalContent />
+    </NewProfileModal>
+  )
 
   if (myProfiles.data?.length === 0) {
     return (
       <Empty>
-        <NewProfileModal>
-          <NewProfileModalTrigger>
-            <EmptyCard>
-              <EmptyCardTitle>Let's create your developer profile.</EmptyCardTitle>
-              <EmptyCardDescription>
-                Create your developer profile to start sharing repositories.
-              </EmptyCardDescription>
-              <Text>New</Text>
-            </EmptyCard>
-          </NewProfileModalTrigger>
-          <NewProfileModalContent />
-        </NewProfileModal>
+        <EmptyCard>
+          <EmptyCardTitle>Let's create your developer profile.</EmptyCardTitle>
+          <EmptyCardDescription>
+            Create your developer profile to start sharing repositories.
+          </EmptyCardDescription>
+          {newProfileButton}
+        </EmptyCard>
       </Empty>
     )
   }
 
   return (
     <Scroll>
-      <View py="$2" px="$3" bbw={1} boc="$borderColor">
-        <NewProfileModal>
-          <NewProfileModalTrigger>
-            <Button als="flex-end" themeInverse>
-              <ButtonText>New Profile</ButtonText>
-            </Button>
-          </NewProfileModalTrigger>
-          <NewProfileModalContent />
-        </NewProfileModal>
+      <View py="$2" px="$3" bbw={1} boc="$borderColor" ai="flex-end">
+        {newProfileButton}
       </View>
       {myProfiles.data?.map((profile) => {
         return (

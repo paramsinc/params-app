@@ -33,6 +33,13 @@ const Content = (props: Pick<React.ComponentProps<typeof ProfileUpdateForm>, 'pr
             })
             onOpenChange(false)
           }}
+          onDidDeleteProfile={() => {
+            toast({
+              title: 'Profile deleted',
+              preset: 'done',
+            })
+            onOpenChange(false)
+          }}
         />
       </ModalDialog>
     </ModalContent>

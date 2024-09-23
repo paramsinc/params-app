@@ -35,6 +35,7 @@ export const NewProfileModalContent = (
           onDidCreateProfile={() => {
             toast({
               title: 'Profile created.',
+              preset: 'done',
             })
             onOpenChange(false)
           }}

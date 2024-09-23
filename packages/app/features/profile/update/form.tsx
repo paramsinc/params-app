@@ -17,12 +17,17 @@ const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]['p
 export function ProfileUpdateForm({
   profileSlug,
   onDidUpdateProfile,
+  onDidDeleteProfile,
 }: {
   profileSlug: string
   onDidUpdateProfile: () => void
+  onDidDeleteProfile: () => void
 }) {
   const mutation = useMutation({
     onSuccess: onDidUpdateProfile,
+  })
+  const deleteMutation = api.deleteProfile.useMutation({
+    onSuccess: onDidDeleteProfile,
   })
   const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
 
@@ -74,22 +79,27 @@ export function ProfileUpdateForm({
 
             <ErrorCard error={mutation.error} />
 
-            <Form.Submit>
-              {({ isSubmitting, handleDirtySubmit, isDirty }) => (
-                <Button
-                  loading={isSubmitting}
-                  onPress={handleDirtySubmit(async (data) => {
-                    if (Object.keys(data).length === 0) {
-                      return onDidUpdateProfile()
-                    }
-                    await mutation.mutateAsync({ id: profile.id, patch: data }).catch()
-                  })}
-                  als="flex-start"
-                >
-                  <ButtonText>Save</ButtonText>
-                </Button>
-              )}
-            </Form.Submit>
+            <View row gap="$3" jbtwn>
+              <Form.Submit>
+                {({ isSubmitting, handleDirtySubmit, isDirty }) => (
+                  <Button
+                    themeInverse
+                    loading={isSubmitting}
+                    onPress={handleDirtySubmit(async (data) => {
+                      if (Object.keys(data).length === 0) {
+                        return onDidUpdateProfile()
+                      }
+                      await mutation.mutateAsync({ id: profile.id, patch: data }).catch()
+                    })}
+                  >
+                    <ButtonText>Save</ButtonText>
+                  </Button>
+                )}
+              </Form.Submit>
+              <Button onPress={() => deleteMutation.mutate({ id: profile.id })} theme="red">
+                <ButtonText>Delete</ButtonText>
+              </Button>
+            </View>
           </Form.RootProvider>
         </View>
       </Scroll>

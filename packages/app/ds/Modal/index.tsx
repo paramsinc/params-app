@@ -1,7 +1,11 @@
 import { createContext } from 'app/ds/createContext'
+import { Header } from 'app/ds/Header'
 import { Open, OpenTrigger, useOpen } from 'app/ds/Open'
 import { platform } from 'app/ds/platform'
+import { styled } from 'app/ds/styled'
+import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
+import { withStaticProperties } from 'app/ds/withStaticProperties'
 import { Modal as NativeModal } from 'react-native'
 
 const makeId = (id?: string) => `${['modal', id].join('__')}`
@@ -42,19 +46,83 @@ const Backdrop = View.styleable<{ id?: string }>(function Backdrop({ id, ...prop
       stretch
       zi={-1}
       {...props}
-      bg="$color5"
+      bg="$color12"
       opacity={0.2}
       animation="quick"
-      hoverStyle={{ opacity: 0.5 }}
+      hoverStyle={{ opacity: 0.18 }}
       onPress={(e) => {
         onOpenChange(false)
         props.onPress?.(e)
       }}
+      cursor="pointer"
     />
   )
 })
 
-export const Modal = Root
 export const ModalContent = Content
+
 export const ModalTrigger = Trigger
 export const ModalBackdrop = Backdrop
+
+export const ModalDialog = styled(View, {
+  // TODO iOS height...hm need to handle safe area for non sheets
+  bg: '$color1',
+  w: '100%',
+  height: '100%',
+  margin: 'auto',
+  $gtMd: {
+    maxWidth: 700,
+    br: '$true',
+    ov: 'hidden',
+  },
+  variants: {
+    autoHeight: {
+      true: {},
+      false: {
+        $gtMd: {
+          maxHeight: 800,
+        },
+      },
+    },
+  } as const,
+  defaultVariants: {
+    autoHeight: false,
+  },
+})
+
+const headerHeight = 50
+
+export const ModalDialogHeader = styled(Header, {
+  bg: '$backgroundStrong',
+  px: '$2',
+  fd: 'row',
+  height: 40,
+  ai: 'center',
+})
+
+const ModalDialogHeaderTitleFrame = styled(Text, {
+  bold: true,
+  lineHeight: 40,
+  center: true,
+})
+
+export const ModalDialogHeaderTitle = (
+  props: React.ComponentProps<typeof ModalDialogHeaderTitleFrame>
+) => {
+  return (
+    <View stretch>
+      <ModalDialogHeaderTitleFrame {...props} />
+    </View>
+  )
+}
+
+export const Modal = withStaticProperties(Root, {
+  Content,
+  Trigger,
+  Backdrop,
+  Dialog: withStaticProperties(ModalDialog, {
+    Header: withStaticProperties(ModalDialogHeader, {
+      Title: ModalDialogHeaderTitle,
+    }),
+  }),
+})

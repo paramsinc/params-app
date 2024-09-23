@@ -34257,63 +34257,26 @@
   "tamaguiConfig": {
     "fonts": {
       "heading": {
-        "family": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+        "family": "var(--font-round)",
+        "letterSpacing": {},
         "lineHeight": {
-          "1": 15,
-          "2": 16,
-          "3": 17,
-          "4": 18,
-          "5": 20,
-          "6": 19,
+          "1": 13.2,
+          "2": 14.399999999999999,
+          "3": 15.6,
+          "4": 16.8,
+          "5": 19.2,
+          "6": 21.599999999999998,
           "7": 24,
-          "8": 27,
-          "9": 34,
-          "10": 50,
-          "11": 59,
-          "12": 66,
-          "13": 76,
-          "14": 96,
-          "15": 118,
-          "16": 138,
-          "true": 18
-        },
-        "weight": {
-          "1": "500",
-          "2": "500",
-          "3": "500",
-          "4": "700",
-          "5": "700",
-          "6": "700",
-          "7": "700",
-          "8": "700",
-          "9": "700",
-          "10": "700",
-          "11": "700",
-          "12": "700",
-          "13": "700",
-          "14": "700",
-          "15": "700",
-          "16": "700",
-          "true": "700"
-        },
-        "letterSpacing": {
-          "1": 0,
-          "2": 0,
-          "3": 0,
-          "4": 0,
-          "5": 0,
-          "6": 0,
-          "7": 0,
-          "8": 0,
-          "9": 0,
-          "10": 0,
-          "11": 0,
-          "12": 0,
-          "13": 0,
-          "14": 0,
-          "15": 0,
-          "16": 0,
-          "true": 0
+          "8": 27.599999999999998,
+          "9": 36,
+          "10": 55.199999999999996,
+          "11": 66,
+          "12": 74.39999999999999,
+          "13": 86.39999999999999,
+          "14": 110.39999999999999,
+          "15": 136.79999999999998,
+          "16": 160.79999999999998,
+          "true": 160.79999999999998
         },
         "size": {
           "1": 11,
@@ -34321,7 +34284,7 @@
           "3": 13,
           "4": 14,
           "5": 16,
-          "6": 15,
+          "6": 18,
           "7": 20,
           "8": 23,
           "9": 30,
@@ -34334,52 +34297,34 @@
           "16": 134,
           "true": 14
         },
-        "transform": {
-          "1": "uppercase",
-          "2": "uppercase",
-          "3": "uppercase",
-          "4": "uppercase",
-          "5": "uppercase",
-          "6": "uppercase",
-          "7": "none",
-          "8": "none",
-          "9": "none",
-          "10": "none",
-          "11": "none",
-          "12": "none",
-          "13": "none",
-          "14": "none",
-          "15": "none",
-          "16": "none",
-          "true": "none"
-        },
+        "weight": {},
         "face": {
           "100": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+            "normal": "var(--font-round)"
           },
           "200": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+            "normal": "var(--font-round)"
           },
           "300": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+            "normal": "var(--font-round)"
           },
           "400": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+            "normal": "var(--font-round)"
           },
           "500": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+            "normal": "var(--font-round)"
           },
           "600": {
-            "normal": "Inter, -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+            "normal": "var(--font-round)"
           },
           "700": {
-            "normal": "InterBold"
+            "normal": "var(--font-round)"
           },
           "800": {
-            "normal": "InterBold"
+            "normal": "var(--font-round)"
           },
           "900": {
-            "normal": "InterBold"
+            "normal": "var(--font-round)"
           }
         }
       },
@@ -35354,7 +35299,7 @@
         "id": "dark_yellow"
       }
     },
-    "shouldAddPrefersColorThemes": true,
+    "shouldAddPrefersColorThemes": false,
     "themeClassNameOnRoot": true,
     "mediaQueryDefaultActive": {
       "xxs": false,

@@ -1,0 +1,1 @@
+export { withStaticProperties } from 'tamagui'

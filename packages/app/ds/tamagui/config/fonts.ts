@@ -1,5 +1,6 @@
 import { createInterFont } from '@tamagui/font-inter'
 import { createFont } from '@tamagui/core'
+import fonts from 'app/ds/tamagui/font/fonts'
 
 const fontSizesBase = {
   // copied from: https://github.com/tamagui/tamagui/blob/968fb22afd1f9e4e313e7bf646f56aa89770203b/packages/font-inter/src/index.ts#L42
@@ -37,7 +38,8 @@ const lineHeights = Object.keys(fontSizesBase).reduce((acc, next) => {
 }, {}) as Record<`${keyof typeof fontSizesBase}`, number>
 
 export const monoFont = createFont({
-  family: 'var(--font-geist-mono)',
+  // family: 'var(--font-geist-mono)',
+  family: fonts.heading,
   letterSpacing: {},
   lineHeight: lineHeights || {},
   size: fontSizes,
@@ -49,7 +51,7 @@ export const monoFont = createFont({
 })
 
 export const roundFont = createFont({
-  family: 'var(--font-round)',
+  family: fonts.heading,
   letterSpacing: {},
   lineHeight: lineHeights || {},
   size: fontSizes,

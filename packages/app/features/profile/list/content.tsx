@@ -2,6 +2,11 @@ import { Empty, EmptyCard, EmptyCardDescription, EmptyCardTitle } from 'app/ds/E
 import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
+import {
+  NewProfileModal,
+  NewProfileModalContent,
+  NewProfileModalTrigger,
+} from 'app/features/profile/new/modal'
 import { api } from 'app/trpc/client'
 
 export function ProfilesListContent() {
@@ -10,12 +15,18 @@ export function ProfilesListContent() {
   if (myProfiles.data?.length === 0) {
     return (
       <Empty>
-        <EmptyCard>
-          <EmptyCardTitle>Let's create your developer profile.</EmptyCardTitle>
-          <EmptyCardDescription>
-            Create your developer profile to start sharing repositories.
-          </EmptyCardDescription>
-        </EmptyCard>
+        <NewProfileModal>
+          <NewProfileModalTrigger>
+            <EmptyCard>
+              <EmptyCardTitle>Let's create your developer profile.</EmptyCardTitle>
+              <EmptyCardDescription>
+                Create your developer profile to start sharing repositories.
+              </EmptyCardDescription>
+              <Text>New</Text>
+            </EmptyCard>
+          </NewProfileModalTrigger>
+          <NewProfileModalContent />
+        </NewProfileModal>
       </Empty>
     )
   }

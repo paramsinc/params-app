@@ -46,8 +46,6 @@ const plugins = [
       webpack: (webpackConfig, options) => {
         webpackConfig.resolve.alias = {
           ...webpackConfig.resolve.alias,
-          // necessary to run TS server in the browser i guess...
-          module: path.resolve(__dirname, './hacks/module'),
           // 'react-native-svg': '@tamagui/react-native-svg',
         }
         // if (!options.isServer) {
@@ -103,6 +101,7 @@ let config = {
     'expo-web-browser',
     'react-native-gesture-handler',
     'geist',
+    '@nandorojo/anchor',
   ],
   experimental: {
     scrollRestoration: true,

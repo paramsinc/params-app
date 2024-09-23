@@ -1,0 +1,35 @@
+import {
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+  ModalDialog,
+  ModalDialogHeader,
+  ModalDialogHeaderTitle,
+  ModalTrigger,
+} from 'app/ds/Modal'
+import { Text } from 'app/ds/Text'
+import { NewProfileForm } from 'app/features/profile/new/form'
+
+const id = 'new-profile'
+
+export const NewProfileModal = (props: React.ComponentProps<typeof Modal>) => {
+  return <Modal {...props} id={id} />
+}
+
+export const NewProfileModalContent = (props: React.ComponentProps<typeof NewProfileForm>) => {
+  return (
+    <ModalContent id={id}>
+      <ModalBackdrop id={id} />
+      <ModalDialog>
+        <ModalDialogHeader>
+          <ModalDialogHeaderTitle>New Profile</ModalDialogHeaderTitle>
+        </ModalDialogHeader>
+        <NewProfileForm />
+      </ModalDialog>
+    </ModalContent>
+  )
+}
+
+export const NewProfileModalTrigger = (props: React.ComponentProps<typeof ModalTrigger>) => {
+  return <ModalTrigger {...props} id={id} />
+}

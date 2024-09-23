@@ -45413,7 +45413,17 @@ var monoFont = (0, import_core60.createFont)({
     // TODO native
   }
 });
-var headingFont = createInterFont(
+var roundFont = (0, import_core60.createFont)({
+  family: "var(--font-round)",
+  letterSpacing: {},
+  lineHeight: lineHeights || {},
+  size: fontSizes,
+  weight: {},
+  face: {
+    // TODO native
+  }
+});
+var headingFontOld = createInterFont(
   {
     size: {
       6: 15
@@ -46398,7 +46408,7 @@ var { bc, ...alias } = shorthands;
 var tamaguiConfig = createTamagui({
   themes,
   animations,
-  shouldAddPrefersColorThemes: true,
+  shouldAddPrefersColorThemes: false,
   themeClassNameOnRoot: true,
   mediaQueryDefaultActive,
   selectionStyles: /* @__PURE__ */ __name((theme) => {
@@ -46416,7 +46426,7 @@ var tamaguiConfig = createTamagui({
     radius: "borderRadius"
   },
   fonts: {
-    heading: headingFont,
+    heading: roundFont,
     body: monoFont
   },
   defaultFont: "body",

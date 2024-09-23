@@ -27,58 +27,6 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
 }
 
-const headingFont = localFont({
-  variable: '--font-round',
-  src: [
-    {
-      path: '../fonts/CircularStd-Book.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-    // italic
-    {
-      path: '../fonts/CircularStd-BookItalic.ttf',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: '../fonts/CircularStd-Medium.ttf',
-      weight: '500',
-      style: 'normal',
-    },
-    // italic
-    {
-      path: '../fonts/CircularStd-MediumItalic.ttf',
-      weight: '500',
-      style: 'italic',
-    },
-
-    {
-      path: '../fonts/CircularStd-Bold.ttf',
-      weight: '600',
-      style: 'normal',
-    },
-    // italic
-    {
-      path: '../fonts/CircularStd-BoldItalic.ttf',
-      weight: '600',
-      style: 'italic',
-    },
-    {
-      path: '../fonts/CircularStd-BlackItalic.ttf',
-      weight: '700',
-      style: 'italic',
-    },
-    {
-      path: '../fonts/CircularStd-Black.ttf',
-      weight: '700',
-      style: 'normal',
-    },
-  ],
-})
-
-console.log({ headingFont })
-
 const APP_NAME = 'Params'
 
 function MyApp({ Component, pageProps, router }: SolitoAppProps) {
@@ -88,7 +36,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
 
   return (
     <div
-      className={`${GeistSans.variable} ${GeistMono.variable} ${headingFont.variable} font_body`}
+      className={`${GeistSans.variable} ${GeistMono.variable}  font_body`}
       style={{ display: 'contents', fontFamily: 'var(--f-family)' }}
     >
       <Head>

@@ -57,14 +57,9 @@ export function ProfilesListContent() {
                 <LinkButton href={`/@${profile.slug}`}>
                   <ButtonText>View</ButtonText>
                 </LinkButton>
-                <UpdateProfileModal>
-                  <UpdateProfileModal.Trigger>
-                    <Button>
-                      <ButtonText>Manage</ButtonText>
-                    </Button>
-                  </UpdateProfileModal.Trigger>
-                  <UpdateProfileModal.Content profileSlug={profile.slug} />
-                </UpdateProfileModal>
+                <LinkButton href={`/dashboard/profiles/${profile.slug}`}>
+                  <ButtonText>Manage</ButtonText>
+                </LinkButton>
               </View>
             </View>
           </View>

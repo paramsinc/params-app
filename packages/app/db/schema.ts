@@ -1,4 +1,13 @@
-import { integer, pgTable, text, timestamp, unique, pgEnum } from 'drizzle-orm/pg-core'
+import {
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  pgEnum,
+  serial,
+} from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 import { ulid } from 'ulid'
 
 const timestampMixin = () => {
@@ -47,7 +56,12 @@ export const repositories = pgTable(
     id: text('id')
       .primaryKey()
       .$default(() => `repository_${ulid()}`),
-    slug: text('slug').notNull(),
+    slug: text('slug')
+      .unique()
+      .notNull()
+      .default(
+        sql`'' ADD CONSTRAINT "check_slug" CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')`
+      ),
     name: text('name').notNull(),
     github_url: text('github_url'),
     profile_id: text('profile_id')
@@ -55,6 +69,7 @@ export const repositories = pgTable(
       .references(() => profiles.id, {
         onDelete: 'cascade',
       }),
+    index: serial('index').notNull(),
     ...timestampMixin(),
   },
   (table) => ({

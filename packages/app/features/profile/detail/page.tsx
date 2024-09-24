@@ -1,3 +1,4 @@
+import { Button, ButtonText } from 'app/ds/Button'
 import { Page } from 'app/ds/Page'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
@@ -11,6 +12,10 @@ const { useParams } = createParam<{ profileSlug: string }>()
 export function ProfileDetailPage() {
   const { params } = useParams()
 
+  if (!params.profileSlug) {
+    return null
+  }
+
   return (
     <Page.Root>
       <Page.Scroll>
@@ -23,12 +28,8 @@ export function ProfileDetailPage() {
 }
 
 function Content({ profileSlug }: { profileSlug: string }) {
-  const profileQuery = api.profileBySlug.useQuery(
-    { slug: profileSlug },
-    {
-      enabled: !!profileSlug,
-    }
-  )
+  const reposQuery = api.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
+  const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
   if (!profileQuery.data) {
     return null
   }
@@ -42,28 +43,47 @@ function Content({ profileSlug }: { profileSlug: string }) {
         </View>
 
         <View h={2} bg="$borderColor" />
-        <Calcom.AvailabilitySettings
-          enableOverrides={true}
-          customClassNames={{
-            subtitlesClassName: 'text-red-500',
-            ctaClassName: 'border p-4 rounded-md',
-            editableHeadingClassName: 'underline font-semibold',
-          }}
-          onUpdateSuccess={() => {
-            console.log('Updated successfully')
-          }}
-          onUpdateError={() => {
-            console.log('update error')
-          }}
-          onDeleteError={() => {
-            console.log('delete error')
-          }}
-          onDeleteSuccess={() => {
-            console.log('Deleted successfully')
-          }}
-        />
+        <View gap="$3">
+          <View row ai="center" jbtwn>
+            <Text bold>Repositories</Text>
+
+            <Button>
+              <ButtonText>Add Repository</ButtonText>
+            </Button>
+          </View>
+
+          {reposQuery.data?.length === 0 && <Text>No repositories found</Text>}
+
+          {reposQuery.data?.map((repo) => (
+            <View key={repo.id}>
+              <Text>{repo.name}</Text>
+            </View>
+          ))}
+        </View>
+        {null && (
+          <Calcom.AvailabilitySettings
+            enableOverrides={true}
+            customClassNames={{
+              subtitlesClassName: 'text-red-500',
+              ctaClassName: 'border p-4 rounded-md',
+              editableHeadingClassName: 'underline font-semibold',
+            }}
+            onUpdateSuccess={() => {
+              console.log('Updated successfully')
+            }}
+            onUpdateError={() => {
+              console.log('update error')
+            }}
+            onDeleteError={() => {
+              console.log('delete error')
+            }}
+            onDeleteSuccess={() => {
+              console.log('Deleted successfully')
+            }}
+          />
+        )}
       </View>
-      <Calcom.CalendarSettings />
+      {null && <Calcom.CalendarSettings />}
     </Calcom.Provider>
   )
 }

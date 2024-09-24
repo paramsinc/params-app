@@ -29887,6 +29887,12 @@ var require_cjs22 = __commonJS({
   }
 });
 
+// ../../node_modules/next/font/local/index.js
+var require_local = __commonJS({
+  "../../node_modules/next/font/local/index.js"() {
+  }
+});
+
 // ../../packages/app/ds/tamagui/tamagui.config.ts
 var tamagui_config_exports = {};
 __export(tamagui_config_exports, {
@@ -45370,6 +45376,94 @@ var defaultSizes = {
 
 // ../../packages/app/ds/tamagui/config/fonts.ts
 var import_core60 = require("@tamagui/core");
+
+// ../../packages/app/ds/tamagui/font/fonts.tsx
+var import_local3 = __toESM(require_local());
+
+// ../../node_modules/geist/dist/sans.js
+var import_local = __toESM(require_local(), 1);
+var GeistSans = (0, import_local.default)({
+  src: "./fonts/geist-sans/Geist-Variable.woff2",
+  variable: "--font-geist-sans",
+  weight: "100 900"
+});
+
+// ../../node_modules/geist/dist/mono.js
+var import_local2 = __toESM(require_local(), 1);
+var GeistMono = (0, import_local2.default)({
+  src: "./fonts/geist-mono/GeistMono-Variable.woff2",
+  variable: "--font-geist-mono",
+  adjustFontFallback: false,
+  fallback: [
+    "ui-monospace",
+    "SFMono-Regular",
+    "Roboto Mono",
+    "Menlo",
+    "Monaco",
+    "Liberation Mono",
+    "DejaVu Sans Mono",
+    "Courier New",
+    "monospace"
+  ],
+  weight: "100 900"
+});
+
+// ../../packages/app/ds/tamagui/font/fonts.tsx
+var headingFont = (0, import_local3.default)({
+  variable: "--font-round",
+  src: [
+    {
+      path: "./fonts/CircularStd-Book.ttf",
+      weight: "400",
+      style: "normal"
+    },
+    // italic
+    {
+      path: "./fonts/CircularStd-BookItalic.ttf",
+      weight: "400",
+      style: "italic"
+    },
+    {
+      path: "./fonts/CircularStd-Medium.ttf",
+      weight: "500",
+      style: "normal"
+    },
+    // italic
+    {
+      path: "./fonts/CircularStd-MediumItalic.ttf",
+      weight: "500",
+      style: "italic"
+    },
+    {
+      path: "./fonts/CircularStd-Bold.ttf",
+      weight: "600",
+      style: "normal"
+    },
+    // italic
+    {
+      path: "./fonts/CircularStd-BoldItalic.ttf",
+      weight: "600",
+      style: "italic"
+    },
+    {
+      path: "./fonts/CircularStd-BlackItalic.ttf",
+      weight: "700",
+      style: "italic"
+    },
+    {
+      path: "./fonts/CircularStd-Black.ttf",
+      weight: "700",
+      style: "normal"
+    }
+  ]
+});
+var fonts_default = {
+  heading: headingFont.style.fontFamily,
+  mono: GeistMono.style.fontFamily,
+  sans: GeistSans.style.fontFamily
+};
+
+// ../../packages/app/ds/tamagui/config/fonts.ts
 var fontSizesBase = {
   // copied from: https://github.com/tamagui/tamagui/blob/968fb22afd1f9e4e313e7bf646f56aa89770203b/packages/font-inter/src/index.ts#L42
   1: 11,
@@ -45403,7 +45497,8 @@ var lineHeights = Object.keys(fontSizesBase).reduce((acc, next) => {
   };
 }, {});
 var monoFont = (0, import_core60.createFont)({
-  family: "var(--font-geist-mono)",
+  // family: 'var(--font-geist-mono)',
+  family: fonts_default.mono,
   letterSpacing: {},
   lineHeight: lineHeights || {},
   size: fontSizes,
@@ -45414,7 +45509,7 @@ var monoFont = (0, import_core60.createFont)({
   }
 });
 var roundFont = (0, import_core60.createFont)({
-  family: "var(--font-round)",
+  family: fonts_default.heading,
   letterSpacing: {},
   lineHeight: lineHeights || {},
   size: fontSizes,

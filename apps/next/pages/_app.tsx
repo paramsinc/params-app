@@ -53,6 +53,13 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
           </Provider>
         </TamaguiProvider>
       </ThemeProvider>
+      <style jsx global>
+        {`
+          body {
+            background-color: var(--color1);
+          }
+        `}
+      </style>
     </div>
   )
 }

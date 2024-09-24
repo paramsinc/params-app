@@ -1,7 +1,6 @@
 import { Auth } from 'app/auth'
 import { Link } from 'app/ds/Link'
 import { Text as T } from 'app/ds/Text'
-import { TextLink } from 'app/ds/TextLink'
 import { View } from 'app/ds/View'
 import { styled } from 'app/ds/styled'
 import { api } from 'app/trpc/client'
@@ -9,6 +8,7 @@ import { Platform } from 'react-native'
 import { cloneElement } from 'react'
 import { fakeRepos } from 'app/features/home/fakeRepos'
 import { fakeRepoImages } from 'app/features/home/fakeRepoImages'
+import { RepoCard } from 'app/features/home/RepoCard'
 
 const Text = T
 
@@ -20,7 +20,7 @@ const H1 = styled(Text, {
   fontFamily: fancyFontFamily,
 })
 
-const formatPrice = Intl.NumberFormat('en-US', {
+export const formatPrice = Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
   // zero digits
@@ -171,63 +171,7 @@ export function HomeScreen(props: {
               )
             }
 
-            const bigImg = (
-              <View key={template.repo_name}>
-                <View row gap="$3" ai="flex-start">
-                  <View>
-                    <img
-                      style={{
-                        width: imgSize,
-                        height: imgSize,
-                        margin: 0,
-                        borderRadius: '6px',
-                        alignSelf: 'center',
-                        objectFit: 'cover',
-                      }}
-                      src={image}
-                    />
-                  </View>
-
-                  <View f={1}>
-                    <Text color="$color11">{`#${intStr} `}</Text>
-                    <Text textDecorationLine="underline" textDecorationColor="transparent">
-                      <Text bold>{template.repo_name}</Text>{' '}
-                    </Text>
-
-                    <TextLink href="https://twitter.com/fchollet" target="_blank">
-                      <Text>
-                        by{' '}
-                        <Text gap="$1" dsp="inline-flex">
-                          {template.user_name}
-                        </Text>
-                      </Text>
-                    </TextLink>
-                    <Text mt="$1">
-                      <Text color="blue" textDecorationLine="underline" mt="$2">
-                        schedule a call {price}
-                      </Text>{' '}
-                    </Text>
-                    <Text textDecorationLine="underline">view on github</Text>
-                  </View>
-                </View>
-
-                <View gap="$3" row dsp="none">
-                  <View w={imgSize} />
-                  <View>
-                    <TextLink href="https://twitter.com/fchollet" target="_blank">
-                      <Text textDecorationLine="underline" gap="$1" dsp="inline-flex">
-                        by {template.user_name}
-                      </Text>
-                    </TextLink>
-                    <View row>
-                      <Text color="blue" textDecorationLine="underline">
-                        schedule a call ${price}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            )
+            const bigImg = <RepoCard key={i} template={template} i={i} />
             return bigImg
           })}
           {/* {props.templates?.map((template, i) => {

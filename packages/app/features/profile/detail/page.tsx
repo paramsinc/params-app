@@ -22,8 +22,6 @@ export function ProfileDetailPage() {
   )
 }
 
-console.log('[tamagui-config]', getConfig())
-
 function Content({ profileSlug }: { profileSlug: string }) {
   const profileQuery = api.profileBySlug.useQuery(
     { slug: profileSlug },

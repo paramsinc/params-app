@@ -6,13 +6,13 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 async function createCalcomAccount({
   email,
   name,
-  timeFormat = '12',
+  timeFormat = 12,
   weekStart = 'Monday',
-  timeZone = 'Europe/London',
+  timeZone = 'America/New_York',
 }: {
   email: string
   name: string | undefined
-  timeFormat?: '12' | '24'
+  timeFormat?: 12 | 24
   weekStart?: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday'
   timeZone?: string
 }): Promise<

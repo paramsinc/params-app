@@ -5,7 +5,7 @@ const path = require('path')
 const { join } = require('path')
 
 const disableExtraction =
-  process.env.DISABLE_EXTRACTION === 'true' ?? process.env.NODE_ENV === 'development'
+  process.env.DISABLE_EXTRACTION === 'true' || process.env.NODE_ENV === 'development'
 
 const plugins = [
   withBundleAnalyzer({
@@ -56,6 +56,7 @@ const plugins = [
         //     })
         //   )
         // }
+        console.log('webpackConfig', webpackConfig.resolve)
         if (typeof nextConfig.webpack === 'function') {
           return nextConfig.webpack(webpackConfig, options)
         }
@@ -77,6 +78,9 @@ let config = {
       },
       {
         hostname: '192.168.0.23',
+      },
+      {
+        hostname: 'i.postimg.cc', // TODO remove
       },
     ],
   },

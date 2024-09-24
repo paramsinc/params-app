@@ -33,9 +33,10 @@ export const tamaguiConfig = createTamagui({
   themeClassNameOnRoot: true,
   mediaQueryDefaultActive,
   selectionStyles: (theme) => {
+    console.log('[selectionStyles]', Object.keys(theme))
     return {
-      backgroundColor: theme.color10,
-      color: theme.color1,
+      backgroundColor: theme.pinkDark10,
+      color: theme.pinkDark12,
     }
   },
   shorthands: {

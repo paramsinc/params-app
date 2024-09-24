@@ -6,6 +6,7 @@ export const isValidSlug = (slug: string) => regex.test(slug)
 export const slugify = (str: string) =>
   str
     .toLowerCase()
+    .replaceAll(' ', '-')
     .replace(/[^a-z0-9-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
+// .replace(/-+/g, '-')
+// .replace(/^-|-$/g, '')

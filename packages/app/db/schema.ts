@@ -56,13 +56,7 @@ export const repositories = pgTable(
     id: text('id')
       .primaryKey()
       .$default(() => `repository_${ulid()}`),
-    slug: text('slug')
-      .unique()
-      .notNull()
-      .default(
-        sql`'' ADD CONSTRAINT "check_slug" CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')`
-      ),
-    name: text('name').notNull(),
+    slug: text('slug').notNull(),
     github_url: text('github_url'),
     profile_id: text('profile_id')
       .notNull()

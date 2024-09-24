@@ -16,7 +16,7 @@ const CardTitle = styled(Text, {
   color: '$color11',
 })
 const CardDescription = styled(Text, {})
-export const ProfileFormCard = withStaticProperties(CardFrame, {
+export const FormCard = withStaticProperties(CardFrame, {
   Title: CardTitle,
   Description: CardDescription,
 })

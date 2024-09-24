@@ -2,7 +2,7 @@ import { Input } from 'app/ds/Input'
 import { TextArea } from 'app/ds/TextArea'
 import { View } from 'app/ds/View'
 import { env } from 'app/env'
-import { ProfileFormCard } from 'app/features/profile/new/layout'
+import { FormCard } from 'app/features/profile/new/layout'
 import { slugify } from 'app/trpc/slugify'
 
 export const ProfileNameField = ({
@@ -17,15 +17,20 @@ export const ProfileNameField = ({
   inputRef: any
 }) => {
   return (
-    <ProfileFormCard theme={error ? 'red' : undefined}>
-      <ProfileFormCard.Title>Profile Name</ProfileFormCard.Title>
-      <Input onChangeText={onChange} value={name} placeholder="Developer Name" ref={inputRef} />
+    <FormCard theme={error ? 'red' : undefined}>
+      <FormCard.Title>Profile Name</FormCard.Title>
+      <Input
+        onChangeText={onChange}
+        value={name}
+        placeholder="Developer Name"
+        ref={inputRef}
+      />
 
-      <ProfileFormCard.Description>
-        This is the name that will be displayed on your profile. Either your personal name or
-        company name, depending on what users should see.
-      </ProfileFormCard.Description>
-    </ProfileFormCard>
+      <FormCard.Description>
+        This is the name that will be displayed on your profile. Either your personal name
+        or company name, depending on what users should see.
+      </FormCard.Description>
+    </FormCard>
   )
 }
 export const ProfileBioField = ({
@@ -40,8 +45,8 @@ export const ProfileBioField = ({
   inputRef: any
 }) => {
   return (
-    <ProfileFormCard theme={error ? 'red' : undefined}>
-      <ProfileFormCard.Title>Bio (Markdown)</ProfileFormCard.Title>
+    <FormCard theme={error ? 'red' : undefined}>
+      <FormCard.Title>Bio (Markdown)</FormCard.Title>
       <TextArea
         onChangeText={onChange}
         value={bio ?? ''}
@@ -49,7 +54,7 @@ export const ProfileBioField = ({
         styled
         ref={inputRef}
       />
-    </ProfileFormCard>
+    </FormCard>
   )
 }
 export const ProfileSlugField = ({
@@ -64,10 +69,10 @@ export const ProfileSlugField = ({
   inputRef: any
 }) => {
   return (
-    <ProfileFormCard theme={error ? 'red' : undefined}>
-      <ProfileFormCard.Title>Slug</ProfileFormCard.Title>
+    <FormCard theme={error ? 'red' : undefined}>
+      <FormCard.Title>Slug</FormCard.Title>
       <View row gap="$1" ai="center">
-        <ProfileFormCard.Description>{env.APP_URL}/@</ProfileFormCard.Description>
+        <FormCard.Description>{env.APP_URL}/@</FormCard.Description>
         <Input
           onChangeText={(next) => onChange(slugify(next))}
           onChange={(e) => e.preventDefault()}
@@ -76,6 +81,6 @@ export const ProfileSlugField = ({
           ref={inputRef}
         />
       </View>
-    </ProfileFormCard>
+    </FormCard>
   )
 }

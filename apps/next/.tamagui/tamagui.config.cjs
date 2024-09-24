@@ -46507,9 +46507,10 @@ var tamaguiConfig = createTamagui({
   themeClassNameOnRoot: true,
   mediaQueryDefaultActive,
   selectionStyles: /* @__PURE__ */ __name((theme) => {
+    console.log("[selectionStyles]", Object.keys(theme));
     return {
-      backgroundColor: theme.color10,
-      color: theme.color1
+      backgroundColor: theme.pinkDark10,
+      color: theme.pinkDark12
     };
   }, "selectionStyles"),
   shorthands: {

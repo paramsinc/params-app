@@ -661,6 +661,42 @@ const profileMember = {
 
       return profileMembers
     }),
+  profileMembersBySlug: authedProcedure
+    .input(z.object({ profile_slug: z.string() }))
+    .query(async ({ ctx, input: { profile_slug } }) => {
+      // TODO merge into one query?
+      const profile = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.slug, profile_slug),
+      })
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile with slug "${profile_slug}" not found.`,
+        })
+      }
+
+      const profileMembers = await db.query.profileMembers
+        .findMany({
+          where: (profileMembers, { eq, and }) =>
+            and(eq(profileMembers.profile_id, profile.id)),
+          columns: publicSchema.profileMembers.ProfileMemberInternal,
+        })
+        .execute()
+
+      const amIMember = profileMembers.find(
+        (member) => member.user_id === ctx.auth.userId
+      )
+
+      if (!amIMember) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      return profileMembers
+    }),
 
   profileMembers_public: publicProcedure
     .input(z.object({ profile_id: z.string() }))
@@ -696,16 +732,31 @@ const repository = {
       inserts.repositories.pick({
         profile_id: true,
         slug: true,
-        name: true,
         github_url: true,
       })
     )
     .mutation(async ({ ctx, input }) => {
-      input.slug ??= ''
-      if (!isValidSlug(input.slug)) {
+      if (!input.slug || !isValidSlug(input.slug)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: `Invalid slug. Please use only lowercase letters, numbers, and dashes.`,
+        })
+      }
+
+      const isMemberOfProfile = await db.query.profileMembers
+        .findFirst({
+          where: (profileMembers, { eq, and }) =>
+            and(
+              eq(profileMembers.profile_id, input.profile_id),
+              eq(profileMembers.user_id, ctx.auth.userId)
+            ),
+        })
+        .execute()
+
+      if (!isMemberOfProfile) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
         })
       }
 

@@ -60,14 +60,14 @@ export const publicSchema = {
       id: true,
       profile_id: true,
       slug: true,
-      name: true,
       created_at: true,
       last_updated_at: true,
       github_url: true,
+      index: true,
     },
   },
 } satisfies Partial<{
   [table in keyof typeof selects]: {
-    [type: string]: Partial<Record<keyof Zod.infer<(typeof selects)[key]>, true>>
+    [t: string]: Partial<Record<keyof Zod.infer<(typeof selects)[table]>, true>>
   }
 }>

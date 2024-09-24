@@ -1,9 +1,12 @@
 import { Button, ButtonText } from 'app/ds/Button'
+import { LinkButton } from 'app/ds/Button/link'
+import { ErrorCard } from 'app/ds/Error/card'
 import { Page } from 'app/ds/Page'
 import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { Calcom } from 'app/features/cal-com/cal-com'
+import { UpdateProfileModal } from 'app/features/profile/update/modal'
 import {
   NewRepositoryModal,
   NewRepositoryModalContent,
@@ -47,15 +50,26 @@ function Content({ profileSlug }: { profileSlug: string }) {
     },
   })
   if (!profileQuery.data) {
-    return null
+    return <ErrorCard error={profileQuery.error} />
   }
   const profile = profileQuery.data
   return (
     <Calcom.Provider profileSlug={profileSlug}>
       <View gap="$4">
-        <View>
-          <Text bold>{profile.name}</Text>
-          <Text>@{profile.slug}</Text>
+        <View row jbtwn ai="center">
+          <View>
+            <Text bold>{profile.name}</Text>
+            <Text>@{profile.slug}</Text>
+          </View>
+
+          <UpdateProfileModal>
+            <UpdateProfileModal.Trigger>
+              <Button>
+                <ButtonText>Edit</ButtonText>
+              </Button>
+            </UpdateProfileModal.Trigger>
+            <UpdateProfileModal.Content profileSlug={profileSlug} />
+          </UpdateProfileModal>
         </View>
 
         <View h={2} bg="$borderColor" />
@@ -78,8 +92,14 @@ function Content({ profileSlug }: { profileSlug: string }) {
           {!!reposQuery.data?.length && (
             <View gap="$1">
               {reposQuery.data?.map((repo) => (
-                <View key={repo.id} p="$3" bg="$color1">
+                <View key={repo.id} p="$3" bg="$color1" row jbtwn ai="center">
                   <Text>{repo.slug}</Text>
+
+                  {!!repo.github_url && (
+                    <LinkButton href={repo.github_url} target="_blank">
+                      <ButtonText>View on GitHub</ButtonText>
+                    </LinkButton>
+                  )}
                 </View>
               ))}
             </View>

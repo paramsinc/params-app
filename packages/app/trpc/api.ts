@@ -606,10 +606,7 @@ const profileMember = {
       const myMembership = await db.query.profileMembers
         .findFirst({
           where: (profileMembers, { eq, and }) =>
-            and(
-              eq(profileMembers.id, ctx.auth.userId),
-              eq(profileMembers.profile_id, id)
-            ),
+            and(eq(profileMembers.user_id, ctx.auth.userId), eq(profileMembers.id, id)),
           columns: publicSchema.profileMembers.ProfileMemberInternal,
         })
         .execute()

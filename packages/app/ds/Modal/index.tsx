@@ -1,5 +1,6 @@
 import { createContext } from 'app/ds/createContext'
 import { Header } from 'app/ds/Header'
+import { Lucide } from 'app/ds/Lucide'
 import { Open, OpenTrigger, useOpen } from 'app/ds/Open'
 import { platform } from 'app/ds/platform'
 import { styled } from 'app/ds/styled'
@@ -98,13 +99,26 @@ export const ModalDialogHeader = styled(Header, {
   bg: '$backgroundStrong',
   px: '$2',
   fd: 'row',
-  height: 40,
+  height: headerHeight,
   ai: 'center',
 })
 
+const HeaderSmart = ({ title, button }: { title: string; button?: React.ReactNode }) => {
+  const { onOpenChange } = useModalState(undefined)
+  return (
+    <ModalDialogHeader>
+      <View>
+        <Lucide.X onPress={() => onOpenChange(false)} />
+      </View>
+      <View grow />
+      <ModalDialogHeaderTitle>{title}</ModalDialogHeaderTitle>
+      {button}
+    </ModalDialogHeader>
+  )
+}
 const ModalDialogHeaderTitleFrame = styled(Text, {
   bold: true,
-  lineHeight: 40,
+  lineHeight: headerHeight,
   center: true,
 })
 
@@ -126,5 +140,6 @@ export const Modal = withStaticProperties(Root, {
     Header: withStaticProperties(ModalDialogHeader, {
       Title: ModalDialogHeaderTitle,
     }),
+    HeaderSmart,
   }),
 })

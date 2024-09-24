@@ -1,6 +1,7 @@
 import { Button, ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { Empty, EmptyCard, EmptyCardDescription, EmptyCardTitle } from 'app/ds/Empty'
+import { ErrorCard } from 'app/ds/Error/card'
 import { Link } from 'app/ds/Link'
 import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
@@ -25,6 +26,17 @@ export function ProfilesListContent() {
       <NewProfileModalContent />
     </NewProfileModal>
   )
+
+  if (!myProfiles.data) {
+    return (
+      <Empty>
+        <EmptyCard>
+          <EmptyCardTitle>Loading profiles...</EmptyCardTitle>
+          <ErrorCard error={myProfiles.error} />
+        </EmptyCard>
+      </Empty>
+    )
+  }
 
   if (myProfiles.data?.length === 0) {
     return (

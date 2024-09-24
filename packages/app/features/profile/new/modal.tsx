@@ -3,8 +3,6 @@ import {
   ModalBackdrop,
   ModalContent,
   ModalDialog,
-  ModalDialogHeader,
-  ModalDialogHeaderTitle,
   ModalTrigger,
   useModalState,
 } from 'app/ds/Modal'
@@ -27,9 +25,7 @@ export const NewProfileModalContent = (
     <ModalContent id={id}>
       <ModalBackdrop id={id} />
       <ModalDialog>
-        <ModalDialogHeader>
-          <ModalDialogHeaderTitle>New Profile</ModalDialogHeaderTitle>
-        </ModalDialogHeader>
+        <Modal.Dialog.HeaderSmart title="New Profile" />
         <NewProfileForm
           {...props}
           onDidCreateProfile={() => {
@@ -45,6 +41,8 @@ export const NewProfileModalContent = (
   )
 }
 
-export const NewProfileModalTrigger = (props: React.ComponentProps<typeof ModalTrigger>) => {
+export const NewProfileModalTrigger = (
+  props: React.ComponentProps<typeof ModalTrigger>
+) => {
   return <ModalTrigger {...props} id={id} />
 }

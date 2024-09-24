@@ -3,8 +3,6 @@ import {
   ModalBackdrop,
   ModalContent,
   ModalDialog,
-  ModalDialogHeader,
-  ModalDialogHeaderTitle,
   ModalTrigger,
   useModalState,
 } from 'app/ds/Modal'
@@ -26,9 +24,7 @@ export const NewRepositoryModalContent = (
     <ModalContent id={id}>
       <ModalBackdrop id={id} />
       <ModalDialog>
-        <ModalDialogHeader>
-          <ModalDialogHeaderTitle>New Repository</ModalDialogHeaderTitle>
-        </ModalDialogHeader>
+        <Modal.Dialog.HeaderSmart title="New Repository" />
         <NewRepositoryForm
           {...props}
           onDidCreateRepository={() => {

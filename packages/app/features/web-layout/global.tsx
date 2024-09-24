@@ -8,7 +8,7 @@ import { View } from 'app/ds/View'
 export function GlobalWebLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Header py="$2" px="$3" bg="$color1" fd="row">
+      <Header ai="center" height={48} px="$3" bg="$color1" fd="row">
         <View w={100}></View>
         <View grow center>
           <Logo size={120} />

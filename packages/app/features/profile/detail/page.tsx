@@ -1,3 +1,4 @@
+import { Auth } from 'app/auth'
 import { Button, ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
@@ -6,6 +7,11 @@ import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { Calcom } from 'app/features/cal-com/cal-com'
+import {
+  ConnectAccountModal,
+  ConnectAccountModalContent,
+  ConnectAccountModalTrigger,
+} from 'app/features/profile/stripe/modal'
 import { UpdateProfileModal } from 'app/features/profile/update/modal'
 import {
   NewRepositoryModal,
@@ -37,9 +43,20 @@ export function ProfileDetailPage() {
 }
 
 function Content({ profileSlug }: { profileSlug: string }) {
+  const me = api.me.useQuery()
   const reposQuery = api.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
   const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
   const members = api.profileMembersBySlug.useQuery({ profile_slug: profileSlug })
+  const connectAccountQuery = api.profileConnectAccount.useQuery(
+    { profile_slug: profileSlug },
+    {
+      trpc: {
+        context: {
+          batch: false,
+        },
+      },
+    }
+  )
   const { toast } = useToast()
   const deleteProfileMember = api.deleteProfileMember.useMutation({
     onSuccess: () => {
@@ -88,7 +105,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
             </NewRepositoryModal>
           </View>
 
-          {reposQuery.data?.length === 0 && <Text>No repositories found</Text>}
+          {reposQuery.data?.length === 0 && (
+            <Text color="$color11">Add your first repository</Text>
+          )}
           {!!reposQuery.data?.length && (
             <View gap="$1">
               {reposQuery.data?.map((repo) => (
@@ -112,7 +131,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
             <Text bold>Members</Text>
           </View>
 
-          {members.data?.length === 0 && <Text>No members found</Text>}
+          {members.data?.length === 0 && (
+            <Text color="$color11">Add your first member</Text>
+          )}
           {!!members.data?.length && (
             <View gap="$1">
               {members.data?.map((member) => (
@@ -121,20 +142,63 @@ function Content({ profileSlug }: { profileSlug: string }) {
                     <Text>
                       {member.first_name} {member.last_name}
                     </Text>
+                    <Text color="$color11">{member.email}</Text>
                   </View>
+
                   <Button
                     theme="red"
-                    loading={deleteProfileMember.isPending}
+                    loading={
+                      deleteProfileMember.isPending &&
+                      deleteProfileMember.variables.id === member.id
+                    }
                     onPress={() => {
                       deleteProfileMember.mutate({ id: member.id })
                     }}
                   >
-                    <ButtonText>Remove</ButtonText>
+                    <ButtonText>
+                      {member.user_id === me.data?.id ? 'Leave' : 'Remove'}
+                    </ButtonText>
                   </Button>
                 </View>
               ))}
             </View>
           )}
+        </View>
+
+        <View h={2} bg="$borderColor" />
+        <View
+          gap="$3"
+          theme={
+            connectAccountQuery.data?.payouts_enabled === false
+              ? 'red'
+              : connectAccountQuery.data?.payouts_enabled === true
+              ? 'green'
+              : undefined
+          }
+        >
+          <View row ai="center" jbtwn>
+            <Text bold>Payouts</Text>
+
+            <ConnectAccountModal>
+              <ConnectAccountModalTrigger>
+                <Button
+                  themeInverse={connectAccountQuery.data?.payouts_enabled === false}
+                  loading={connectAccountQuery.isLoading}
+                >
+                  <ButtonText>Configure</ButtonText>
+                </Button>
+              </ConnectAccountModalTrigger>
+              <ConnectAccountModalContent profileSlug={profileSlug} />
+            </ConnectAccountModal>
+          </View>
+
+          {connectAccountQuery.data?.payouts_enabled === false ? (
+            <Text color="$color11">
+              You cannot receive payouts. Please complete your payment onboarding.
+            </Text>
+          ) : connectAccountQuery.data?.payouts_enabled === true ? (
+            <Text color="$color11">Payouts configured successfully.</Text>
+          ) : null}
         </View>
         {null && (
           <Calcom.AvailabilitySettings

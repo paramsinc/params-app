@@ -5046,6 +5046,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stripe/connect-js@npm:^3.3.13":
+  version: 3.3.13
+  resolution: "@stripe/connect-js@npm:3.3.13"
+  checksum: 10/e822c7da19bd26790167da8590bc7afb39d9cded7da6d593ff802ad85589ae7d6a653ed67c5180ac58e5f3395a24cff0b80c95a713737c0be1d8a1a936e7e512
+  languageName: node
+  linkType: hard
+
+"@stripe/react-connect-js@npm:^3.3.14":
+  version: 3.3.14
+  resolution: "@stripe/react-connect-js@npm:3.3.14"
+  peerDependencies:
+    "@stripe/connect-js": ">=3.3.13"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10/3c55ec987c3434d6f3fd3bfc19ea684659a47bb14bb5caa2af1055322ae54b993d7e71baee9c3c5a870791bf1ff388ba0470a59b147840d834a98de4453e4dd6
+  languageName: node
+  linkType: hard
+
 "@swc/core-darwin-arm64@npm:1.7.26":
   version: 1.7.26
   resolution: "@swc/core-darwin-arm64@npm:1.7.26"
@@ -7581,6 +7599,8 @@ __metadata:
     "@react-navigation/native": "npm:^6.1.7"
     "@react-navigation/native-stack": "npm:^6.9.13"
     "@shopify/flash-list": "npm:^1.7.1"
+    "@stripe/connect-js": "npm:^3.3.13"
+    "@stripe/react-connect-js": "npm:^3.3.14"
     "@tamagui/animations-css": "npm:1.111.6"
     "@tamagui/animations-moti": "npm:1.111.6"
     "@tamagui/colors": "npm:1.111.6"

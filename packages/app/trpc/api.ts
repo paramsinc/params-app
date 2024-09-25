@@ -507,6 +507,91 @@ const profile = {
 
       return calUser.data
     }),
+  allProfiles_admin: authedProcedure.query(async ({ ctx }) => {
+    // TODO admin
+    const profiles = await db.query.profiles.findMany({
+      columns: publicSchema.profiles.ProfileInternal,
+    })
+    return profiles
+  }),
+
+  profileConnectAccountSession: authedProcedure
+    .input(z.object({ profile_slug: z.string() }))
+    .query(async ({ ctx, input: { profile_slug } }) => {
+      const profile = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.slug, profile_slug),
+      })
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      const myMembership = await db.query.profileMembers
+        .findFirst({
+          where: (profileMembers, { eq, and }) =>
+            and(
+              eq(profileMembers.profile_id, profile.id),
+              eq(profileMembers.user_id, ctx.auth.userId)
+            ),
+        })
+        .execute()
+
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const accountSession = await stripe.accountSessions.create({
+        account: profile.stripe_connect_account_id,
+        components: {
+          account_onboarding: { enabled: true },
+          account_management: { enabled: true },
+        },
+      })
+
+      return accountSession
+    }),
+
+  profileConnectAccount: authedProcedure
+    .input(z.object({ profile_slug: z.string() }))
+    .query(async ({ ctx, input: { profile_slug } }) => {
+      const profile = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.slug, profile_slug),
+      })
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      const myMembership = await db.query.profileMembers
+        .findFirst({
+          where: (profileMembers, { eq, and }) =>
+            and(
+              eq(profileMembers.profile_id, profile.id),
+              eq(profileMembers.user_id, ctx.auth.userId)
+            ),
+        })
+        .execute()
+
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const account = await stripe.accounts.retrieve(profile.stripe_connect_account_id)
+
+      return account
+    }),
 }
 
 const profileMember = {

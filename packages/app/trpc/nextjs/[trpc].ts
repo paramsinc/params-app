@@ -6,4 +6,5 @@ import { createTrpcContext } from '../context'
 export default trpcNext.createNextApiHandler({
   router: appRouter,
   createContext: createTrpcContext,
+  allowBatching: true,
 })

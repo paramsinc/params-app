@@ -25,7 +25,21 @@ const run = async () => {
         email: `seed-data+${profileName.toLowerCase().replaceAll(' ', '_')}@params.com`,
         name: profileName,
       })
-      const stripeConnectAccountId = await stripe.accounts.create().then((res) => res.id)
+      const stripeConnectAccountId = await stripe.accounts
+        .create({
+          controller: {
+            stripe_dashboard: {
+              type: 'express',
+            },
+            fees: {
+              payer: 'application',
+            },
+            losses: {
+              payments: 'application',
+            },
+          },
+        })
+        .then((res) => res.id)
       return {
         name: profileName,
         slug: slugify(profileName),

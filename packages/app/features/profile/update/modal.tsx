@@ -13,7 +13,8 @@ import { ProfileUpdateForm } from 'app/features/profile/update/form'
 const id = 'profile-update-modal'
 
 const Content = (
-  props: Pick<React.ComponentProps<typeof ProfileUpdateForm>, 'profileSlug'>
+  props: Partial<React.ComponentProps<typeof ProfileUpdateForm>> &
+    Pick<React.ComponentProps<typeof ProfileUpdateForm>, 'profileSlug'>
 ) => {
   const { toast } = useToast()
   const { onOpenChange } = useModalState(id)
@@ -24,14 +25,16 @@ const Content = (
         <Modal.Dialog.HeaderSmart title="Update Profile" />
         <ProfileUpdateForm
           {...props}
-          onDidUpdateProfile={() => {
+          onDidUpdateProfile={(...args) => {
+            props.onDidUpdateProfile?.(...args)
             toast({
               title: 'Profile updated',
               preset: 'done',
             })
             onOpenChange(false)
           }}
-          onDidDeleteProfile={() => {
+          onDidDeleteProfile={(...args) => {
+            props.onDidDeleteProfile?.(...args)
             onOpenChange(false)
             toast({
               title: 'Profile deleted',

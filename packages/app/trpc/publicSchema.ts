@@ -20,11 +20,8 @@ export const publicSchema = {
       github_username: true,
       image_vendor: true,
       image_vendor_id: true,
-      cal_com_access_token: true,
-      cal_com_account_id: true,
       created_at: true,
       last_updated_at: true,
-      cal_com_refresh_token: true,
     },
     ProfilePublic: {
       id: true,

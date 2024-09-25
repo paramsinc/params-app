@@ -73,20 +73,25 @@ function Content({ profileSlug }: { profileSlug: string }) {
   return (
     <Calcom.Provider profileSlug={profileSlug}>
       <View gap="$4">
-        <View row jbtwn ai="center">
+        <View row jbtwn ai="center" flexWrap="wrap">
           <View>
             <Text bold>{profile.name}</Text>
             <Text>@{profile.slug}</Text>
           </View>
 
-          <UpdateProfileModal>
-            <UpdateProfileModal.Trigger>
-              <Button>
-                <ButtonText>Edit</ButtonText>
-              </Button>
-            </UpdateProfileModal.Trigger>
-            <UpdateProfileModal.Content profileSlug={profileSlug} />
-          </UpdateProfileModal>
+          <View row gap="$1">
+            <UpdateProfileModal>
+              <UpdateProfileModal.Trigger>
+                <Button>
+                  <ButtonText>Edit</ButtonText>
+                </Button>
+              </UpdateProfileModal.Trigger>
+              <UpdateProfileModal.Content profileSlug={profileSlug} />
+            </UpdateProfileModal>
+            <LinkButton href={`/@${profile.slug}`}>
+              <ButtonText>View Public Profile</ButtonText>
+            </LinkButton>
+          </View>
         </View>
 
         <View h={2} bg="$borderColor" />
@@ -105,9 +110,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
             </NewRepositoryModal>
           </View>
 
-          {reposQuery.data?.length === 0 && (
-            <Text color="$color11">Add your first repository</Text>
-          )}
+          {reposQuery.data?.length === 0 && <Text color="$color11">Add your first repository</Text>}
           {!!reposQuery.data?.length && (
             <View gap="$1">
               {reposQuery.data?.map((repo) => (
@@ -131,9 +134,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
             <Text bold>Members</Text>
           </View>
 
-          {members.data?.length === 0 && (
-            <Text color="$color11">Add your first member</Text>
-          )}
+          {members.data?.length === 0 && <Text color="$color11">Add your first member</Text>}
           {!!members.data?.length && (
             <View gap="$1">
               {members.data?.map((member) => (
@@ -155,9 +156,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
                       deleteProfileMember.mutate({ id: member.id })
                     }}
                   >
-                    <ButtonText>
-                      {member.user_id === me.data?.id ? 'Leave' : 'Remove'}
-                    </ButtonText>
+                    <ButtonText>{member.user_id === me.data?.id ? 'Leave' : 'Remove'}</ButtonText>
                   </Button>
                 </View>
               ))}

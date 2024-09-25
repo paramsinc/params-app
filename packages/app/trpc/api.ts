@@ -33,18 +33,18 @@ async function createUser(
   }
   let slug = baseSlug
   // should this throw and just say that the slug is taken?
-  while (await db.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
-    const maxSlugsCheck = 10
-    if (slugSearchCount >= maxSlugsCheck) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: `Couldn't create user, because the slug ${baseSlug} is already taken. Please try another one.`,
-      })
-    }
-    slugSearchCount++
-    slug = `${baseSlug}-${slugSearchCount}`
-  }
   const user = await db.transaction(async (tx) => {
+    while (await tx.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
+      const maxSlugsCheck = 10
+      if (slugSearchCount >= maxSlugsCheck) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Couldn't create user, because the slug ${baseSlug} is already taken. Please try another one.`,
+        })
+      }
+      slugSearchCount++
+      slug = `${baseSlug}-${slugSearchCount}`
+    }
     const [user] = await tx
       .insert(schema.users)
       .values({
@@ -68,7 +68,7 @@ async function createUser(
       })
     }
 
-    const addUserToProfilesWhereEmailMatches = await tx
+    await tx
       .update(schema.profileMembers)
       .set({
         user_id: user.id,
@@ -99,19 +99,24 @@ const user = {
   }),
   createMe: authedProcedure
     .input(
-      inserts.users.pick({ slug: true, first_name: true, last_name: true, email: true }).partial()
+      inserts.users
+        .pick({ slug: true, first_name: true, last_name: true, email: true })
+        .partial()
+        .optional()
     )
     .output(selects.users.pick(publicSchema.users.UserPublic))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input = {} }) => {
       const firstName = input.first_name ?? ctx.auth.userFirstName
       const lastName = input.last_name ?? ctx.auth.userLastName
       const email = input.email ?? ctx.auth.userEmail
+      console.log('[createMe]', firstName, lastName, email)
       if (!firstName || !lastName || !email) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: `Please provide your first name, last name, and email.`,
         })
       }
+      const baseSlug = input.slug ?? slugify([firstName, lastName].filter(Boolean).join(' '))
       const user = await createUser({
         first_name: firstName,
         last_name: lastName,
@@ -190,6 +195,19 @@ const calcomUserInsert = z
   .partial()
 
 const profile = {
+  isProfileSlugAvailable: authedProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input: { slug } }) => {
+      if (!slug || !isValidSlug(slug)) {
+        return false
+      }
+      const existingProfileBySlug = await db.query.profiles
+        .findFirst({
+          where: (profiles, { eq }) => eq(profiles.slug, slug),
+        })
+        .execute()
+      return !existingProfileBySlug
+    }),
   createProfile: authedProcedure
     .input(
       inserts.profiles
@@ -208,37 +226,37 @@ const profile = {
         input: { timeFormat, weekStart, timeZone, disableCreateMember, ...input },
         ctx,
       }) => {
-        const existingProfileBySlug = await db.query.profiles
-          .findFirst({
-            where: (profiles, { eq }) => eq(profiles.slug, input.slug),
-          })
-          .execute()
-
-        if (existingProfileBySlug) {
-          throw new TRPCError({
-            code: 'CONFLICT',
-            message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
-          })
-        }
-
-        const me = await db.query.users.findFirst({
-          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-        })
-
-        if (!me) {
-          throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: `Please complete creating your account.`,
-          })
-        }
-
-        const memberInsert = {
-          first_name: me.first_name,
-          last_name: me.last_name,
-          email: me.email,
-        }
-
         const { profile, member } = await db.transaction(async (tx) => {
+          const existingProfileBySlug = await tx.query.profiles
+            .findFirst({
+              where: (profiles, { eq }) => eq(profiles.slug, input.slug),
+            })
+            .execute()
+
+          if (existingProfileBySlug) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
+            })
+          }
+
+          const me = await tx.query.users.findFirst({
+            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+          })
+
+          if (!me) {
+            throw new TRPCError({
+              code: 'UNAUTHORIZED',
+              message: `Please complete creating your account.`,
+            })
+          }
+
+          const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
+            first_name: me.first_name,
+            last_name: me.last_name,
+            email: me.email,
+            user_id: me.id,
+          }
           const calcomUser = await tx.query.calcomUsers.findFirst({
             where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
           })
@@ -504,26 +522,33 @@ const profile = {
   profileConnectAccountSession: authedProcedure
     .input(z.object({ profile_slug: z.string() }))
     .query(async ({ ctx, input: { profile_slug } }) => {
-      const profile = await db.query.profiles.findFirst({
-        where: (profiles, { eq }) => eq(profiles.slug, profile_slug),
-      })
+      const [first] = await db
+        .select({
+          profile: pick('profiles', { stripe_connect_account_id: true }),
+          myMembership: pick('profileMembers', { id: true }),
+        })
+        .from(schema.profiles)
+        .innerJoin(
+          schema.profileMembers,
+          d.eq(schema.profileMembers.profile_id, schema.profiles.id)
+        )
+        .where(
+          d.and(
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId),
+            d.eq(schema.profiles.slug, profile_slug)
+          )
+        )
+        .limit(1)
+        .execute()
 
-      if (!profile) {
+      if (!first) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `Profile not found.`,
         })
       }
 
-      const myMembership = await db.query.profileMembers
-        .findFirst({
-          where: (profileMembers, { eq, and }) =>
-            and(
-              eq(profileMembers.profile_id, profile.id),
-              eq(profileMembers.user_id, ctx.auth.userId)
-            ),
-        })
-        .execute()
+      const { myMembership, profile } = first
 
       if (!myMembership) {
         throw new TRPCError({
@@ -537,6 +562,11 @@ const profile = {
         components: {
           account_onboarding: { enabled: true },
           account_management: { enabled: true },
+          payouts: { enabled: true },
+          payouts_list: { enabled: true },
+          balances: { enabled: true },
+          tax_registrations: { enabled: true },
+          payment_details: { enabled: true },
         },
       })
 

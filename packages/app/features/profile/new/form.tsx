@@ -43,7 +43,7 @@ export function NewProfileForm({
               render={({ field, fieldState }) => {
                 const nameValue = field.value
                 return (
-                  <>
+                  <View gap="$3">
                     <ProfileNameField
                       name={nameValue}
                       onChange={field.onChange}
@@ -64,7 +64,7 @@ export function NewProfileForm({
                         />
                       )}
                     />
-                  </>
+                  </View>
                 )
               }}
             />
@@ -80,6 +80,7 @@ export function NewProfileForm({
                 />
               )}
             />
+            <ErrorCard error={mutation.error} />
 
             <Form.Submit>
               {({ isSubmitting, handleSubmit }) => (
@@ -101,8 +102,6 @@ export function NewProfileForm({
             </Form.Submit>
           </Form.RootProvider>
         </View>
-
-        <ErrorCard error={mutation.error} />
       </Scroll>
     </View>
   )

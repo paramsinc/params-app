@@ -16,8 +16,8 @@ import { ReactElement, ReactNode } from 'react'
 import type { SolitoAppProps } from 'solito'
 import { TamaguiProvider } from 'app/ds/tamagui/provider'
 import { GlobalWebLayout } from 'app/features/web-layout/global'
-import localFont from 'next/font/local'
 import { DashboardLayout } from 'app/features/web-layout/dashboard'
+import { env } from 'app/env'
 
 if (process.env.NODE_ENV === 'production') {
   // require('../public/tamagui.css')
@@ -27,7 +27,7 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
 }
 
-const APP_NAME = 'Params'
+const { APP_NAME } = env
 
 function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   const getLayout = Component.getLayout || ((page) => page)

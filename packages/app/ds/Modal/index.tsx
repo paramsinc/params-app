@@ -107,11 +107,11 @@ const HeaderSmart = ({ title, button }: { title: string; button?: React.ReactNod
   const { onOpenChange } = useModalState(undefined)
   return (
     <ModalDialogHeader>
-      <View>
-        <Lucide.X onPress={() => onOpenChange(false)} />
+      <ModalDialogHeaderTitle>{title}</ModalDialogHeaderTitle>
+      <View onPress={() => onOpenChange(false)} cursor="pointer">
+        <Lucide.X />
       </View>
       <View grow />
-      <ModalDialogHeaderTitle>{title}</ModalDialogHeaderTitle>
       {button}
     </ModalDialogHeader>
   )
@@ -126,7 +126,7 @@ export const ModalDialogHeaderTitle = (
   props: React.ComponentProps<typeof ModalDialogHeaderTitleFrame>
 ) => {
   return (
-    <View stretch>
+    <View stretch zi={0} ai="center">
       <ModalDialogHeaderTitleFrame {...props} />
     </View>
   )

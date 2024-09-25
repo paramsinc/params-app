@@ -1,13 +1,7 @@
 'use client'
 import { makeAuth } from 'app/auth/make-auth'
 import { Clerk } from '@clerk/clerk-js'
-import {
-  ClerkProvider,
-  useAuth,
-  UserButton,
-  SignUpButton,
-  SignedOut,
-} from '@clerk/nextjs'
+import { ClerkProvider, useAuth, UserButton, SignUpButton, SignedOut } from '@clerk/nextjs'
 import { useLatestCallback } from 'app/helpers/use-latest-callback'
 import { env } from 'app/env'
 import { getConfig, getVariableValue } from 'tamagui'
@@ -59,7 +53,12 @@ export default makeAuth({
   },
   Provider({ children }) {
     return (
-      <ClerkProvider publishableKey={env.CLERK_PUBLISHABLE_KEY!} Clerk={clerk}>
+      <ClerkProvider
+        publishableKey={env.CLERK_PUBLISHABLE_KEY!}
+        Clerk={clerk}
+        signInFallbackRedirectUrl="/dashboard"
+        signUpFallbackRedirectUrl="/dashboard"
+      >
         {children}
       </ClerkProvider>
     )

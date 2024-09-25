@@ -11,7 +11,6 @@ import {
   NewProfileModalContent,
   NewProfileModalTrigger,
 } from 'app/features/profile/new/modal'
-import { UpdateProfileModal } from 'app/features/profile/update/modal'
 import { api } from 'app/trpc/client'
 
 export function ProfilesListContent() {
@@ -20,7 +19,7 @@ export function ProfilesListContent() {
     <NewProfileModal>
       <NewProfileModalTrigger>
         <Button themeInverse>
-          <ButtonText>New Profile</ButtonText>
+          <ButtonText>Create Profile</ButtonText>
         </Button>
       </NewProfileModalTrigger>
       <NewProfileModalContent />

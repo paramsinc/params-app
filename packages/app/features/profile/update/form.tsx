@@ -20,8 +20,10 @@ export function ProfileUpdateForm({
   onDidDeleteProfile,
 }: {
   profileSlug: string
-  onDidUpdateProfile: () => void
-  onDidDeleteProfile: () => void
+  onDidUpdateProfile: NonNullable<NonNullable<Parameters<typeof useMutation>[0]>['onSuccess']>
+  onDidDeleteProfile: NonNullable<
+    NonNullable<Parameters<typeof api.deleteProfile.useMutation>[0]>['onSuccess']
+  >
 }) {
   const mutation = useMutation({
     onSuccess: onDidUpdateProfile,
@@ -57,6 +59,7 @@ export function ProfileUpdateForm({
               name="slug"
               render={({ field, fieldState }) => (
                 <ProfileSlugField
+                  reservedSlug={profile.slug}
                   slug={field.value ?? profile.slug}
                   onChange={field.onChange}
                   error={fieldState.error}

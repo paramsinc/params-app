@@ -33,9 +33,7 @@ async function createUser(
   }
   let slug = baseSlug
   // should this throw and just say that the slug is taken?
-  while (
-    await db.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })
-  ) {
+  while (await db.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
     const maxSlugsCheck = 10
     if (slugSearchCount >= maxSlugsCheck) {
       throw new TRPCError({
@@ -101,9 +99,7 @@ const user = {
   }),
   createMe: authedProcedure
     .input(
-      inserts.users
-        .pick({ slug: true, first_name: true, last_name: true, email: true })
-        .partial()
+      inserts.users.pick({ slug: true, first_name: true, last_name: true, email: true }).partial()
     )
     .output(selects.users.pick(publicSchema.users.UserPublic))
     .mutation(async ({ ctx, input }) => {
@@ -131,9 +127,7 @@ const user = {
       return user
     }),
   updateMe: authedProcedure
-    .input(
-      inserts.users.partial().pick({ first_name: true, last_name: true, email: true })
-    )
+    .input(inserts.users.partial().pick({ first_name: true, last_name: true, email: true }))
     .mutation(async ({ ctx, input }) => {
       const [user] = await db
         .update(schema.users)
@@ -188,15 +182,7 @@ const calcomUserInsert = z
   .object({
     timeFormat: z.number().int(),
     weekStart: z
-      .enum([
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ])
+      .enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
       .optional(),
     timeZone: z.string(),
     disableCreateMember: z.boolean(),
@@ -253,19 +239,14 @@ const profile = {
         }
 
         const { profile, member } = await db.transaction(async (tx) => {
-          let calcom_user_id: number
-
-          const existingCalcomUserForMemberEmail = await tx.query.calcomUsers.findFirst({
+          const calcomUser = await tx.query.calcomUsers.findFirst({
             where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
           })
-          if (existingCalcomUserForMemberEmail) {
-            calcom_user_id = existingCalcomUserForMemberEmail.id
-          } else {
+          let calcom_user_id = calcomUser?.id
+          if (!calcom_user_id) {
             const createdCalcomUser = await createCalcomUser({
               email: memberInsert.email,
-              name: [memberInsert.first_name, memberInsert.last_name]
-                .filter(Boolean)
-                .join(' '),
+              name: [memberInsert.first_name, memberInsert.last_name].filter(Boolean).join(' '),
               timeFormat: (timeFormat as 12 | 24) ?? 12,
               weekStart,
               timeZone,
@@ -308,7 +289,10 @@ const profile = {
             .execute()
 
           if (!profile) {
-            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `Couldn't create profile.`,
+            })
           }
 
           // add this user as a member
@@ -321,10 +305,7 @@ const profile = {
                   profile_id: profile.id,
                 })
                 .returning(
-                  pick(
-                    'profileMembers',
-                    publicSchema.profileMembers.ProfileMemberInternal
-                  )
+                  pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal)
                 )
                 .execute()
 
@@ -399,10 +380,7 @@ const profile = {
       const profileMembers = await db.query.profileMembers
         .findMany({
           where: (profileMembers, { eq, and }) =>
-            and(
-              eq(profileMembers.profile_id, id),
-              eq(profileMembers.user_id, ctx.auth.userId)
-            ),
+            and(eq(profileMembers.profile_id, id), eq(profileMembers.user_id, ctx.auth.userId)),
         })
         .execute()
 
@@ -483,10 +461,7 @@ const profile = {
     const profiles = await db
       .select(pick('profiles', publicSchema.profiles.ProfileInternal))
       .from(schema.profiles)
-      .innerJoin(
-        schema.profileMembers,
-        d.eq(schema.profileMembers.profile_id, schema.profiles.id)
-      )
+      .innerJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
       .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
       .execute()
 
@@ -631,9 +606,7 @@ const profileMember = {
       const [profileMember] = await db
         .insert(schema.profileMembers)
         .values(input)
-        .returning(
-          pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal)
-        )
+        .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
         .execute()
 
       if (!profileMember) {
@@ -663,10 +636,7 @@ const profileMember = {
       const myMembership = await db.query.profileMembers
         .findFirst({
           where: (profileMembers, { eq, and }) =>
-            and(
-              eq(profileMembers.id, ctx.auth.userId),
-              eq(profileMembers.profile_id, id)
-            ),
+            and(eq(profileMembers.id, ctx.auth.userId), eq(profileMembers.profile_id, id)),
         })
         .execute()
 
@@ -681,9 +651,7 @@ const profileMember = {
         .update(schema.profileMembers)
         .set(patch)
         .where(d.eq(schema.profileMembers.id, id))
-        .returning(
-          pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal)
-        )
+        .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
         .execute()
 
       if (!profileMember) {
@@ -735,15 +703,12 @@ const profileMember = {
     .query(async ({ ctx, input: { profile_id } }) => {
       const profileMembers = await db.query.profileMembers
         .findMany({
-          where: (profileMembers, { eq, and }) =>
-            and(eq(profileMembers.profile_id, profile_id)),
+          where: (profileMembers, { eq, and }) => and(eq(profileMembers.profile_id, profile_id)),
           columns: publicSchema.profileMembers.ProfileMemberInternal,
         })
         .execute()
 
-      const amIMember = profileMembers.find(
-        (member) => member.user_id === ctx.auth.userId
-      )
+      const amIMember = profileMembers.find((member) => member.user_id === ctx.auth.userId)
 
       if (!amIMember) {
         throw new TRPCError({
@@ -771,15 +736,12 @@ const profileMember = {
 
       const profileMembers = await db.query.profileMembers
         .findMany({
-          where: (profileMembers, { eq, and }) =>
-            and(eq(profileMembers.profile_id, profile.id)),
+          where: (profileMembers, { eq, and }) => and(eq(profileMembers.profile_id, profile.id)),
           columns: publicSchema.profileMembers.ProfileMemberInternal,
         })
         .execute()
 
-      const amIMember = profileMembers.find(
-        (member) => member.user_id === ctx.auth.userId
-      )
+      const amIMember = profileMembers.find((member) => member.user_id === ctx.auth.userId)
 
       if (!amIMember) {
         throw new TRPCError({
@@ -796,8 +758,7 @@ const profileMember = {
     .query(async ({ input: { profile_id } }) => {
       const profileMembers = await db.query.profileMembers
         .findMany({
-          where: (profileMembers, { eq, and }) =>
-            and(eq(profileMembers.profile_id, profile_id)),
+          where: (profileMembers, { eq, and }) => and(eq(profileMembers.profile_id, profile_id)),
           columns: publicSchema.profileMembers.ProfileMemberPublic,
         })
         .execute()
@@ -877,10 +838,7 @@ const repository = {
           profile: pick('profiles', publicSchema.profiles.ProfilePublic),
         })
         .from(schema.repositories)
-        .innerJoin(
-          schema.profiles,
-          d.eq(schema.repositories.profile_id, schema.profiles.id)
-        )
+        .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
         .where(d.eq(schema.profiles.slug, profile_slug))
         .execute()
 
@@ -894,13 +852,11 @@ const calCom = {
     const calComUsers = await getCalcomUsers()
     return calComUsers
   }),
-  dcca: authedProcedure
-    .input(z.object({ userId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      const calComUser = await deleteCalcomAccount(input.userId)
+  dcca: authedProcedure.input(z.object({ userId: z.number() })).mutation(async ({ ctx, input }) => {
+    const calComUser = await deleteCalcomAccount(input.userId)
 
-      return calComUser
-    }),
+    return calComUser
+  }),
 }
 
 export const appRouter = router({

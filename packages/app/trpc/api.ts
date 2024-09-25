@@ -280,10 +280,10 @@ const profile = {
           let { calcom_user_id } = input
 
           if (calcom_user_id) {
+            const id = calcom_user_id
             const existingCalcomUser = await tx.query.calcomUsers.findFirst({
               where: (calcomUsers, { eq }) => eq(calcomUsers.id, id),
             })
-            const id = calcom_user_id
 
             if (!existingCalcomUser) {
               throw new TRPCError({
@@ -302,11 +302,13 @@ const profile = {
               })
             }
           } else {
-            const existingCalcomUser = await tx.query.calcomUsers.findFirst({
-              where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
-            })
-            if (existingCalcomUser) {
-              calcom_user_id = existingCalcomUser.id
+            const existingCalcomUserForMemberEmail = await tx.query.calcomUsers.findFirst(
+              {
+                where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
+              }
+            )
+            if (existingCalcomUserForMemberEmail) {
+              calcom_user_id = existingCalcomUserForMemberEmail.id
             } else {
               const createdCalcomUser = await createCalcomUser({
                 email: memberInsert.email,
@@ -333,6 +335,12 @@ const profile = {
                 })
                 .returning()
                 .execute()
+                .catch(async (e) => {
+                  // garbage collect the stale calcom user if db insertion fails
+                  await deleteCalcomAccount(createdCalcomUser.data.user.id)
+
+                  throw e
+                })
               calcom_user_id = createdCalcomUser.data.user.id
             }
           }
@@ -353,7 +361,6 @@ const profile = {
           }
 
           // add this user as a member
-
           const [member] = disableCreateMember
             ? []
             : await tx

@@ -3,7 +3,7 @@ import { env } from 'app/env'
 import { serverEnv } from 'app/env/env.server'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-export async function createCalcomUserAndInsertInDB({
+export async function createCalcomUser({
   email,
   name,
   timeFormat = 12,
@@ -94,39 +94,23 @@ async function createCalcomScheduleForAccount({
   }).then((res) => res.json())
 }
 
-/**
- * This should get exported.
- */
-export async function createCalcomAccountAndSchedule(
-  props: Parameters<typeof createCalcomUserAndInsertInDB>[0]
-) {
-  const calcomAccount = await createCalcomUserAndInsertInDB(props)
-
-  if (calcomAccount.status !== 'success') {
-    throw new Error(
-      'Failed to create cal account' + JSON.stringify(calcomAccount, null, 2)
-    )
-  }
-
-  return { calcomAccount }
-}
-
-export async function refreshCalcomTokenAndUpdateProfile(
+export async function refreshCalcomUserToken({
+  accessToken,
+}: {
   accessToken: string
-): Promise<{ accessToken: string } | null> {
+}): Promise<{ accessToken: string } | null> {
   console.log('[calcom][refreshToken][accessToken]', accessToken)
   console.log('[calcom][refreshToken][env]', env, '\n\n\n')
-  const profile = await db.query.profiles.findFirst({
+  const calcomUser = await db.query.calcomUsers.findFirst({
     where(fields, { eq }) {
-      return eq(fields.cal_com_access_token, accessToken)
+      return eq(fields.access_token, accessToken)
     },
   })
 
-  console.log('[calcom][refreshToken][profile]', profile)
+  console.log('[calcom][refreshToken][profile]', calcomUser)
 
-  if (!profile?.cal_com_refresh_token) {
-    console.error('User not found or refresh token missing')
-    return null
+  if (!calcomUser) {
+    throw new Error('Calcom user not found for the given access token')
   }
 
   // Make a request to Cal.com to refresh the token
@@ -139,14 +123,14 @@ export async function refreshCalcomTokenAndUpdateProfile(
         'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
       },
       body: JSON.stringify({
-        refreshToken: profile.cal_com_refresh_token,
+        refreshToken: calcomUser.refresh_token,
       }),
     }
   )
 
-  if (!response.ok && profile.cal_com_account_id != null) {
+  if (!response.ok && calcomUser.id != null) {
     response = await fetch(
-      `${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/users/${profile.cal_com_account_id}/force-refresh`,
+      `${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/users/${calcomUser.id}/force-refresh`,
       {
         method: 'POST',
         headers: {
@@ -173,12 +157,12 @@ export async function refreshCalcomTokenAndUpdateProfile(
 
   // Update the user's tokens in the database
   await db
-    .update(schema.profiles)
+    .update(schema.calcomUsers)
     .set({
-      cal_com_access_token: calResponse.data.accessToken,
-      cal_com_refresh_token: calResponse.data.refreshToken,
+      access_token: calResponse.data.accessToken,
+      refresh_token: calResponse.data.refreshToken,
     })
-    .where(d.eq(schema.profiles.id, profile.id))
+    .where(d.eq(schema.calcomUsers.id, calcomUser.id))
     .execute()
 
   return { accessToken: calResponse.data.accessToken }
@@ -253,7 +237,7 @@ export async function calcomRefreshToken_NextHandler(
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const result = await refreshCalcomTokenAndUpdateProfile(accessToken)
+  const result = await refreshCalcomUserToken({ accessToken })
 
   if (result) {
     return res.status(200).json({ accessToken: result.accessToken })

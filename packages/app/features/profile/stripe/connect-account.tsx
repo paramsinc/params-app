@@ -36,7 +36,7 @@ export function ConnectAccountContent(props: {
   )
 
   return (
-    <View grow overflow="auto">
+    <View grow style={{ overflowY: 'auto' }}>
       {/* <Scroll> */}
       {s}
       {/* </Scroll> */}

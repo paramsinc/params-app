@@ -36,6 +36,27 @@
       "when": 1727197358254,
       "tag": "0004_round_retro_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1727273537592,
+      "tag": "0005_lush_epoch",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1727274872692,
+      "tag": "0006_closed_changeling",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1727274959283,
+      "tag": "0007_acoustic_raza",
+      "breakpoints": true
     }
   ]
 }

@@ -43,9 +43,11 @@ export const profiles = pgTable('profiles', {
   image_vendor_id: text('image_vendor_id'),
   stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
 
-  cal_com_account_id: integer('cal_com_account_id'),
-  cal_com_access_token: text('cal_com_access_token'),
-  cal_com_refresh_token: text('cal_com_refresh_token'),
+  calcom_user_id: integer('calcom_user_id')
+    .references(() => calcomUsers.id, {
+      onDelete: 'restrict',
+    })
+    .notNull(),
 
   ...timestampMixin(),
 })
@@ -94,3 +96,11 @@ export const profileMembers = pgTable(
     uniqueUserIdForProfile: unique().on(table.profile_id, table.user_id),
   })
 )
+
+export const calcomUsers = pgTable('calcom_users', {
+  id: integer('id').primaryKey(),
+  access_token: text('access_token').notNull(),
+  refresh_token: text('refresh_token').notNull(),
+  email: text('email').unique().notNull(),
+  ...timestampMixin(),
+})

@@ -1,0 +1,1 @@
+ALTER TABLE "calcom_users" ALTER COLUMN "id" SET DATA TYPE integer;

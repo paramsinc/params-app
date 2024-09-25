@@ -7,6 +7,7 @@ import { TRPCError } from '@trpc/server'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
 import {
   createCalcomAccountAndSchedule,
+  createCalcomUserAndInsertInDB as createCalcomUser,
   deleteCalcomAccount,
   getCalcomUser,
   getCalcomUsers,
@@ -184,6 +185,25 @@ const user = {
     }),
 }
 
+const calcomUserInsert = z
+  .object({
+    timeFormat: z.number().int(),
+    weekStart: z
+      .enum([
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ])
+      .optional(),
+    timeZone: z.string(),
+    disableCreateMember: z.boolean(),
+  })
+  .partial()
+
 const profile = {
   createProfile: authedProcedure
     .input(
@@ -197,23 +217,13 @@ const profile = {
           image_vendor_id: true,
         })
         .merge(
-          z.object({
-            timeFormat: z.number().int().optional(),
-            weekStart: z
-              .enum([
-                'Monday',
-                'Tuesday',
-                'Wednesday',
-                'Thursday',
-                'Friday',
-                'Saturday',
-                'Sunday',
-              ])
-              .optional(),
-            timeZone: z.string().optional(),
-            disableCreateMember: z.boolean().optional(),
-          })
+          inserts.profiles
+            .pick({
+              calcom_user_id: true,
+            })
+            .partial()
         )
+        .merge(calcomUserInsert)
     )
     .mutation(
       async ({
@@ -267,17 +277,62 @@ const profile = {
           }
         }
 
-        const { calcomAccount } = await createCalcomAccountAndSchedule({
-          email: memberInsert.email,
-          name: [memberInsert.first_name, memberInsert.last_name]
-            .filter(Boolean)
-            .join(' '),
-          timeFormat: (timeFormat as 12 | 24) ?? 12,
-          weekStart,
-          timeZone,
-        })
-
         const { profile, member } = await db.transaction(async (tx) => {
+          let { calcom_user_id } = input
+
+          if (calcom_user_id) {
+            const id = calcom_user_id
+            const existingCalcomUser = await tx.query.calcomUsers.findFirst({
+              where: (calcomUsers, { eq }) => eq(calcomUsers.id, id),
+            })
+
+            if (!existingCalcomUser) {
+              throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: `You selected an invalid account to receive emails for events. The provided ID was ${id}.`,
+              })
+            }
+
+            // TODO should this check me.verifiedEmails in the future?
+            const hasPermission = memberInsert.email === existingCalcomUser.email
+
+            if (!hasPermission) {
+              throw new TRPCError({
+                code: 'UNAUTHORIZED',
+                message: `You do not have permission to access emails for the selected account. Please select a different calcom_user_id.`,
+              })
+            }
+          } else {
+            const createdCalcomUser = await createCalcomUser({
+              email: memberInsert.email,
+              name: [memberInsert.first_name, memberInsert.last_name]
+                .filter(Boolean)
+                .join(' '),
+              timeFormat: (timeFormat as 12 | 24) ?? 12,
+              weekStart,
+              timeZone,
+            })
+
+            if (createdCalcomUser.status !== 'success') {
+              throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: `Couldn't create your calendar account for ${memberInsert.email}. Please try again.`,
+              })
+            }
+
+            await tx
+              .insert(schema.calcomUsers)
+              .values({
+                id: createdCalcomUser.data.user.id,
+                email: createdCalcomUser.data.user.email,
+                access_token: createdCalcomUser.data.accessToken,
+                refresh_token: createdCalcomUser.data.refreshToken,
+              })
+              .returning()
+              .execute()
+
+            calcom_user_id = createdCalcomUser.data.user.id
+          }
           const [profile] = await tx
             .insert(schema.profiles)
             .values({
@@ -285,11 +340,7 @@ const profile = {
               stripe_connect_account_id: await stripe.accounts
                 .create()
                 .then((account) => account.id),
-              ...(calcomAccount.status === 'success' && {
-                cal_com_account_id: calcomAccount.data.user.id,
-                cal_com_access_token: calcomAccount.data.accessToken,
-                cal_com_refresh_token: calcomAccount.data.refreshToken,
-              }),
+              calcom_user_id,
             })
             .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
             .execute()

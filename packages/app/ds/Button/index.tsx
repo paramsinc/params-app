@@ -4,7 +4,6 @@ import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import { withStaticProperties } from 'app/ds/withStaticProperties'
 import { createStyledContext } from 'tamagui'
-import { useContext } from 'react'
 
 const height = 30
 
@@ -66,6 +65,7 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
 
 export const ButtonText = styled(Text, {
   // textDecorationLine: 'underline',
+  userSelect: 'none',
 
   lineHeight: height,
   bold: true,

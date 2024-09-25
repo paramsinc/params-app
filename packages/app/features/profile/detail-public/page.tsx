@@ -56,6 +56,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const loader =
     profile.image_vendor && imageLoader[profile.image_vendor as keyof typeof imageLoader]
   const repositories = fakeRepos.filter((repo) => repo.user_name === profile.name)
+  const repos = profile.repos
   return (
     <Calcom.Provider profileSlug={profileSlug}>
       <View gap="$4">
@@ -115,19 +116,19 @@ function Content({ profileSlug }: { profileSlug: string }) {
         <View gap="$3">
           <Text bold>Repositories</Text>
           <View gap="$1">
-            {repositories.map((template, i) => (
-              <View key={template.repo_name} p="$3" bg="$color2" gap="$3" bw={2} boc="$borderColor">
+            {repos.map((repo, i) => (
+              <View key={repo.id} p="$3" bg="$color2" gap="$3" bw={2} boc="$borderColor">
                 <View row gap="$3" ai="flex-start">
                   <View grow>
-                    <Text color="$color11">{`#${i.toString().padStart(3, '0')} `}</Text>
+                    <Text color="$color11">{`#${repo.index.toString().padStart(3, '0')} `}</Text>
                     <Text textDecorationLine="underline" textDecorationColor="transparent">
-                      <Text bold>{template.repo_name}</Text>{' '}
+                      <Text bold>{repo.slug}</Text>{' '}
                     </Text>
 
                     <TextLink href="https://twitter.com/fchollet" target="_blank">
                       <Text>
                         <Text gap="$1" color="$color11">
-                          by {template.user_name}
+                          by {profile.name}
                         </Text>
                       </Text>
                     </TextLink>

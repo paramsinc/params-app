@@ -430,18 +430,29 @@ const profile = {
       })
     )
     .query(async ({ input: { slug } }) => {
-      const publicProfile = await db.query.profiles
-        .findFirst({
-          where: (profiles, { eq }) => eq(profiles.slug, slug),
-          columns: publicSchema.profiles.ProfilePublic,
+      const profileRepoPairs = await db
+        .select({
+          ...pick('profiles', publicSchema.profiles.ProfilePublic),
+          repo: pick('repositories', publicSchema.repositories.RepositoryPublic),
         })
+        .from(schema.profiles)
+        .leftJoin(schema.repositories, d.eq(schema.repositories.profile_id, schema.profiles.id))
+        .where(d.eq(schema.profiles.slug, slug))
+        .limit(100)
         .execute()
-
-      if (!publicProfile) {
+      console.log('[q]', profileRepoPairs)
+      const repos = profileRepoPairs.map((p) => p.repo).filter(Boolean)
+      const [first] = profileRepoPairs
+      if (!first) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Profile not found.` })
       }
 
-      return publicProfile
+      const { repo: _, ...publicProfile } = first
+
+      return {
+        ...publicProfile,
+        repos,
+      }
     }),
   profileBySlug: authedProcedure
     .input(z.object({ slug: z.string() }))
@@ -510,6 +521,37 @@ const profile = {
       }
 
       return calUser.data
+    }),
+  calcomAccessTokenByProfileSlug: authedProcedure
+    .input(z.object({ profileSlug: z.string() }))
+    .query(async ({ ctx, input: { profileSlug } }) => {
+      const [first] = await db
+        .select({
+          calcomUser: pick('calcomUsers', { access_token: true }),
+          profile: pick('profiles', { slug: true, id: true }),
+          myMembership: pick('profileMembers', { id: true }),
+        })
+        .from(schema.profiles)
+        .where(d.eq(schema.profiles.slug, profileSlug))
+        .innerJoin(
+          schema.profileMembers,
+          d.and(
+            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId)
+          )
+        )
+        .innerJoin(schema.calcomUsers, d.eq(schema.calcomUsers.id, schema.profiles.calcom_user_id))
+        .limit(1)
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `You don't have access to this profile's cal account.`,
+        })
+      }
+
+      return first.calcomUser.access_token
     }),
   allProfiles_admin: authedProcedure.query(async ({ ctx }) => {
     // TODO admin

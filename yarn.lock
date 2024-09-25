@@ -6701,6 +6701,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@total-typescript/ts-reset@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "@total-typescript/ts-reset@npm:0.6.1"
+  checksum: 10/3e18063433c4667561b2a5ea6b698d95f8ca2cbecc7e3717b60f9266e2fd7070b2006cab0df255e60eaad5658d1cec4afc89ea4ca5645c8f36a312093bba3645
+  languageName: node
+  linkType: hard
+
 "@trpc-playground/html@npm:1.0.4":
   version: 1.0.4
   resolution: "@trpc-playground/html@npm:1.0.4"
@@ -17317,6 +17324,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "solito-blank@workspace:."
   dependencies:
+    "@total-typescript/ts-reset": "npm:^0.6.1"
     "@types/react": "npm:^18.2.21"
     "@typescript-eslint/eslint-plugin": "npm:^8.6.0"
     "@typescript-eslint/parser": "npm:^8.6.0"

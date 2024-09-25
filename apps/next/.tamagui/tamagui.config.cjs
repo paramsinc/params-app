@@ -46507,7 +46507,6 @@ var tamaguiConfig = createTamagui({
   themeClassNameOnRoot: true,
   mediaQueryDefaultActive,
   selectionStyles: /* @__PURE__ */ __name((theme) => {
-    console.log("[selectionStyles]", Object.keys(theme));
     return {
       backgroundColor: theme.pinkDark10,
       color: theme.pinkDark12

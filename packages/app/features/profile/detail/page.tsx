@@ -2,7 +2,10 @@ import { Auth } from 'app/auth'
 import { Button, ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
+import { Modal } from 'app/ds/Modal'
+import { Open, OpenContent, OpenTrigger } from 'app/ds/Open'
 import { Page } from 'app/ds/Page'
+import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
@@ -199,30 +202,49 @@ function Content({ profileSlug }: { profileSlug: string }) {
             <Text color="$color11">Payouts configured successfully.</Text>
           ) : null}
         </View>
-        {null && (
-          <Calcom.AvailabilitySettings
-            enableOverrides={true}
-            customClassNames={{
-              subtitlesClassName: 'text-red-500',
-              ctaClassName: 'border p-4 rounded-md',
-              editableHeadingClassName: 'underline font-semibold',
-            }}
-            onUpdateSuccess={() => {
-              console.log('Updated successfully')
-            }}
-            onUpdateError={() => {
-              console.log('update error')
-            }}
-            onDeleteError={() => {
-              console.log('delete error')
-            }}
-            onDeleteSuccess={() => {
-              console.log('Deleted successfully')
-            }}
-          />
-        )}
+        <View h={2} bg="$borderColor" />
+        <Open>
+          <View row ai="center" jbtwn>
+            <View grow>
+              <Text>Calendar Settings</Text>
+              <Text color="$color11">
+                Sync Google Calendar, block off dates, and set your availability.
+              </Text>
+            </View>
+            <OpenTrigger>
+              <Button>
+                <ButtonText>Settings</ButtonText>
+              </Button>
+            </OpenTrigger>
+          </View>
+          <OpenContent>
+            {true && <Calcom.CalendarSettings />}
+            <Calcom.Connect.Google />
+            {true && (
+              <Calcom.AvailabilitySettings
+                enableOverrides={true}
+                customClassNames={{
+                  subtitlesClassName: 'text-red-500',
+                  ctaClassName: 'border p-4 rounded-md',
+                  editableHeadingClassName: 'underline font-semibold',
+                }}
+                onUpdateSuccess={() => {
+                  console.log('Updated successfully')
+                }}
+                onUpdateError={() => {
+                  console.log('update error')
+                }}
+                onDeleteError={() => {
+                  console.log('delete error')
+                }}
+                onDeleteSuccess={() => {
+                  console.log('Deleted successfully')
+                }}
+              />
+            )}
+          </OpenContent>
+        </Open>
       </View>
-      {null && <Calcom.CalendarSettings />}
     </Calcom.Provider>
   )
 }

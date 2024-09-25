@@ -20,7 +20,9 @@ setupDev({
  */
 
 const themes =
-  process.env.TAMAGUI_TARGET !== 'web' || process.env.TAMAGUI_IS_SERVER || process.env.STORYBOOK
+  process.env.TAMAGUI_TARGET !== 'web' ||
+  process.env.TAMAGUI_IS_SERVER ||
+  process.env.STORYBOOK
     ? themesNew
     : ({} as typeof themesNew)
 
@@ -33,7 +35,6 @@ export const tamaguiConfig = createTamagui({
   themeClassNameOnRoot: true,
   mediaQueryDefaultActive,
   selectionStyles: (theme) => {
-    console.log('[selectionStyles]', Object.keys(theme))
     return {
       backgroundColor: theme.pinkDark10,
       color: theme.pinkDark12,

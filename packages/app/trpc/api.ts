@@ -215,13 +215,6 @@ const profile = {
           image_vendor: true,
           image_vendor_id: true,
         })
-        .merge(
-          inserts.profiles
-            .pick({
-              calcom_user_id: true,
-            })
-            .partial()
-        )
         .merge(calcomUserInsert)
     )
     .mutation(
@@ -242,108 +235,66 @@ const profile = {
           })
         }
 
-        let memberInsert:
-          | Pick<
-              z.infer<typeof inserts.profileMembers>,
-              'email' | 'first_name' | 'last_name' | 'user_id'
-            >
-          | undefined
+        const me = await db.query.users.findFirst({
+          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+        })
 
-        if (ctx.auth.userEmail && ctx.auth.userFirstName && ctx.auth.userLastName) {
-          memberInsert = {
-            email: ctx.auth.userEmail,
-            first_name: ctx.auth.userFirstName,
-            last_name: ctx.auth.userLastName,
-            user_id: ctx.auth.userId,
-          }
-        } else {
-          const me = await db.query.users.findFirst({
-            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+        if (!me) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: `Please complete creating your account.`,
           })
+        }
 
-          if (!me) {
-            throw new TRPCError({
-              code: 'UNAUTHORIZED',
-              message: `Please complete creating your account.`,
-            })
-          }
-
-          memberInsert = {
-            email: me.email,
-            first_name: me.first_name,
-            last_name: me.last_name,
-            user_id: me.id,
-          }
+        const memberInsert = {
+          first_name: me.first_name,
+          last_name: me.last_name,
+          email: me.email,
         }
 
         const { profile, member } = await db.transaction(async (tx) => {
-          let { calcom_user_id } = input
+          let calcom_user_id: number
 
-          if (calcom_user_id) {
-            const id = calcom_user_id
-            const existingCalcomUser = await tx.query.calcomUsers.findFirst({
-              where: (calcomUsers, { eq }) => eq(calcomUsers.id, id),
-            })
-
-            if (!existingCalcomUser) {
-              throw new TRPCError({
-                code: 'NOT_FOUND',
-                message: `You selected an invalid account to receive emails for events. The provided ID was "${id}".`,
-              })
-            }
-
-            // TODO should this check me.verifiedEmails in the future?
-            const hasPermission = memberInsert.email === existingCalcomUser.email
-
-            if (!hasPermission) {
-              throw new TRPCError({
-                code: 'UNAUTHORIZED',
-                message: `You do not have permission to access emails for the selected account. Please select a different calendar user ID for ${memberInsert.email}.`,
-              })
-            }
+          const existingCalcomUserForMemberEmail = await tx.query.calcomUsers.findFirst({
+            where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
+          })
+          if (existingCalcomUserForMemberEmail) {
+            calcom_user_id = existingCalcomUserForMemberEmail.id
           } else {
-            const existingCalcomUserForMemberEmail = await tx.query.calcomUsers.findFirst(
-              {
-                where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
-              }
-            )
-            if (existingCalcomUserForMemberEmail) {
-              calcom_user_id = existingCalcomUserForMemberEmail.id
-            } else {
-              const createdCalcomUser = await createCalcomUser({
-                email: memberInsert.email,
-                name: [memberInsert.first_name, memberInsert.last_name]
-                  .filter(Boolean)
-                  .join(' '),
-                timeFormat: (timeFormat as 12 | 24) ?? 12,
-                weekStart,
-                timeZone,
+            const createdCalcomUser = await createCalcomUser({
+              email: memberInsert.email,
+              name: [memberInsert.first_name, memberInsert.last_name]
+                .filter(Boolean)
+                .join(' '),
+              timeFormat: (timeFormat as 12 | 24) ?? 12,
+              weekStart,
+              timeZone,
+            })
+            if (createdCalcomUser.status !== 'success') {
+              throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: `Couldn't create your calendar account for ${memberInsert.email}. Please try again.`,
               })
-              if (createdCalcomUser.status !== 'success') {
-                throw new TRPCError({
-                  code: 'INTERNAL_SERVER_ERROR',
-                  message: `Couldn't create your calendar account for ${memberInsert.email}. Please try again.`,
-                })
-              }
-              await tx
-                .insert(schema.calcomUsers)
-                .values({
-                  id: createdCalcomUser.data.user.id,
-                  email: createdCalcomUser.data.user.email,
-                  access_token: createdCalcomUser.data.accessToken,
-                  refresh_token: createdCalcomUser.data.refreshToken,
-                })
-                .returning()
-                .execute()
-                .catch(async (e) => {
-                  // garbage collect the stale calcom user if db insertion fails
-                  await deleteCalcomAccount(createdCalcomUser.data.user.id)
-
-                  throw e
-                })
-              calcom_user_id = createdCalcomUser.data.user.id
             }
+            await tx
+              .insert(schema.calcomUsers)
+              .values({
+                id: createdCalcomUser.data.user.id,
+                email: createdCalcomUser.data.user.email,
+                access_token: createdCalcomUser.data.accessToken,
+                refresh_token: createdCalcomUser.data.refreshToken,
+              })
+              .returning()
+              .execute()
+              .catch(async (e) => {
+                // garbage collect the stale calcom user if db insertion fails
+                await deleteCalcomAccount(createdCalcomUser.data.user.id)
+
+                throw e
+              })
+            calcom_user_id = createdCalcomUser.data.user.id
           }
+
           const [profile] = await tx
             .insert(schema.profiles)
             .values({
@@ -472,9 +423,7 @@ const profile = {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Profile not found.` })
       }
 
-      if (profile.cal_com_account_id) {
-        await deleteCalcomAccount(profile.cal_com_account_id)
-      }
+      await deleteCalcomAccount(profile.calcom_user_id)
 
       return true
     }),
@@ -530,6 +479,7 @@ const profile = {
       return profile
     }),
   myProfiles: authedProcedure.query(async ({ ctx }) => {
+    console.log('[myProfiles]', ctx)
     const profiles = await db
       .select(pick('profiles', publicSchema.profiles.ProfileInternal))
       .from(schema.profiles)
@@ -550,14 +500,14 @@ const profile = {
         where: (profiles, { eq }) => eq(profiles.slug, profileSlug),
       })
 
-      if (!profile?.cal_com_account_id) {
+      if (!profile?.calcom_user_id) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `Profile not found.`,
         })
       }
 
-      const calUser = await getCalcomUser(profile.cal_com_account_id)
+      const calUser = await getCalcomUser(profile.calcom_user_id)
 
       if (calUser.status !== 'success') {
         throw new TRPCError({

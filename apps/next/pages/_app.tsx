@@ -44,6 +44,14 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
         <meta name="description" content={APP_NAME} />
         <link rel="icon" href="/favicon.svg" />
       </Head>
+      <style jsx global>
+        {`
+          body {
+            background-color: var(--color1);
+            font-family: var(--f-family);
+          }
+        `}
+      </style>
       <ThemeProvider>
         <TamaguiProvider>
           <Provider>
@@ -53,14 +61,6 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
           </Provider>
         </TamaguiProvider>
       </ThemeProvider>
-      <style jsx global>
-        {`
-          body {
-            background-color: var(--color1);
-            font-family: var(--f-family);
-          }
-        `}
-      </style>
     </div>
   )
 }

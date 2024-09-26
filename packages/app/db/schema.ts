@@ -1,22 +1,14 @@
-import {
-  integer,
-  pgTable,
-  text,
-  timestamp,
-  unique,
-  pgEnum,
-  serial,
-} from 'drizzle-orm/pg-core'
+import { integer, pgTable, text, timestamp, unique, pgEnum, serial } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 import { ulid } from 'ulid'
 
 const timestampMixin = () => {
   return {
-    created_at: timestamp('created_at').defaultNow(),
-    last_updated_at: timestamp('updated_at')
+    created_at: timestamp('created_at', { mode: 'string' }).defaultNow(),
+    last_updated_at: timestamp('updated_at', { mode: 'string' })
       .notNull()
       .defaultNow()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => new Date().toISOString()),
   }
 }
 

@@ -5064,6 +5064,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stripe/react-stripe-js@npm:^2.8.0":
+  version: 2.8.0
+  resolution: "@stripe/react-stripe-js@npm:2.8.0"
+  dependencies:
+    prop-types: "npm:^15.7.2"
+  peerDependencies:
+    "@stripe/stripe-js": ^1.44.1 || ^2.0.0 || ^3.0.0 || ^4.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 10/8ed79034f872a12b6ef5197350292aed06f7defa27209f208fe3b4c7bed99ec6805156abdcd5232fa2b87eb4db841f140b4ea166e791727711f17eec568851fd
+  languageName: node
+  linkType: hard
+
+"@stripe/stripe-js@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "@stripe/stripe-js@npm:4.5.0"
+  checksum: 10/75e742578b2afb49226ffa5bf04fae051b83be2a974da4269b226d840e81809d99d9d3b0c2e8080d0c14c11039e0ffd2718a107a56b1251bb0e9f00db2228902
+  languageName: node
+  linkType: hard
+
 "@swc/core-darwin-arm64@npm:1.7.26":
   version: 1.7.26
   resolution: "@swc/core-darwin-arm64@npm:1.7.26"
@@ -7608,6 +7628,8 @@ __metadata:
     "@shopify/flash-list": "npm:^1.7.1"
     "@stripe/connect-js": "npm:^3.3.13"
     "@stripe/react-connect-js": "npm:^3.3.14"
+    "@stripe/react-stripe-js": "npm:^2.8.0"
+    "@stripe/stripe-js": "npm:^4.5.0"
     "@tamagui/animations-css": "npm:1.111.6"
     "@tamagui/animations-moti": "npm:1.111.6"
     "@tamagui/colors": "npm:1.111.6"

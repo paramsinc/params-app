@@ -15,6 +15,8 @@
     "@shopify/flash-list": "^1.7.1",
     "@stripe/connect-js": "^3.3.13",
     "@stripe/react-connect-js": "^3.3.14",
+    "@stripe/react-stripe-js": "^2.8.0",
+    "@stripe/stripe-js": "^4.5.0",
     "@tamagui/animations-css": "1.111.6",
     "@tamagui/animations-moti": "1.111.6",
     "@tamagui/colors": "1.111.6",

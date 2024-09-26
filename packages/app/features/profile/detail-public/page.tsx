@@ -1,7 +1,7 @@
 import { Button, ButtonText } from 'app/ds/Button'
 import { Image } from 'app/ds/Image'
 import { Lucide } from 'app/ds/Lucide'
-import { Modal, ModalBackdrop, ModalContent, ModalTrigger } from 'app/ds/Modal'
+import { Modal, ModalBackdrop, ModalContent, ModalDialog, ModalTrigger } from 'app/ds/Modal'
 import { Page } from 'app/ds/Page'
 import { styled } from 'app/ds/styled'
 import { Text } from 'app/ds/Text'
@@ -17,6 +17,12 @@ import { getConfig } from 'tamagui'
 import { Highlight, themes } from 'prism-react-renderer'
 import { LinkButton } from 'app/ds/Button/link'
 import img from './fch.png'
+import { platform } from 'app/ds/platform'
+import * as linking from 'expo-linking'
+import { env } from 'app/env'
+import { useState } from 'app/react'
+import { StripeCheckout } from 'app/features/stripe-connect/checkout/checkout'
+import { Scroll } from 'app/ds/Scroll'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -34,19 +40,11 @@ export function ProfileDetailPublicPage() {
   )
 }
 
-console.log('[tamagui-config]', getConfig())
-
 function Content({ profileSlug }: { profileSlug: string }) {
   const profileQuery = api.profileBySlug_public.useQuery(
-    { slug: profileSlug },
+    { profile_slug: profileSlug },
     {
       enabled: !!profileSlug,
-    }
-  )
-  const calUserQuery = api.calUserByProfileSlug.useQuery(
-    { profileSlug },
-    {
-      enabled: false && !!profileSlug, // this will be orgs
     }
   )
   if (!profileQuery.data) {
@@ -55,120 +53,151 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const profile = profileQuery.data
   const loader =
     profile.image_vendor && imageLoader[profile.image_vendor as keyof typeof imageLoader]
-  const repositories = fakeRepos.filter((repo) => repo.user_name === profile.name)
   const repos = profile.repos
   return (
-    <Calcom.Provider profileSlug={profileSlug}>
-      <View gap="$4">
-        <View gap="$3" $gtMd={{ row: true }}>
-          <View $gtMd={{ grow: true }}>
-            <View aspectRatio={16 / 9} bg="$borderColor">
-              {!!loader && !!profile.image_vendor_id && (
-                <Image
-                  fill
-                  // loader={loader}
-                  src={img}
-                  alt={profile.name}
-                  contentFit="cover"
-                />
-              )}
-              <View stretch center>
-                <View br="$rounded" box={75} bg="white" center pl={2}>
-                  <Lucide.Play color="black" size={29} />
-                </View>
+    <View gap="$4">
+      <View gap="$3" $gtMd={{ row: true }}>
+        <View $gtMd={{ grow: true }}>
+          <View aspectRatio={16 / 9} bg="$borderColor">
+            {!!loader && !!profile.image_vendor_id && (
+              <Image
+                fill
+                // loader={loader}
+                src={img}
+                alt={profile.name}
+                contentFit="cover"
+              />
+            )}
+            <View stretch center>
+              <View br="$rounded" box={75} bg="white" center pl={2}>
+                <Lucide.Play color="black" size={29} />
               </View>
-            </View>
-          </View>
-          <View $gtMd={{ width: '40%' }} gap="$4">
-            <View>
-              <Text bold fontSize={24} fontFamily="$body">
-                {profile.name}
-              </Text>
-            </View>
-
-            <Modal>
-              <ModalTrigger>
-                <Button themeInverse>
-                  <ButtonText>Book a Call ($425+)</ButtonText>
-                </Button>
-              </ModalTrigger>
-              <ModalContent>
-                <ModalBackdrop />
-                <View pointerEvents="box-none" grow center>
-                  {calUserQuery.data && (
-                    <Calcom.Booker
-                      eventSlug="sixty-minutes-video"
-                      username={calUserQuery.data?.username}
-                    />
-                  )}
-                </View>
-              </ModalContent>
-            </Modal>
-            <View gap="$3">
-              <Text color="$color11" bold>
-                About
-              </Text>
-              <Text>{profile.bio}</Text>
             </View>
           </View>
         </View>
+        <View $gtMd={{ width: '40%' }} gap="$4">
+          <View>
+            <Text bold fontSize={24} fontFamily="$body">
+              {profile.name}
+            </Text>
+          </View>
 
-        <View gap="$3">
-          <Text bold>Repositories</Text>
-          <View gap="$1">
-            {repos.map((repo, i) => (
-              <View key={repo.id} p="$3" bg="$color2" gap="$3" bw={2} boc="$borderColor">
-                <View row gap="$3" ai="flex-start">
-                  <View grow>
-                    <Text color="$color11">{`#${repo.index.toString().padStart(3, '0')} `}</Text>
-                    <Text textDecorationLine="underline" textDecorationColor="transparent">
-                      <Text bold>{repo.slug}</Text>{' '}
-                    </Text>
-
-                    <TextLink href="https://twitter.com/fchollet" target="_blank">
-                      <Text>
-                        <Text gap="$1" color="$color11">
-                          by {profile.name}
-                        </Text>
-                      </Text>
-                    </TextLink>
-                  </View>
-                  <View>
-                    <LinkButton href="https://github.com/fchollet" target="_blank" als="flex-start">
-                      <ButtonText>view code on github</ButtonText>
-                    </LinkButton>
-                  </View>
-                </View>
-                <Highlight
-                  theme={themes.shadesOfPurple}
-                  code={`import wandb
-from wandb.integration.keras import WandbMetricsLogger, WandbModelCheckpoint
-​
-wandb.login()`}
-                  language="python"
-                >
-                  {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                    <pre style={{ ...style, padding: '8px 0', maxWidth: 800, display: 'none' }}>
-                      {tokens.map((line, i) => (
-                        <div key={i} {...getLineProps({ line })}>
-                          <span style={{ width: 30, display: 'inline-block', paddingLeft: 6 }}>
-                            {i + 1}
-                          </span>
-                          {line.map((token, key) => (
-                            <span key={key} {...getTokenProps({ token })} />
-                          ))}
-                        </div>
-                      ))}
-                    </pre>
-                  )}
-                </Highlight>
-              </View>
-            ))}
+          <CreateBooking profileSlug={profileSlug} />
+          <View gap="$3">
+            <Text color="$color11" bold>
+              About
+            </Text>
+            <Text>{profile.bio}</Text>
           </View>
         </View>
       </View>
-    </Calcom.Provider>
+
+      <View gap="$3">
+        <Text bold>Repositories</Text>
+        <View gap="$1">
+          {repos.map((repo, i) => (
+            <View key={repo.id} p="$3" bg="$color2" gap="$3" bw={2} boc="$borderColor">
+              <View row gap="$3" ai="flex-start">
+                <View grow>
+                  <Text color="$color11">{`#${repo.index.toString().padStart(3, '0')} `}</Text>
+                  <Text textDecorationLine="underline" textDecorationColor="transparent">
+                    <Text bold>{repo.slug}</Text>{' '}
+                  </Text>
+
+                  <Text>
+                    <Text gap="$1" color="$color11">
+                      by {profile.name}
+                    </Text>
+                  </Text>
+                </View>
+                {!!repo.github_url && (
+                  <View>
+                    <LinkButton href={repo.github_url} target="_blank" als="flex-start">
+                      <ButtonText>view code on github</ButtonText>
+                    </LinkButton>
+                  </View>
+                )}
+              </View>
+              <Highlight
+                theme={themes.shadesOfPurple}
+                code={`import wandb
+from wandb.integration.keras import WandbMetricsLogger, WandbModelCheckpoint
+​
+wandb.login()`}
+                language="python"
+              >
+                {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                  <pre style={{ ...style, padding: '8px 0', maxWidth: 800, display: 'none' }}>
+                    {tokens.map((line, i) => (
+                      <div key={i} {...getLineProps({ line })}>
+                        <span style={{ width: 30, display: 'inline-block', paddingLeft: 6 }}>
+                          {i + 1}
+                        </span>
+                        {line.map((token, key) => (
+                          <span key={key} {...getTokenProps({ token })} />
+                        ))}
+                      </div>
+                    ))}
+                  </pre>
+                )}
+              </Highlight>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
   )
 }
 
-const Main = styled(View, {})
+// TODO make this a page
+const CreateBooking = ({ profileSlug }: { profileSlug: string }) => {
+  const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
+  const sessionMutation = api.createProfileCheckoutSession.useMutation()
+  const profile = profileQuery.data
+  const clientSecret = sessionMutation.data?.clientSecret
+  return (
+    <Modal
+      open={clientSecret != null}
+      onOpenChange={(next) => {
+        if (!next) {
+          sessionMutation.reset()
+        }
+      }}
+    >
+      <Button
+        themeInverse
+        loading={sessionMutation.isPending}
+        disabled={!profile}
+        onPress={() => {
+          if (!profile) {
+            return
+          }
+          const route = `/booking-checkout/success?session_id={CHECKOUT_SESSION_ID}`
+          sessionMutation.mutate({
+            profile_id: profile.id,
+            return_success_url:
+              platform.OS === 'web'
+                ? `${window.location.origin}${route}`
+                : `https://${env.APP_URL}${route}`,
+          })
+        }}
+      >
+        <ButtonText>Book a Call ($425+)</ButtonText>
+      </Button>
+      <ModalContent>
+        <ModalBackdrop />
+        <ModalDialog>
+          <Modal.Dialog.HeaderSmart title="Book a Call" />
+          <Scroll>
+            <StripeCheckout clientSecret={clientSecret} />
+          </Scroll>
+        </ModalDialog>
+        {/* <View pointerEvents="box-none" grow center>
+          {calUserQuery.data && (
+            <Calcom.Booker eventSlug="sixty-minutes-video" username={calUserQuery.data?.username} />
+          )}
+        </View> */}
+      </ModalContent>
+    </Modal>
+  )
+}

@@ -426,10 +426,10 @@ const profile = {
   profileBySlug_public: publicProcedure
     .input(
       z.object({
-        slug: z.string(),
+        profile_slug: z.string(),
       })
     )
-    .query(async ({ input: { slug } }) => {
+    .query(async ({ input: { profile_slug: slug } }) => {
       const profileRepoPairs = await db
         .select({
           ...pick('profiles', publicSchema.profiles.ProfilePublic),
@@ -931,6 +931,71 @@ const calCom = {
   }),
 }
 
+const profileBookings = {
+  createProfileCheckoutSession: authedProcedure
+    .input(z.object({ profile_id: z.string(), return_success_url: z.string() }))
+    .mutation(async ({ ctx, input: { profile_id, return_success_url: return_url } }) => {
+      const profile = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.id, profile_id),
+      })
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      const unit_amount = 10_00 // TODO pull from a plan or something
+      const application_fee_amount = 123 // TODO calculate
+
+      const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `${profile.name} booking`,
+              },
+              unit_amount,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        ui_mode: 'embedded',
+        return_url,
+        payment_intent_data: {
+          application_fee_amount,
+          transfer_data: {
+            destination: profile.stripe_connect_account_id,
+          },
+        },
+      })
+
+      if (!session.client_secret) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Couldn't create checkout session.`,
+        })
+      }
+
+      return {
+        clientSecret: session.client_secret,
+      }
+    }),
+  stripeCheckoutSession: publicProcedure
+    .input(z.object({ session_id: z.string() }))
+    .query(async ({ input: { session_id } }) => {
+      const session = await stripe.checkout.sessions.retrieve(session_id)
+      const customer =
+        typeof session.customer === 'string'
+          ? await stripe.customers.retrieve(session.customer)
+          : null
+      return { session, customer }
+    }),
+}
+
 export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
@@ -941,6 +1006,7 @@ export const appRouter = router({
   ...profileMember,
   ...calCom,
   ...repository,
+  ...profileBookings,
 })
 
 export type AppRouter = typeof appRouter

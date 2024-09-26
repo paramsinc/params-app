@@ -1,5 +1,13 @@
 import { z } from 'zod'
 
+declare global {
+  var Deno: any
+}
+
+if (typeof window !== 'undefined' && typeof (Deno as any) === 'undefined') {
+  throw new Error('env.server.tsx should only be imported in the server')
+}
+
 const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL
 const DATABASE_URL = NEON_DATABASE_URL!
 

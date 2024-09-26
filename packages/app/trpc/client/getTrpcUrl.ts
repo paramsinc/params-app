@@ -1,3 +1,5 @@
+import { env } from 'app/env'
+
 export function getTrpcUrl() {
   if (typeof window !== 'undefined')
     // browser should use relative path

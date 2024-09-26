@@ -1,12 +1,13 @@
+import { platform } from 'app/ds/platform'
 import { Scroll } from 'app/ds/Scroll'
 import { styled } from 'app/ds/styled'
 import { View } from 'app/ds/View'
 
 export const Page = {
   Root: styled(View, {
-    grow: true,
+    grow: platform.OS !== 'web',
   }),
-  Scroll,
+  Scroll: platform.select({ web: View as any as typeof Scroll, default: Scroll }),
   Content: styled(View, {
     p: '$3',
     $gtSm: {

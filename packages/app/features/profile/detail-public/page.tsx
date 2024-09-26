@@ -23,6 +23,8 @@ import { env } from 'app/env'
 import { useState } from 'app/react'
 import { StripeCheckout } from 'app/features/stripe-connect/checkout/checkout'
 import { Scroll } from 'app/ds/Scroll'
+import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/provider'
+import { StripeCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -82,7 +84,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
             </Text>
           </View>
 
-          <CreateBooking profileSlug={profileSlug} />
+          {/* <CreateBooking profileSlug={profileSlug} /> */}
+          <CreateBooking_ConfirmOnBackend profileId={profile.id} />
           <View gap="$3">
             <Text color="$color11" bold>
               About
@@ -197,6 +200,31 @@ const CreateBooking = ({ profileSlug }: { profileSlug: string }) => {
             <Calcom.Booker eventSlug="sixty-minutes-video" username={calUserQuery.data?.username} />
           )}
         </View> */}
+      </ModalContent>
+    </Modal>
+  )
+}
+
+const CreateBooking_ConfirmOnBackend = ({ profileId }: { profileId: string | undefined }) => {
+  return (
+    <Modal>
+      <ModalTrigger>
+        <Button themeInverse disabled={!profileId}>
+          <ButtonText>Book a Call ($425+)</ButtonText>
+        </Button>
+      </ModalTrigger>
+      <ModalContent>
+        <ModalBackdrop />
+        <ModalDialog>
+          <Modal.Dialog.HeaderSmart title="Book a Call" />
+          <Scroll>
+            <StripeProvider_ConfirmOnBackend amountCents={425_00} currency="usd">
+              <View p="$3">
+                {profileId ? <StripeCheckoutForm_ConfirmOnBackend profile_id={profileId} /> : null}
+              </View>
+            </StripeProvider_ConfirmOnBackend>
+          </Scroll>
+        </ModalDialog>
       </ModalContent>
     </Modal>
   )

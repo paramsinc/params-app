@@ -299,7 +299,15 @@ const profile = {
             .values({
               ...input,
               stripe_connect_account_id: await stripe.accounts
-                .create()
+                .create({
+                  settings: {
+                    payouts: {
+                      schedule: {
+                        interval: 'manual',
+                      },
+                    },
+                  },
+                })
                 .then((account) => account.id),
               calcom_user_id,
             })
@@ -971,6 +979,9 @@ const profileBookings = {
             destination: profile.stripe_connect_account_id,
           },
         },
+        metadata: {
+          // offer ID
+        },
       })
 
       if (!session.client_secret) {
@@ -993,6 +1004,89 @@ const profileBookings = {
           ? await stripe.customers.retrieve(session.customer)
           : null
       return { session, customer }
+    }),
+  createOfferAndPaymentIntent: authedProcedure
+    .input(z.object({ profile_id: z.string(), stripe_confirmation_token_id: z.string() }))
+    .mutation(async ({ ctx, input: { profile_id, stripe_confirmation_token_id } }) => {
+      const { paymentIntent } = await db.transaction(async (tx) => {
+        const [first] = await tx
+          .select({
+            profile: schema.profiles,
+            calcomUser: schema.calcomUsers,
+          })
+          .from(schema.profiles)
+          .innerJoin(
+            schema.calcomUsers,
+            d.eq(schema.calcomUsers.id, schema.profiles.calcom_user_id)
+          )
+          .where(d.eq(schema.profiles.id, profile_id))
+          .limit(1)
+          .execute()
+
+        if (!first) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Profile not found.`,
+          })
+        }
+
+        const { profile, calcomUser } = first
+
+        const [offer] = await tx
+          .insert(schema.offers)
+          .values({
+            profile_id: profile.id,
+          })
+          .returning()
+          .execute()
+        if (!offer) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Offer couldn't get created.`,
+          })
+        }
+
+        const amount = 10_00 // TODO pull from a plan or something
+        const currency = 'usd' // TODO make this dynamic
+        const application_fee_amount = 123 // TODO calculate
+
+        const paymentIntent = await stripe.paymentIntents.create(
+          {
+            amount,
+            currency,
+            confirm: true,
+            confirmation_token: stripe_confirmation_token_id,
+            application_fee_amount,
+            transfer_data: {
+              destination: profile.stripe_connect_account_id,
+            },
+            metadata: {
+              offer_id: offer.id,
+            },
+            payment_method_types: ['card'],
+          },
+          {
+            // is this correct?
+            idempotencyKey: offer.id,
+          }
+        )
+
+        await tx
+          .update(schema.offers)
+          .set({ stripe_payment_intent_id: paymentIntent.id })
+          .where(d.eq(schema.offers.id, offer.id))
+          .execute()
+
+        return { paymentIntent }
+      })
+
+      return {
+        paymentIntent: {
+          client_secret: paymentIntent.client_secret,
+          id: paymentIntent.id,
+          status: paymentIntent.status,
+        },
+      }
     }),
 }
 

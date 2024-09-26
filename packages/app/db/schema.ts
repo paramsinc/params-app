@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, unique, pgEnum, serial } from 'drizzle-orm/pg-core'
+import { integer, pgTable, text, timestamp, unique, boolean, serial } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 import { ulid } from 'ulid'
 
@@ -94,5 +94,46 @@ export const calcomUsers = pgTable('calcom_users', {
   access_token: text('access_token').notNull(),
   refresh_token: text('refresh_token').notNull(),
   email: text('email').unique().notNull(),
+  ...timestampMixin(),
+})
+
+export const offers = pgTable('offers', {
+  id: text('id')
+    .primaryKey()
+    .$default(() => `offer_${ulid()}`),
+  profile_id: text('profile_id')
+    .notNull()
+    .references(() => profiles.id, {
+      onDelete: 'cascade',
+    }),
+  stripe_payment_intent_id: text('stripe_payment_intent_id'),
+  voided: boolean('voided').default(false),
+  created_by_user_id: text('created_by_user_id').references(() => users.id, {
+    onDelete: 'restrict',
+  }),
+
+  ...timestampMixin(),
+})
+
+export const bookings = pgTable('bookings', {
+  id: text('id')
+    .primaryKey()
+    .$default(() => `booking_${ulid()}`),
+  offer_id: text('offer_id')
+    .notNull()
+    .references(() => offers.id, {
+      onDelete: 'restrict',
+    }),
+  profile_id: text('profile_id')
+    .notNull()
+    .references(() => profiles.id, {
+      onDelete: 'cascade',
+    }),
+  calcom_booking_id: integer('calcom_booking_id').notNull(),
+  stripe_payment_intent_id: text('stripe_payment_intent_id').notNull(),
+  stripe_payout_id: text('stripe_payout_id'),
+  created_by_user_id: text('created_by_user_id').references(() => users.id, {
+    onDelete: 'restrict',
+  }),
   ...timestampMixin(),
 })

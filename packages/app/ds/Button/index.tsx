@@ -41,6 +41,7 @@ const Frame = styled(View, {
     loading: false,
   },
   jc: 'center',
+  tag: 'button',
   row: true,
 })
 

@@ -7,13 +7,9 @@ export const metadata = {
   title: '(params)',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" dir="ltr">
       <body>
         <StylesProvider>
           <TamaguiProvider>

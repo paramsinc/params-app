@@ -14,6 +14,10 @@ import {
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
+import {
+  createOrganization,
+  getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs,
+} from 'app/trpc/routes/organization'
 
 async function createUser(
   insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
@@ -940,61 +944,6 @@ const calCom = {
 }
 
 const profileBookings = {
-  createProfileCheckoutSession: authedProcedure
-    .input(z.object({ profile_id: z.string(), return_success_url: z.string() }))
-    .mutation(async ({ ctx, input: { profile_id, return_success_url: return_url } }) => {
-      const profile = await db.query.profiles.findFirst({
-        where: (profiles, { eq }) => eq(profiles.id, profile_id),
-      })
-
-      if (!profile) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Profile not found.`,
-        })
-      }
-
-      const unit_amount = 10_00 // TODO pull from a plan or something
-      const application_fee_amount = 123 // TODO calculate
-
-      const session = await stripe.checkout.sessions.create({
-        line_items: [
-          {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: `${profile.name} booking`,
-              },
-              unit_amount,
-            },
-            quantity: 1,
-          },
-        ],
-        mode: 'payment',
-        ui_mode: 'embedded',
-        return_url,
-        payment_intent_data: {
-          application_fee_amount,
-          transfer_data: {
-            destination: profile.stripe_connect_account_id,
-          },
-        },
-        metadata: {
-          // offer ID
-        },
-      })
-
-      if (!session.client_secret) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Couldn't create checkout session.`,
-        })
-      }
-
-      return {
-        clientSecret: session.client_secret,
-      }
-    }),
   stripeCheckoutSession: publicProcedure
     .input(z.object({ session_id: z.string() }))
     .query(async ({ input: { session_id } }) => {
@@ -1006,9 +955,41 @@ const profileBookings = {
       return { session, customer }
     }),
   createOfferAndPaymentIntent: authedProcedure
-    .input(z.object({ profile_id: z.string(), stripe_confirmation_token_id: z.string() }))
-    .mutation(async ({ ctx, input: { profile_id, stripe_confirmation_token_id } }) => {
+    .input(
+      z.object({
+        profile_id: z.string(),
+        stripe_confirmation_token_id: z.string(),
+        organization_id: z.string().nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
       const { paymentIntent } = await db.transaction(async (tx) => {
+        if (!input.organization_id) {
+          input.organization_id = await getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs({
+            userId: ctx.auth.userId,
+            transaction: tx,
+          })
+        } else {
+          const orgId = input.organization_id
+          const isInOrg = await tx.query.organizationMembers
+            .findFirst({
+              where: (organizationMembers, { eq, and }) =>
+                and(
+                  eq(organizationMembers.organization_id, orgId),
+                  eq(organizationMembers.user_id, ctx.auth.userId)
+                ),
+            })
+            .execute()
+
+          if (!isInOrg) {
+            throw new TRPCError({
+              code: 'UNAUTHORIZED',
+              message: `You are not a member of this organization.`,
+            })
+          }
+        }
+        const { profile_id, stripe_confirmation_token_id } = input
+
         const [first] = await tx
           .select({
             profile: schema.profiles,
@@ -1030,12 +1011,14 @@ const profileBookings = {
           })
         }
 
-        const { profile, calcomUser } = first
+        const { profile } = first
 
         const [offer] = await tx
           .insert(schema.offers)
           .values({
             profile_id: profile.id,
+            created_by_user_id: ctx.auth.userId,
+            organization_id: input.organization_id,
           })
           .returning()
           .execute()

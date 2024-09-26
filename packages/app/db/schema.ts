@@ -104,12 +104,17 @@ export const offers = pgTable('offers', {
   profile_id: text('profile_id')
     .notNull()
     .references(() => profiles.id, {
-      onDelete: 'cascade',
+      onDelete: 'restrict',
+    }),
+  organization_id: text('organization_id')
+    .notNull()
+    .references(() => organizations.id, {
+      onDelete: 'restrict',
     }),
   stripe_payment_intent_id: text('stripe_payment_intent_id'),
   voided: boolean('voided').default(false),
   created_by_user_id: text('created_by_user_id').references(() => users.id, {
-    onDelete: 'restrict',
+    onDelete: 'set null',
   }),
 
   ...timestampMixin(),
@@ -127,13 +132,48 @@ export const bookings = pgTable('bookings', {
   profile_id: text('profile_id')
     .notNull()
     .references(() => profiles.id, {
-      onDelete: 'cascade',
+      onDelete: 'restrict',
+    }),
+  organization_id: text('organization_id')
+    .notNull()
+    .references(() => organizations.id, {
+      onDelete: 'restrict',
     }),
   calcom_booking_id: integer('calcom_booking_id').notNull(),
   stripe_payment_intent_id: text('stripe_payment_intent_id').notNull(),
   stripe_payout_id: text('stripe_payout_id'),
   created_by_user_id: text('created_by_user_id').references(() => users.id, {
-    onDelete: 'restrict',
+    onDelete: 'set null',
   }),
+  ...timestampMixin(),
+})
+
+export const organizations = pgTable('organizations', {
+  id: text('id')
+    .primaryKey()
+    .$default(() => `organization_${ulid()}`),
+  name: text('name').notNull(),
+  stripe_customer_id: text('stripe_customer_id').notNull(),
+  created_by_user_id: text('created_by_user_id').references(() => users.id, {
+    onDelete: 'set null',
+  }),
+  ...timestampMixin(),
+})
+
+export const organizationMembers = pgTable('organization_members', {
+  id: text('id')
+    .primaryKey()
+    .$default(() => `organization_member_${ulid()}`),
+  organization_id: text('organization_id')
+    .notNull()
+    .references(() => organizations.id, {
+      onDelete: 'cascade',
+    }),
+  user_id: text('user_id').references(() => users.id, {
+    onDelete: 'cascade',
+  }),
+  email: text('email').notNull(),
+  first_name: text('first_name').notNull(),
+  last_name: text('last_name').notNull(),
   ...timestampMixin(),
 })

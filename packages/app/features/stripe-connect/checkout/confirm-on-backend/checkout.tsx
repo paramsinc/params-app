@@ -37,7 +37,7 @@ export function StripeCheckoutForm_ConfirmOnBackend({ profile_id }: { profile_id
 
       const redirect = (paymentIntentId: string) => {
         router.push(
-          `/pay/intent?redirect_status=${paymentIntent.status}&payment_intent_id=${paymentIntentId}&client_secret=${paymentIntent.client_secret}`
+          `/booking-payment-intent?redirect_status=${paymentIntent.status}&payment_intent_id=${paymentIntentId}&client_secret=${paymentIntent.client_secret}`
         )
       }
 

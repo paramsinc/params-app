@@ -82,6 +82,11 @@ let config = {
       {
         hostname: 'i.postimg.cc', // TODO remove
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '**',
+      },
     ],
   },
 

@@ -15,6 +15,8 @@ import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
 import { getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs } from 'app/trpc/routes/organization'
+import { cdn } from 'app/multi-media/cdn'
+import { keys } from 'app/helpers/object'
 
 async function createUser(
   insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
@@ -85,6 +87,10 @@ async function createUser(
 
   return user
 }
+
+const [firstCdn, ...restCdns] = keys(cdn)
+
+const imageVendor = z.enum([firstCdn!, ...restCdns])
 
 const user = {
   // me
@@ -347,15 +353,19 @@ const profile = {
       z.object({
         id: z.string(),
         patch: inserts.profiles
-          .partial()
+
           .pick({
             name: true,
             slug: true,
             bio: true,
             github_username: true,
-            image_vendor: true,
             image_vendor_id: true,
           })
+          .merge(
+            z.object({
+              image_vendor: imageVendor,
+            })
+          )
           .partial(),
       })
     )
@@ -944,6 +954,15 @@ export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
   }),
+
+  uploadImage: authedProcedure
+    .input(z.object({ image: z.string(), vendor: imageVendor }))
+    .mutation(async ({ ctx, input }) => {
+      const { id, vendor } = await cdn[input.vendor].uploadImage(input.image, {
+        folder: 'trpc-uploads',
+      })
+      return { id, vendor }
+    }),
 
   ...user,
   ...profile,

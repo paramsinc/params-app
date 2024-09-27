@@ -1,6 +1,8 @@
+import { cdnImageTransformations } from 'app/multi-media/cdnImageTransformations'
+
 type Base<Vendor extends string> = {
   uploadImage: (
-    image: File,
+    base64: string,
     options?: {
       folder?: string
       publicId?: string
@@ -9,6 +11,9 @@ type Base<Vendor extends string> = {
     id: string
     vendor: Vendor
   }>
+  getTransformedImageUrls: (publicId: string) => {
+    [key in keyof typeof cdnImageTransformations]: string
+  }
 }
 
 export const makeCDN = <Vendor extends string, CDN extends Base<Vendor> = Base<Vendor>>(

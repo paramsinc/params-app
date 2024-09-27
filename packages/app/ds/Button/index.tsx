@@ -7,7 +7,9 @@ import { createStyledContext } from 'tamagui'
 
 const height = 30
 
-const context = createStyledContext<{ loading?: boolean }>()
+const context = createStyledContext<{ loading?: boolean }>({
+  loading: false,
+})
 
 const Frame = styled(View, {
   px: '$2',
@@ -36,10 +38,6 @@ const Frame = styled(View, {
       },
     },
   } as const,
-  defaultVariants: {
-    disabled: false,
-    loading: false,
-  },
   jc: 'center',
   tag: 'button',
   row: true,
@@ -51,8 +49,8 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
   return (
     <Frame
       {...rest}
-      disabled={props.loading ?? props.disabled ?? false}
-      loading={props.loading ?? false}
+      disabled={props.disabled || props.loading || false}
+      loading={props.loading || false}
     >
       {children}
       {props.loading && (
@@ -66,11 +64,11 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
 
 export const ButtonText = styled(Text, {
   // textDecorationLine: 'underline',
+  context,
   userSelect: 'none',
 
   lineHeight: height,
   bold: true,
-  context,
   variants: {
     loading: {
       true: {

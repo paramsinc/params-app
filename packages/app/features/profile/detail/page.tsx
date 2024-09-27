@@ -2,6 +2,7 @@ import { Auth } from 'app/auth'
 import { Button, ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
+import { Image } from 'app/ds/Image'
 import { Modal } from 'app/ds/Modal'
 import { Open, OpenContent, OpenTrigger } from 'app/ds/Open'
 import { Page } from 'app/ds/Page'
@@ -76,24 +77,39 @@ function Content({ profileSlug }: { profileSlug: string }) {
   return (
     <Calcom.Provider profileSlug={profileSlug}>
       <View gap="$4">
-        <View row jbtwn ai="center" flexWrap="wrap">
-          <View>
-            <Text bold>{profile.name}</Text>
-            <Text>@{profile.slug}</Text>
+        <View gap="$3" $gtMd={{ row: true }}>
+          <View $gtMd={{ grow: true }}>
+            <View aspectRatio={16 / 9} bg="$color3">
+              {profile.image_vendor_id && profile.image_vendor ? (
+                <Image
+                  src={profile.image_vendor_id}
+                  loader={profile.image_vendor}
+                  contentFit="cover"
+                  fill
+                  sizes="(min-width: 1200px) 80vw, 100vw"
+                />
+              ) : null}
+            </View>
           </View>
+          <View $md={{ row: true, jbtwn: true }} $gtMd={{ w: 400 }} gap="$3">
+            <View>
+              <Text bold>{profile.name}</Text>
+              <Text>@{profile.slug}</Text>
+            </View>
 
-          <View row gap="$1">
-            <UpdateProfileModal>
-              <UpdateProfileModal.Trigger>
-                <Button>
-                  <ButtonText>Edit</ButtonText>
-                </Button>
-              </UpdateProfileModal.Trigger>
-              <UpdateProfileModal.Content profileSlug={profileSlug} />
-            </UpdateProfileModal>
-            <LinkButton href={`/@${profile.slug}`}>
-              <ButtonText>View Public Profile</ButtonText>
-            </LinkButton>
+            <View row gap="$1">
+              <UpdateProfileModal>
+                <UpdateProfileModal.Trigger>
+                  <Button>
+                    <ButtonText>Edit</ButtonText>
+                  </Button>
+                </UpdateProfileModal.Trigger>
+                <UpdateProfileModal.Content profileSlug={profileSlug} />
+              </UpdateProfileModal>
+              <LinkButton href={`/@${profile.slug}`}>
+                <ButtonText>View Public Profile</ButtonText>
+              </LinkButton>
+            </View>
           </View>
         </View>
 

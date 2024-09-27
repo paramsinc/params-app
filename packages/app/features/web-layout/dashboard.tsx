@@ -19,9 +19,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   ]
   const { hasLoaded, isSignedIn } = Auth.useUser()
   return (
-    <View grow bg="$backgroundStrong">
+    <>
       {hasLoaded && (
-        <View grow>
+        <>
           {isSignedIn ? (
             <>
               <View bbw={1} boc="$borderColor">
@@ -53,9 +53,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </EmptyCard>
             </Empty>
           )}
-        </View>
+        </>
       )}
-    </View>
+    </>
   )
 }
 

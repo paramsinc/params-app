@@ -46548,10 +46548,12 @@ var tamaguiConfig = createTamagui({
       "-2": -8,
       "-3": -16,
       "-4": -32,
-      true: 16,
-      marketingPageWidth: 900
+      true: 16
     },
-    size: size5
+    size: {
+      ...size5,
+      marketingPageWidth: 1200
+    }
     // space: space,
   }),
   media,

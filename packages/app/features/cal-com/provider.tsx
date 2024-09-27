@@ -3,6 +3,17 @@ import { env } from 'app/env'
 import { api } from 'app/trpc/client'
 import '@calcom/atoms/globals.min.css'
 
+const sharedProps: React.ComponentProps<typeof CalProvider> = {
+  clientId: env.CAL_COM_CLIENT_ID,
+  options: {
+    apiUrl: env.CAL_COM_API_URL,
+    refreshUrl: env.CAL_COM_REFRESH_URL,
+  },
+  labels: {
+    availability: 'Avails',
+  },
+}
+
 export const CalcomProvider = ({
   children,
   profileSlug,
@@ -17,20 +28,12 @@ export const CalcomProvider = ({
     }
   )
   return (
-    <div style={{ display: 'contents', fontFamily: 'var(--f-family)' }}>
-      <CalProvider
-        clientId={env.CAL_COM_CLIENT_ID}
-        accessToken={profile.data ?? undefined}
-        options={{
-          apiUrl: env.CAL_COM_API_URL,
-          refreshUrl: env.CAL_COM_REFRESH_URL,
-        }}
-        labels={{
-          availability: 'Avails',
-        }}
-      >
-        {profile.data && children}
-      </CalProvider>
-    </div>
+    <CalProvider accessToken={profile.data ?? undefined} {...sharedProps}>
+      {children}
+    </CalProvider>
   )
+}
+
+export const CalcomProviderPublic = ({ children }: { children: React.ReactNode }) => {
+  return <CalProvider {...sharedProps}>{children}</CalProvider>
 }

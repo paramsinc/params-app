@@ -6,7 +6,6 @@ import { View } from 'app/ds/View'
 export const Page = {
   Root: styled(View, {
     grow: platform.OS !== 'web',
-    bg: '$backgroundStrong',
   }),
   Scroll: platform.select({ web: View as any as typeof Scroll, default: Scroll }),
   Content: styled(View, {
@@ -14,5 +13,8 @@ export const Page = {
     $gtSm: {
       p: '$4',
     },
+    width: '100%',
+    als: 'center',
+    maw: '$marketingPageWidth',
   }),
 }

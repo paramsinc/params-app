@@ -10,7 +10,7 @@ import {
 } from '@calcom/atoms'
 
 import { View } from 'app/ds/View'
-import { CalcomProvider } from 'app/features/cal-com/provider'
+import { CalcomProvider, CalcomProviderPublic } from 'app/features/cal-com/provider'
 
 export const Calcom = {
   Connect: {
@@ -53,7 +53,7 @@ export const Calcom = {
   Booker,
 
   Provider: CalcomProvider,
-
+  ProviderPublic: CalcomProviderPublic,
   CalendarSettings: function CalSettings(props: React.ComponentProps<typeof CalendarSettings>) {
     return (
       <View bg="white">

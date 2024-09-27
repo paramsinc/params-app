@@ -20,9 +20,7 @@ setupDev({
  */
 
 const themes =
-  process.env.TAMAGUI_TARGET !== 'web' ||
-  process.env.TAMAGUI_IS_SERVER ||
-  process.env.STORYBOOK
+  process.env.TAMAGUI_TARGET !== 'web' || process.env.TAMAGUI_IS_SERVER || process.env.STORYBOOK
     ? themesNew
     : ({} as typeof themesNew)
 
@@ -78,9 +76,11 @@ export const tamaguiConfig = createTamagui({
       '-3': -16,
       '-4': -32,
       true: 16,
-      marketingPageWidth: 900,
     },
-    size,
+    size: {
+      ...size,
+      marketingPageWidth: 1200,
+    },
     // space: space,
   }),
   media,

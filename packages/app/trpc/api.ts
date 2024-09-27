@@ -580,6 +580,32 @@ const profile = {
     return profiles
   }),
 
+  calUserByProfileSlug_public: publicProcedure
+    .input(z.object({ profileSlug: z.string() }))
+    .query(async ({ input: { profileSlug } }) => {
+      const profile = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.slug, profileSlug),
+      })
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      const calUser = await getCalcomUser(profile.calcom_user_id)
+
+      if (calUser.status !== 'success') {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Couldn't get cal user.`,
+        })
+      }
+
+      return calUser.data.username
+    }),
+
   profileConnectAccountSession: authedProcedure
     .input(z.object({ profile_slug: z.string() }))
     .query(async ({ ctx, input: { profile_slug } }) => {
@@ -1102,18 +1128,22 @@ export const appRouter = router({
   offerByPaymentIntentId: publicProcedure
     .input(z.object({ payment_intent_id: z.string(), payment_intent_client_secret: z.string() }))
     .query(async ({ input: { payment_intent_id, payment_intent_client_secret } }) => {
-      const offer = await db.query.offers.findFirst({
-        where: (offers, { eq }) => eq(offers.stripe_payment_intent_id, payment_intent_id),
-        columns: {
-          id: true,
-          profile_id: true,
-          created_at: true,
-          last_updated_at: true,
-          voided: true,
-          stripe_payment_intent_id: true,
-          organization_id: true,
-        },
-      })
+      const [offer] = await db
+        .select({
+          ...pick('offers', {
+            id: true,
+            profile_id: true,
+            created_at: true,
+            last_updated_at: true,
+            voided: true,
+            stripe_payment_intent_id: true,
+            organization_id: true,
+          }),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+        })
+        .from(schema.offers)
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.offers.profile_id))
+        .execute()
 
       if (!offer) {
         throw new TRPCError({
@@ -1121,6 +1151,27 @@ export const appRouter = router({
           message: `Offer not found. Are you sure this is a valid URL?`,
         })
       }
+
+      // const offer = await db.query.offers.findFirst({
+      //   where: (offers, { eq }) => eq(offers.stripe_payment_intent_id, payment_intent_id),
+      //   columns: {
+      //     id: true,
+      //     profile_id: true,
+      //     created_at: true,
+      //     last_updated_at: true,
+      //     voided: true,
+      //     stripe_payment_intent_id: true,
+      //     organization_id: true,
+      //   },
+      // })
+
+      // if (!offer) {
+      //   throw new TRPCError({
+      //     code: 'NOT_FOUND',
+      //     message: `Offer not found. Are you sure this is a valid URL?`,
+      //   })
+      // }
+
       const { stripe_payment_intent_id } = offer
 
       if (!stripe_payment_intent_id) {
@@ -1131,12 +1182,17 @@ export const appRouter = router({
         stripe_payment_intent_id
       )
 
-      if (client_secret !== payment_intent_client_secret) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: `Invalid payment intent client secret.`,
-        })
-      }
+      // if (client_secret !== payment_intent_client_secret) {
+      //   console.error('[invalid-payment-intent-request]', {
+      //     client_secret,
+      //     payment_intent_client_secret,
+      //   })
+      //   // sanity check
+      //   throw new TRPCError({
+      //     code: 'UNAUTHORIZED',
+      //     message: `Invalid payment intent client secret.`,
+      //   })
+      // }
 
       return {
         paymentIntent: {

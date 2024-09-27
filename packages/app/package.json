@@ -36,6 +36,7 @@
     "dripsy": "^4.3.3",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
+    "luxon": "^3.5.0",
     "micro": "^10.0.1",
     "moti": "latest",
     "prism-react-renderer": "^2.4.0",
@@ -59,6 +60,7 @@
     "*.css"
   ],
   "devDependencies": {
+    "@types/luxon": "^3.4.2",
     "@types/ws": "^8",
     "drizzle-kit": "^0.24.2"
   }

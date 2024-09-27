@@ -79,7 +79,7 @@ export async function getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs({
     })
     return organization.id
   } else if (myOrganizations.length === 1) {
-    return myOrganizations[0]!.id
+    return myOrganizations[0]!.organizations.id
   } else {
     throw new TRPCError({
       message: 'Please select an organization to use for this offer.',

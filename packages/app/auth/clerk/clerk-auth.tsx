@@ -5,8 +5,10 @@ import { ClerkProvider, useAuth, UserButton, SignUpButton, SignedOut } from '@cl
 import { useLatestCallback } from 'app/helpers/use-latest-callback'
 import { env } from 'app/env'
 import { getConfig, getVariableValue } from 'tamagui'
-
-console.log('[clerk]', env)
+import { Button, ButtonText } from 'app/ds/Button'
+import { useEffect, useState } from 'app/react'
+import { platform } from 'app/ds/platform'
+import { useCurrentPath } from 'app/navigation/use-pathname'
 
 const clerk = new Clerk(env.CLERK_PUBLISHABLE_KEY!)
 
@@ -24,6 +26,14 @@ const getToken = async (): Promise<string | null> => {
   return session.getToken()
 }
 
+function UserTrigger({ children }: { children?: React.ReactElement }) {
+  return (
+    <Font>
+      <UserButton />
+    </Font>
+  )
+}
+
 function Font({ children }: { children: React.ReactNode }) {
   const config = getConfig()
   return (
@@ -34,6 +44,23 @@ function Font({ children }: { children: React.ReactNode }) {
     >
       {children}
     </div>
+  )
+}
+
+function SignUp({ children }: { children?: React.ReactElement }) {
+  const [redirectUrl, setRedirectUrl] = useState<string>()
+  const path = useCurrentPath()
+  useEffect(() => {
+    if (platform.OS === 'web') {
+      setRedirectUrl(window.location.href)
+    }
+  }, [path])
+  return (
+    <Font>
+      <SignUpButton mode="modal" signInForceRedirectUrl={redirectUrl}>
+        {children}
+      </SignUpButton>
+    </Font>
   )
 }
 
@@ -58,6 +85,7 @@ export default makeAuth({
         Clerk={clerk}
         signInFallbackRedirectUrl="/dashboard"
         signUpFallbackRedirectUrl="/dashboard"
+        afterSignOutUrl="/"
       >
         {children}
       </ClerkProvider>
@@ -66,19 +94,24 @@ export default makeAuth({
   useGetToken() {
     return getToken
   },
-  UserButton() {
+  UserButton({ children }) {
+    const { isSignedIn, isLoaded, userId } = useAuth()
+    if (!isLoaded) return null
+    if (isSignedIn) {
+      return <UserTrigger children={children} />
+    }
     return (
-      <Font>
-        <UserButton />
-      </Font>
+      <SignUp>
+        <Button>
+          <ButtonText>Login</ButtonText>
+        </Button>
+      </SignUp>
     )
   },
   AuthFlowTrigger({ children }) {
     return (
       <SignedOut>
-        <Font>
-          <SignUpButton mode="modal">{children}</SignUpButton>
-        </Font>
+        <SignUp children={children} />
       </SignedOut>
     )
   },

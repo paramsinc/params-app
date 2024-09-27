@@ -135,8 +135,8 @@ let config = {
   },
   rewrites: () => [
     {
-      source: '/@:profileSlug',
-      destination: '/profiles/:profileSlug',
+      source: '/@:profileSlug/:path*',
+      destination: '/profiles/:profileSlug/:path*',
     },
   ],
 }

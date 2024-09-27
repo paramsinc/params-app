@@ -13,14 +13,7 @@ export async function createCalcomUser({
   email: string
   name: string | undefined
   timeFormat?: 12 | 24
-  weekStart?:
-    | 'Monday'
-    | 'Tuesday'
-    | 'Wednesday'
-    | 'Thursday'
-    | 'Friday'
-    | 'Saturday'
-    | 'Sunday'
+  weekStart?: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday'
   timeZone?: string
 }): Promise<
   | {
@@ -70,11 +63,7 @@ export async function createCalcomUser({
 
   When specifying start time and end time for each day use 24 hour format e.g. 08:00, 15:00 etc.
  */
-async function createCalcomScheduleForAccount({
-  accessToken,
-}: {
-  accessToken: string
-}): Promise<{
+async function createCalcomScheduleForAccount({ accessToken }: { accessToken: string }): Promise<{
   name: string
   timeZone: string
   isDefault: boolean
@@ -114,19 +103,16 @@ export async function refreshCalcomUserToken({
   }
 
   // Make a request to Cal.com to refresh the token
-  let response = await fetch(
-    `${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/refresh`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
-      },
-      body: JSON.stringify({
-        refreshToken: calcomUser.refresh_token,
-      }),
-    }
-  )
+  let response = await fetch(`${env.CAL_COM_API_URL}/oauth/${env.CAL_COM_CLIENT_ID}/refresh`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
+    },
+    body: JSON.stringify({
+      refreshToken: calcomUser.refresh_token,
+    }),
+  })
 
   if (!response.ok && calcomUser.id != null) {
     response = await fetch(
@@ -169,16 +155,13 @@ export async function refreshCalcomUserToken({
 }
 
 export function deleteCalcomAccount(userId: number) {
-  return fetch(
-    `${env.CAL_COM_API_URL}/oauth-clients/${env.CAL_COM_CLIENT_ID}/users/${userId}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
-      },
-    }
-  ).then((res) => res.json())
+  return fetch(`${env.CAL_COM_API_URL}/oauth-clients/${env.CAL_COM_CLIENT_ID}/users/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
+    },
+  }).then((res) => res.json())
 }
 
 export async function getCalcomUsers(): Promise<{
@@ -213,22 +196,25 @@ export async function getCalcomUser(userId: number): Promise<
       error: string
     }
 > {
-  return fetch(
-    `${env.CAL_COM_API_URL}/oauth-clients/${env.CAL_COM_CLIENT_ID}/users/${userId}`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
-      },
-    }
-  ).then((res) => res.json())
+  return fetch(`${env.CAL_COM_API_URL}/oauth-clients/${env.CAL_COM_CLIENT_ID}/users/${userId}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-cal-secret-key': serverEnv.CAL_COM_CLIENT_SECRET,
+    },
+  }).then((res) => res.json())
+}
+
+export async function getCalcomUserEventTypes(username: string) {
+  return fetch(`${env.CAL_COM_API_URL}/event-types`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'cal-api-version': '2024-06-14',
+    },
+  }).then((res) => res.json())
 }
 
 // https://github.com/calcom/atoms-examples/blob/main/cal-sync/src/pages/api/refresh.ts
-export async function calcomRefreshToken_NextHandler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export async function calcomRefreshToken_NextHandler(req: NextApiRequest, res: NextApiResponse) {
   const authHeader = req.headers.authorization
 
   const accessToken = authHeader?.split('Bearer ')[1]

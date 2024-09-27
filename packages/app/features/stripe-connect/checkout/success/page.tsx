@@ -3,6 +3,7 @@ import { ErrorCard } from 'app/ds/Error/card'
 import { Page } from 'app/ds/Page'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
+import { formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
 
@@ -12,11 +13,6 @@ export function CheckoutSuccessPage() {
   const { params } = useParams()
   return <CheckoutSuccessContent session_id={params.session_id} />
 }
-
-const formatUSD = Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 function CheckoutSuccessContent({ session_id }: { session_id: string }) {
   const sessionQuery = api.stripeCheckoutSession.useQuery({ session_id })

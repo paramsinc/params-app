@@ -7,13 +7,16 @@ import { Button, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
 import { View } from 'app/ds/View'
 import { OfferPaymentIntentPublicPageParams } from 'app/features/offer/payment-intent-public/page'
+import { formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
 
 export function StripeCheckoutForm_ConfirmOnBackend({
   profile_id,
   organization_id,
+  amount,
 }: {
   profile_id: string
   organization_id: string | null
+  amount: number
 }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -47,10 +50,11 @@ export function StripeCheckoutForm_ConfirmOnBackend({
         const params: OfferPaymentIntentPublicPageParams = {
           payment_intent_id: paymentIntentId,
           redirect_status: paymentIntent.status,
-          client_secret: paymentIntent.client_secret,
+          client_secret: paymentIntent.client_secret ?? '',
         }
+
         router.push(
-          `/offer-payment-intent?redirect_status=${paymentIntent.status}&payment_intent_id=${paymentIntentId}&client_secret=${paymentIntent.client_secret}`
+          `/offer-payment-intent?redirect_status=${params.redirect_status}&payment_intent_id=${params.payment_intent_id}&client_secret=${params.client_secret}`
         )
       }
 
@@ -80,11 +84,15 @@ export function StripeCheckoutForm_ConfirmOnBackend({
       }}
     >
       <View gap="$3">
-        <PaymentElement onReady={() => setReady(true)} />
+        <PaymentElement
+          onReady={(e) => {
+            setReady(true)
+          }}
+        />
         <ErrorCard error={mutation.error} />
         {ready && (
           <Button loading={!stripe || mutation.isPending || !elements} themeInverse>
-            <ButtonText>Submit</ButtonText>
+            <ButtonText>Pay {formatUSD.format(amount / 100)}</ButtonText>
           </Button>
         )}
       </View>

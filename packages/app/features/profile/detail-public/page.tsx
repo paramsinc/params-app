@@ -3,20 +3,13 @@ import { Image } from 'app/ds/Image'
 import { Lucide } from 'app/ds/Lucide'
 import { Modal, ModalBackdrop, ModalContent, ModalDialog, ModalTrigger } from 'app/ds/Modal'
 import { Page } from 'app/ds/Page'
-import { styled } from 'app/ds/styled'
 import { Text } from 'app/ds/Text'
-import { TextLink } from 'app/ds/TextLink'
 import { View } from 'app/ds/View'
-import { Calcom } from 'app/features/cal-com/cal-com'
-import { fakeRepos } from 'app/features/home/fakeRepos'
-import { RepoCard } from 'app/features/home/RepoCard'
 import { imageLoader } from 'app/image/loader'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
-import { getConfig } from 'tamagui'
 import { Highlight, themes } from 'prism-react-renderer'
 import { LinkButton } from 'app/ds/Button/link'
-import img from './fch.png'
 import { platform } from 'app/ds/platform'
 import * as linking from 'expo-linking'
 import { env } from 'app/env'
@@ -57,17 +50,18 @@ function Content({ profileSlug }: { profileSlug: string }) {
     profile.image_vendor && imageLoader[profile.image_vendor as keyof typeof imageLoader]
   const repos = profile.repos
   return (
-    <View gap="$4">
+    <View gap="$4" maw="$marketingPageWidth" als="center" w="100%">
       <View gap="$3" $gtMd={{ row: true }}>
         <View $gtMd={{ grow: true }}>
           <View aspectRatio={16 / 9} bg="$borderColor">
-            {!!loader && !!profile.image_vendor_id && (
+            {!!profile.image_vendor && !!profile.image_vendor_id && (
               <Image
                 fill
-                // loader={loader}
-                src={img}
+                loader={profile.image_vendor}
+                src={profile.image_vendor_id}
                 alt={profile.name}
                 contentFit="cover"
+                sizes="(max-width: 1200px) 100vw, 60vw"
               />
             )}
             <View stretch center>
@@ -85,7 +79,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
           </View>
 
           {/* <CreateBooking profileSlug={profileSlug} /> */}
-          <CreateBooking_ConfirmOnBackend profileId={profile.id} />
+          {/* <CreateBooking_ConfirmOnBackend profileId={profile.id} /> */}
+          <CreateBooking_Link profileSlug={profileSlug} />
           <View gap="$3">
             <Text color="$color11" bold>
               About
@@ -232,5 +227,13 @@ const CreateBooking_ConfirmOnBackend = ({ profileId }: { profileId: string | und
         </ModalDialog>
       </ModalContent>
     </Modal>
+  )
+}
+
+const CreateBooking_Link = ({ profileSlug }: { profileSlug: string }) => {
+  return (
+    <LinkButton themeInverse href={`/@${profileSlug}/book`}>
+      <ButtonText>Book a Call ($425+)</ButtonText>
+    </LinkButton>
   )
 }

@@ -220,7 +220,12 @@ const CreateBooking_ConfirmOnBackend = ({ profileId }: { profileId: string | und
           <Scroll>
             <StripeProvider_ConfirmOnBackend amountCents={425_00} currency="usd">
               <View p="$3">
-                {profileId ? <StripeCheckoutForm_ConfirmOnBackend profile_id={profileId} /> : null}
+                {profileId ? (
+                  <StripeCheckoutForm_ConfirmOnBackend
+                    profile_id={profileId}
+                    organization_id={null}
+                  />
+                ) : null}
               </View>
             </StripeProvider_ConfirmOnBackend>
           </Scroll>

@@ -40,17 +40,17 @@ export async function getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs({
   userId: string
   transaction: typeof db
 }): Promise<string> {
-  const organizationMember = tx
-    .select()
-    .from(schema.organizationMembers)
-    .where(d.eq(schema.organizationMembers.user_id, userId))
-    .as('organizationMember')
-
   const myOrganizations = await tx
     .select()
     .from(schema.organizations)
-    .where(d.eq(organizationMember.organization_id, schema.organizations.id))
+    .innerJoin(
+      schema.organizationMembers,
+      d.eq(schema.organizationMembers.organization_id, schema.organizations.id)
+    )
+    .where(d.eq(schema.organizationMembers.user_id, userId))
     .execute()
+
+  console.log('[myOrganizations]', myOrganizations)
 
   if (myOrganizations.length === 0) {
     const me = await tx.query.users.findFirst({

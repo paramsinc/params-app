@@ -32,6 +32,7 @@
     "@trpc/server": "^11.0.0-rc.502",
     "bufferutil": "^4.0.8",
     "burnt": "0.12.2",
+    "cloudinary": "^2.5.0",
     "dripsy": "^4.3.3",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",

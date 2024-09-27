@@ -11,8 +11,6 @@ if (typeof window !== 'undefined' && typeof (Deno as any) === 'undefined') {
 const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL
 const DATABASE_URL = NEON_DATABASE_URL!
 
-console.log('[server-env]', process.env.CLERK_SECRET_KEY)
-
 export const serverEnv = z
   .object({
     CLERK_SECRET_KEY: z.string(),
@@ -21,6 +19,9 @@ export const serverEnv = z
     STRIPE_SECRET_KEY: z.string(),
     CAL_COM_CLIENT_SECRET: z.string(),
     CLERK_WEBHOOK_SECRET: z.string(),
+    CLOUDINARY_CLOUD_NAME: z.string(),
+    CLOUDINARY_API_KEY: z.string(),
+    CLOUDINARY_SECRET: z.string(),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
@@ -29,4 +30,7 @@ export const serverEnv = z
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     CAL_COM_CLIENT_SECRET: process.env.CAL_COM_CLIENT_SECRET,
     CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
+    CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUDNAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_SECRET: process.env.CLOUDINARY_SECRET,
   })

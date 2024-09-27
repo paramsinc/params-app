@@ -14,10 +14,7 @@ import {
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
-import {
-  createOrganization,
-  getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs,
-} from 'app/trpc/routes/organization'
+import { getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs } from 'app/trpc/routes/organization'
 
 async function createUser(
   insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
@@ -943,7 +940,19 @@ const calCom = {
   }),
 }
 
-const profileBookings = {
+export const appRouter = router({
+  hello: publicProcedure.query(({ ctx }) => {
+    return 'hello there sir'
+  }),
+
+  ...user,
+  ...profile,
+  ...profileMember,
+  ...calCom,
+  ...repository,
+  /**
+   * @deprecated
+   */
   stripeCheckoutSession: publicProcedure
     .input(z.object({ session_id: z.string() }))
     .query(async ({ input: { session_id } }) => {
@@ -1071,19 +1080,53 @@ const profileBookings = {
         },
       }
     }),
-}
+  offerByPaymentIntentId: publicProcedure
+    .input(z.object({ payment_intent_id: z.string(), payment_intent_client_secret: z.string() }))
+    .query(async ({ input: { payment_intent_id, payment_intent_client_secret } }) => {
+      const offer = await db.query.offers.findFirst({
+        where: (offers, { eq }) => eq(offers.stripe_payment_intent_id, payment_intent_id),
+        columns: {
+          id: true,
+          profile_id: true,
+          created_at: true,
+          last_updated_at: true,
+          voided: true,
+          stripe_payment_intent_id: true,
+          organization_id: true,
+        },
+      })
 
-export const appRouter = router({
-  hello: publicProcedure.query(({ ctx }) => {
-    return 'hello there sir'
-  }),
+      if (!offer) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Offer not found. Are you sure this is a valid URL?`,
+        })
+      }
+      const { stripe_payment_intent_id } = offer
 
-  ...user,
-  ...profile,
-  ...profileMember,
-  ...calCom,
-  ...repository,
-  ...profileBookings,
+      if (!stripe_payment_intent_id) {
+        return null
+      }
+
+      const { amount, status, client_secret } = await stripe.paymentIntents.retrieve(
+        stripe_payment_intent_id
+      )
+
+      if (client_secret !== payment_intent_client_secret) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Invalid payment intent client secret.`,
+        })
+      }
+
+      return {
+        paymentIntent: {
+          amount,
+          status,
+        },
+        offer,
+      }
+    }),
 })
 
 export type AppRouter = typeof appRouter

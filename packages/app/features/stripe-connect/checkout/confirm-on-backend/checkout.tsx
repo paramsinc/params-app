@@ -6,8 +6,15 @@ import { useRouter } from 'app/navigation/use-router'
 import { Button, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
 import { View } from 'app/ds/View'
+import { OfferPaymentIntentPublicPageParams } from 'app/features/offer/payment-intent-public/page'
 
-export function StripeCheckoutForm_ConfirmOnBackend({ profile_id }: { profile_id: string }) {
+export function StripeCheckoutForm_ConfirmOnBackend({
+  profile_id,
+  organization_id,
+}: {
+  profile_id: string
+  organization_id: string | null
+}) {
   const stripe = useStripe()
   const elements = useElements()
   const router = useRouter()
@@ -33,11 +40,17 @@ export function StripeCheckoutForm_ConfirmOnBackend({ profile_id }: { profile_id
       const { paymentIntent } = await createOfferAndPaymentIntentMutation.mutateAsync({
         profile_id,
         stripe_confirmation_token_id: confirmationToken.id,
+        organization_id,
       })
 
       const redirect = (paymentIntentId: string) => {
+        const params: OfferPaymentIntentPublicPageParams = {
+          payment_intent_id: paymentIntentId,
+          redirect_status: paymentIntent.status,
+          client_secret: paymentIntent.client_secret,
+        }
         router.push(
-          `/booking-payment-intent?redirect_status=${paymentIntent.status}&payment_intent_id=${paymentIntentId}&client_secret=${paymentIntent.client_secret}`
+          `/offer-payment-intent?redirect_status=${paymentIntent.status}&payment_intent_id=${paymentIntentId}&client_secret=${paymentIntent.client_secret}`
         )
       }
 

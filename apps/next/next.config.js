@@ -56,7 +56,6 @@ const plugins = [
         //     })
         //   )
         // }
-        console.log('webpackConfig', webpackConfig.resolve)
         if (typeof nextConfig.webpack === 'function') {
           return nextConfig.webpack(webpackConfig, options)
         }

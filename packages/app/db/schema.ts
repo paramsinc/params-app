@@ -116,7 +116,9 @@ export const offers = pgTable('offers', {
   created_by_user_id: text('created_by_user_id').references(() => users.id, {
     onDelete: 'set null',
   }),
-
+  start_datetime: timestamp('start_datetime', { mode: 'string' }).notNull(),
+  duration_minutes: integer('duration_minutes').notNull(),
+  timezone: text('timezone').notNull(),
   ...timestampMixin(),
 })
 
@@ -126,6 +128,7 @@ export const bookings = pgTable('bookings', {
     .$default(() => `booking_${ulid()}`),
   offer_id: text('offer_id')
     .notNull()
+    .unique()
     .references(() => offers.id, {
       onDelete: 'restrict',
     }),
@@ -139,12 +142,17 @@ export const bookings = pgTable('bookings', {
     .references(() => organizations.id, {
       onDelete: 'restrict',
     }),
-  calcom_booking_id: integer('calcom_booking_id').notNull(),
+  google_calendar_event_id: text('google_calendar_event_id').notNull(),
   stripe_payment_intent_id: text('stripe_payment_intent_id').notNull(),
   stripe_payout_id: text('stripe_payout_id'),
   created_by_user_id: text('created_by_user_id').references(() => users.id, {
     onDelete: 'set null',
   }),
+
+  start_datetime: timestamp('start_datetime', { mode: 'string' }).notNull(),
+  duration_minutes: integer('duration_minutes').notNull(),
+  timezone: text('timezone').notNull(),
+
   ...timestampMixin(),
 })
 

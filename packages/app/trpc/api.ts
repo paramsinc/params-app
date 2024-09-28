@@ -1011,11 +1011,19 @@ export const appRouter = router({
     }),
   createOfferAndPaymentIntent: authedProcedure
     .input(
-      z.object({
-        profile_id: z.string(),
-        stripe_confirmation_token_id: z.string(),
-        organization_id: z.string().nullable(),
-      })
+      inserts.offers
+        .pick({
+          profile_id: true,
+          start_datetime: true,
+          duration_minutes: true,
+          timezone: true,
+        })
+        .merge(
+          z.object({
+            stripe_confirmation_token_id: z.string(),
+            organization_id: z.string().nullable(),
+          })
+        )
     )
     .mutation(async ({ ctx, input }) => {
       const { paymentIntent } = await db.transaction(async (tx) => {
@@ -1074,6 +1082,9 @@ export const appRouter = router({
             profile_id: profile.id,
             created_by_user_id: ctx.auth.userId,
             organization_id: input.organization_id,
+            start_datetime: input.start_datetime,
+            duration_minutes: input.duration_minutes,
+            timezone: input.timezone,
           })
           .returning()
           .execute()

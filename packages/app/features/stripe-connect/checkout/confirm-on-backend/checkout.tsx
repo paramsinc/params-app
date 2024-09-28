@@ -8,6 +8,7 @@ import { ErrorCard } from 'app/ds/Error/card'
 import { View } from 'app/ds/View'
 import { OfferPaymentIntentPublicPageParams } from 'app/features/offer/payment-intent-public/page'
 import { formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import { DateTime } from 'app/dates/date-time'
 
 export function StripeCheckoutForm_ConfirmOnBackend({
   profile_id,
@@ -44,6 +45,16 @@ export function StripeCheckoutForm_ConfirmOnBackend({
         profile_id,
         stripe_confirmation_token_id: confirmationToken.id,
         organization_id,
+        duration_minutes: 60,
+        start_datetime: DateTime.fromObject({
+          hour: 15,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        })
+          .plus({ day: 1 })
+          .toISO()!,
+        timezone: 'America/New_York',
       })
 
       const redirect = (paymentIntentId: string) => {

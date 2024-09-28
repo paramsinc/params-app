@@ -28,7 +28,7 @@ export const CreateMeModalContent = (props: Partial<React.ComponentProps<typeof 
           {...props}
           onDidCreateUser={() => {
             toast({
-              title: 'Account created successfully.',
+              title: 'Account saved.',
               preset: 'done',
             })
             onOpenChange(false)

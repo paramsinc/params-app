@@ -1,7 +1,7 @@
 'use client'
 import { makeAuth } from 'app/auth/make-auth'
 import { Clerk } from '@clerk/clerk-js'
-import { ClerkProvider, useAuth, UserButton, SignUpButton, SignedOut } from '@clerk/nextjs'
+import { ClerkProvider, useAuth, UserButton, SignUpButton, SignedOut, useUser } from '@clerk/nextjs'
 import { useLatestCallback } from 'app/helpers/use-latest-callback'
 import { env } from 'app/env'
 import { getConfig, getVariableValue } from 'tamagui'
@@ -29,7 +29,15 @@ const getToken = async (): Promise<string | null> => {
 function UserTrigger({ children }: { children?: React.ReactElement }) {
   return (
     <Font>
-      <UserButton />
+      <UserButton
+        children={children}
+        customMenuItems={[
+          {
+            label: 'Developer Dashboard',
+            href: '/dashboard',
+          },
+        ]}
+      />
     </Font>
   )
 }
@@ -66,11 +74,30 @@ function SignUp({ children }: { children?: React.ReactElement }) {
 
 export default makeAuth({
   useUser() {
-    const { isSignedIn, isLoaded, userId } = useAuth()
+    const { isLoaded, userId } = useAuth()
+    const user = useUser()
 
     if (!isLoaded) return { hasLoaded: false }
 
-    return { isSignedIn, userId, hasLoaded: true }
+    if (userId) {
+      return {
+        isSignedIn: true,
+        userId,
+        hasLoaded: true,
+        userFirstName: user.user?.firstName ?? undefined,
+        userLastName: user.user?.lastName ?? undefined,
+        userEmail: user.user?.emailAddresses[0]?.emailAddress,
+      }
+    }
+
+    return {
+      hasLoaded: true,
+      isSignedIn: false,
+      userId: null,
+      userFirstName: null,
+      userLastName: null,
+      userEmail: null,
+    }
   },
   useSignOut() {
     const { signOut } = useAuth()
@@ -85,7 +112,6 @@ export default makeAuth({
         Clerk={clerk}
         signInFallbackRedirectUrl="/dashboard"
         signUpFallbackRedirectUrl="/dashboard"
-        afterSignOutUrl="/"
       >
         {children}
       </ClerkProvider>

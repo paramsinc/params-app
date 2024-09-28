@@ -1,4 +1,5 @@
 import { ErrorCard } from 'app/ds/Error/card'
+import { Page } from 'app/ds/Page'
 import { Text } from 'app/ds/Text'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
@@ -27,10 +28,20 @@ export function OfferPaymentIntentPublicPage() {
     }
   )
 
+  if (!query.data) {
+    return <ErrorCard error={query.error} />
+  }
+
+  const { paymentIntent, offer } = query.data
+
   return (
-    <>
-      <ErrorCard error={query.error} />
-      <Text>{JSON.stringify(query.data, null, 2)}</Text>
-    </>
+    <Page.Root>
+      <Page.Scroll>
+        <Page.Content>
+          <ErrorCard error={query.error} />
+          <Text>{JSON.stringify(query.data, null, 2)}</Text>
+        </Page.Content>
+      </Page.Scroll>
+    </Page.Root>
   )
 }

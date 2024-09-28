@@ -204,16 +204,17 @@ const calcomUserInsert = z
 const profile = {
   isProfileSlugAvailable: authedProcedure
     .input(z.object({ slug: z.string() }))
-    .query(async ({ ctx, input: { slug } }) => {
+    .output(z.object({ slug: z.string(), isAvailable: z.boolean() }))
+    .query(async ({ input: { slug } }) => {
       if (!slug || !isValidSlug(slug)) {
-        return false
+        return { slug, isAvailable: false }
       }
       const existingProfileBySlug = await db.query.profiles
         .findFirst({
           where: (profiles, { eq }) => eq(profiles.slug, slug),
         })
         .execute()
-      return !existingProfileBySlug
+      return { slug, isAvailable: !existingProfileBySlug }
     }),
   createProfile: authedProcedure
     .input(

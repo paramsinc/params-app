@@ -9,7 +9,7 @@ import { TextArea } from 'app/ds/TextArea'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { env } from 'app/env'
-import { FormCard } from 'app/features/profile/new/layout'
+import { FormCard } from 'app/ds/Form/layout'
 import useDebounce from 'app/helpers/use-debounce'
 import { CDNVendor } from 'app/multi-media/CDNVendor'
 import { api } from 'app/trpc/client'
@@ -27,9 +27,9 @@ export const ProfileCoverImageField = ({
   onRemove: () => void
 }) => {
   const uploadMutation = api.uploadImage.useMutation()
-  console.log('')
   return (
     <Dropzone
+      disabled={uploadMutation.isPending}
       onPickImage={(base64) => {
         uploadMutation.mutate(
           { image: base64, vendor: 'cloudinary' },
@@ -48,7 +48,7 @@ export const ProfileCoverImageField = ({
       {(props) => {
         return (
           <FormCard {...(props?.isDragAccept && { theme: 'green' })}>
-            <FormCard.Title>Cover Image</FormCard.Title>
+            <FormCard.Label>Cover Image</FormCard.Label>
 
             <View
               aspectRatio={16 / 9}
@@ -126,7 +126,7 @@ export const ProfileNameField = ({
 }) => {
   return (
     <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Title>Profile Name</FormCard.Title>
+      <FormCard.Label>Profile Name</FormCard.Label>
       <Input onChangeText={onChange} value={name} placeholder="Developer Name" ref={inputRef} />
 
       <FormCard.Description>
@@ -149,7 +149,7 @@ export const ProfileBioField = ({
 }) => {
   return (
     <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Title>Bio (Markdown)</FormCard.Title>
+      <FormCard.Label>Bio (Markdown)</FormCard.Label>
       <TextArea
         onChangeText={onChange}
         value={bio ?? ''}
@@ -174,28 +174,17 @@ export const ProfileSlugField = ({
   reservedSlug?: string
 }) => {
   const isAvailableQuery = api.isProfileSlugAvailable.useQuery(
-    { slug: useDebounce(slug) },
+    { slug: useDebounce(slug, 500) },
     {
-      placeholderData: (previous) => previous,
       enabled: !!slug && slug !== reservedSlug,
+      staleTime: 0,
+      gcTime: 0,
     }
   )
 
   return (
-    <FormCard
-      theme={
-        error
-          ? 'red'
-          : isAvailableQuery.isFetching
-          ? undefined
-          : isAvailableQuery.data === true
-          ? 'green'
-          : isAvailableQuery.data === false
-          ? 'red'
-          : undefined
-      }
-    >
-      <FormCard.Title>Slug</FormCard.Title>
+    <FormCard>
+      <FormCard.Label>Slug</FormCard.Label>
       <View row gap="$1" ai="center">
         <FormCard.Description>{env.APP_URL}/@</FormCard.Description>
         <Input
@@ -206,9 +195,22 @@ export const ProfileSlugField = ({
           ref={inputRef}
         />
       </View>
-      {isAvailableQuery.data != null && (
-        <View o={isAvailableQuery.isFetching ? 0 : 1}>
-          {isAvailableQuery.data === true ? (
+      {slug !== reservedSlug && (
+        <View
+          o={isAvailableQuery.isPending || isAvailableQuery.data == null ? 0 : 1}
+          theme={
+            error
+              ? 'red'
+              : isAvailableQuery.isFetching
+              ? undefined
+              : isAvailableQuery.data?.isAvailable === true
+              ? 'green'
+              : isAvailableQuery.data?.isAvailable === false
+              ? 'red'
+              : undefined
+          }
+        >
+          {isAvailableQuery.data?.isAvailable === true ? (
             <FormCard.Description color="$color11">
               Congrats, that slug is available!
             </FormCard.Description>

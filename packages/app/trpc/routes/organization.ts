@@ -64,7 +64,7 @@ export async function getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs({
     }
     const { organization, members } = await createOrganization({
       insert: {
-        name: `${me.first_name} ${me.last_name}'s Personal Org`,
+        name: `${me.first_name} ${me.last_name}`,
         stripe_customer_id: await stripe.customers.create().then((customer) => customer.id),
         created_by_user_id: userId,
       },

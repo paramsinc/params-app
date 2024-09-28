@@ -1,12 +1,13 @@
 import Zone from 'react-dropzone'
 import { DropzoneProps } from './dropzone.types'
 
-export function Dropzone({ children, onPickImage, noClick }: DropzoneProps) {
+export function Dropzone({ children, onPickImage, noClick, disabled }: DropzoneProps) {
   return (
     <Zone
       accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'] }}
       noClick={noClick}
       maxFiles={1}
+      disabled={disabled}
       onDrop={([file]) => {
         if (!file) return
         const reader = new FileReader()

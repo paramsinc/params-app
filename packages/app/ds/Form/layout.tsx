@@ -8,15 +8,18 @@ const CardFrame = styled(View, {
   bw: 1,
   boc: '$borderColor',
   // borderRadius: '$3',
-  bg: '$color1',
+  bg: '$color2',
   gap: '$3',
 })
-const CardTitle = styled(Text, {
+const Label = styled(Text, {
   bold: true,
   color: '$color11',
 })
 const CardDescription = styled(Text, {})
 export const FormCard = withStaticProperties(CardFrame, {
-  Title: CardTitle,
+  Title: styled(Text, {
+    bold: true,
+  }),
+  Label: Label,
   Description: CardDescription,
 })

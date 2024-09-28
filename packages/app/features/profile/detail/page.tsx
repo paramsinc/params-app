@@ -11,6 +11,7 @@ import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { Calcom } from 'app/features/cal-com/cal-com'
+import { FormCard } from 'app/ds/Form/layout'
 import {
   ConnectAccountModal,
   ConnectAccountModalContent,
@@ -23,6 +24,7 @@ import {
   NewRepositoryModalTrigger,
 } from 'app/features/repository/new/modal'
 import { createParam } from 'app/navigation/use-params'
+import { useRouter } from 'app/navigation/use-router'
 import { api } from 'app/trpc/client'
 import { getConfig } from 'tamagui'
 
@@ -51,6 +53,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const reposQuery = api.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
   const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
   const members = api.profileMembersBySlug.useQuery({ profile_slug: profileSlug })
+  const router = useRouter()
   const connectAccountQuery = api.profileConnectAccount.useQuery(
     { profile_slug: profileSlug },
     {
@@ -104,7 +107,14 @@ function Content({ profileSlug }: { profileSlug: string }) {
                     <ButtonText>Edit</ButtonText>
                   </Button>
                 </UpdateProfileModal.Trigger>
-                <UpdateProfileModal.Content profileSlug={profileSlug} />
+                <UpdateProfileModal.Content
+                  profileSlug={profileSlug}
+                  onDidUpdateProfile={(patch) => {
+                    if (patch.slug !== profile.slug) {
+                      router.replace(`/dashboard/profiles/${patch.slug}`)
+                    }
+                  }}
+                />
               </UpdateProfileModal>
               <LinkButton href={`/@${profile.slug}`}>
                 <ButtonText>View Public Profile</ButtonText>
@@ -133,15 +143,15 @@ function Content({ profileSlug }: { profileSlug: string }) {
           {!!reposQuery.data?.length && (
             <View gap="$1">
               {reposQuery.data?.map((repo) => (
-                <View key={repo.id} p="$3" bg="$color1" row jbtwn ai="center">
-                  <Text>{repo.slug}</Text>
+                <FormCard key={repo.id} row jbtwn ai="center">
+                  <FormCard.Title>{repo.slug}</FormCard.Title>
 
                   {!!repo.github_url && (
                     <LinkButton href={repo.github_url} target="_blank">
                       <ButtonText>View on GitHub</ButtonText>
                     </LinkButton>
                   )}
-                </View>
+                </FormCard>
               ))}
             </View>
           )}
@@ -157,11 +167,11 @@ function Content({ profileSlug }: { profileSlug: string }) {
           {!!members.data?.length && (
             <View gap="$1">
               {members.data?.map((member) => (
-                <View row key={member.id} p="$3" bg="$color1" ai="center">
+                <FormCard key={member.id} row jbtwn ai="center">
                   <View grow>
-                    <Text>
+                    <FormCard.Title>
                       {member.first_name} {member.last_name}
-                    </Text>
+                    </FormCard.Title>
                     <Text color="$color11">{member.email}</Text>
                   </View>
 
@@ -177,7 +187,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
                   >
                     <ButtonText>{member.user_id === me.data?.id ? 'Leave' : 'Remove'}</ButtonText>
                   </Button>
-                </View>
+                </FormCard>
               ))}
             </View>
           )}

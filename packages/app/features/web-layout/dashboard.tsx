@@ -60,7 +60,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 }
 
 const MeGate = ({ children }: { children: React.ReactNode }) => {
-  const me = api.me.useQuery()
+  const auth = Auth.useUser()
+  const me = api.me.useQuery(undefined, {
+    enabled: auth.isSignedIn,
+  })
   const createMe = api.createMe.useMutation()
 
   if (me.data) {

@@ -74,9 +74,9 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
     eventTypeSlug = eventTypes.data[0]!.slug
   }
 
-  if (!eventTypeSlug) {
-    // TODO custom db event types
+  const renderEventTypePicker = () => {
     const seenLengths = new Set<number>()
+    // TODO custom db event types
     return (
       <View bg="$color3" br="$3" overflow="hidden">
         {eventTypes.data
@@ -144,12 +144,17 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
             </View>
           ) : null}
           <Text center bold>
-            Book {profile.name}
+            {profile.name}
+          </Text>
+          <Text center color="$color11">
+            Book a meeting
           </Text>
         </View>
       )}
 
-      {calBookingInput ? (
+      {!eventTypeSlug ? (
+        renderEventTypePicker()
+      ) : calBookingInput ? (
         <StripeProvider_ConfirmOnBackend amountCents={amountCents} currency="usd">
           <View
             p="$3"

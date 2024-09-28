@@ -1,7 +1,7 @@
 import { Input } from 'app/ds/Input'
 import { View } from 'app/ds/View'
 import { env } from 'app/env'
-import { FormCard } from 'app/features/profile/new/layout'
+import { FormCard } from 'app/ds/Form/layout'
 import { slugify } from 'app/trpc/slugify'
 
 export const RepositorySlugField = ({
@@ -17,7 +17,7 @@ export const RepositorySlugField = ({
 }) => {
   return (
     <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Title>Repo Name</FormCard.Title>
+      <FormCard.Label>Repo Name</FormCard.Label>
       <View row gap="$1" ai="center">
         <Input
           onChangeText={(next) => onChange(slugify(next))}
@@ -47,7 +47,7 @@ export const RepositoryGithubUrlField = ({
 }) => {
   return (
     <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Title>GitHub URL</FormCard.Title>
+      <FormCard.Label>GitHub URL</FormCard.Label>
       <Input
         onChangeText={onChange}
         value={url}
@@ -55,8 +55,8 @@ export const RepositoryGithubUrlField = ({
         ref={inputRef}
       />
       <FormCard.Description>
-        Enter the URL of the GitHub repository. If the project is nested in a monorepo,
-        add the URL to the nested folder.
+        Enter the URL of the GitHub repository. If the project is nested in a monorepo, add the URL
+        to the nested folder.
       </FormCard.Description>
     </FormCard>
   )

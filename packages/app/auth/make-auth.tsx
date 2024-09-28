@@ -4,7 +4,22 @@ type AuthBase = {
   Provider: React.ComponentType<{ children: React.ReactNode }>
   useSignOut: () => () => Promise<void>
   useUser: () =>
-    | { isSignedIn: boolean; hasLoaded: true; userId: string | null }
+    | {
+        isSignedIn: true
+        hasLoaded: true
+        userId: string
+        userFirstName: string | undefined
+        userLastName: string | undefined
+        userEmail: string | undefined
+      }
+    | {
+        isSignedIn: false
+        hasLoaded: true
+        userId: null
+        userFirstName: null
+        userLastName: null
+        userEmail: null
+      }
     | { hasLoaded: false }
   useGetToken: () => () => Promise<string | null>
   UserButton: React.ComponentType<{ children?: React.ReactElement }>

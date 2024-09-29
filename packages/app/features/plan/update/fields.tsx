@@ -3,7 +3,7 @@ import { FormCard } from 'app/ds/Form/layout'
 import { Input } from 'app/ds/Input'
 import { Text } from 'app/ds/Text'
 import { formatMinutes } from 'app/features/profile/detail/book/page'
-import { formatCurrency } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
 
 export const PlanDurationField = ({
   minutes,
@@ -75,7 +75,7 @@ export const PlanPriceField = ({
         }}
         ref={inputRef}
       />
-      {<Text color="$green11">{formatCurrency[currency]?.format((price ?? 0) / 100)}</Text>}
+      {<Text color="$green11">{formatCurrencyInteger[currency]?.format((price ?? 0) / 100)}</Text>}
     </FormCard>
   )
 }

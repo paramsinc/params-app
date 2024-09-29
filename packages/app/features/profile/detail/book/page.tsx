@@ -16,9 +16,11 @@ import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/che
 import { useState } from 'app/react'
 import { DateTime } from 'app/dates/date-time'
 import { Image } from 'app/ds/Image'
+import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
 
 const { useParams } = createParam<{
   profileSlug: string
+  planId: string | undefined
   eventTypeSlug: string | undefined
   slot?: string
 }>()
@@ -56,6 +58,7 @@ export function ProfileDetailBookPage() {
 function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername: string }) {
   const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
   const eventTypes = useEventTypes(calUsername)
+  const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
   const { params, setParams } = useParams()
 
   const amountCents = 425_00
@@ -66,6 +69,12 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
   >(null)
 
   const error = profileQuery.error ?? eventTypes.error
+
+  let planId = params.planId
+
+  // if (plansQuery.data?.length === 1 && !planId) {
+  //   planId = plansQuery.data[0]!.id
+  // }
 
   let eventTypeSlug = params.eventTypeSlug
   console.log('params.slot', params.slot)
@@ -121,6 +130,45 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
     )
   }
 
+  const renderPlanPicker = () => {
+    // TODO custom db event types
+    return (
+      <View bg="$color3" br="$3" overflow="hidden">
+        {plansQuery.data?.map(({ id, duration_mins, price, currency }, i) => {
+          return (
+            <Fragment key={id}>
+              {i > 0 && <View h={1} bg="$color4" />}
+              <View
+                p="$3"
+                group
+                row
+                ai="center"
+                hoverStyle={{ bg: '$color4' }}
+                animation="quick"
+                cursor="pointer"
+                onPressIn={() => {
+                  setParams({ planId: id })
+                }}
+              >
+                <View grow>
+                  <Text bold>
+                    {duration_mins} {'Minute'} Call
+                  </Text>
+                  <Text color="$color11">
+                    {formatCurrencyInteger[currency]?.format(price / 100)}
+                  </Text>
+                </View>
+
+                <Lucide.ChevronRight size={16} />
+              </View>
+            </Fragment>
+          )
+        })}
+        <ErrorCard error={eventTypes.error} />
+      </View>
+    )
+  }
+
   const profile = profileQuery.data
 
   return (
@@ -152,8 +200,8 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
         </View>
       )}
 
-      {!eventTypeSlug ? (
-        renderEventTypePicker()
+      {!planId ? (
+        renderPlanPicker()
       ) : calBookingInput ? (
         <StripeProvider_ConfirmOnBackend amountCents={amountCents} currency="usd">
           <View
@@ -223,7 +271,7 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
         </StripeProvider_ConfirmOnBackend>
       ) : (
         <Calcom.Booker
-          eventSlug={eventTypeSlug}
+          eventSlug={'sixty-minutes-video'}
           username={calUsername}
           hideBranding
           handleCreateBooking={(e) => {

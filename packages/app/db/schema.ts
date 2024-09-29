@@ -40,7 +40,7 @@ export const profiles = pgTable('profiles', {
   name: text('name').notNull(),
   bio: text('bio'),
   github_username: text('github_username'),
-  image_vendor: text('image_vendor'),
+  image_vendor: text('image_vendor', { enum: ['cloudinary', 'raw'] }),
   image_vendor_id: text('image_vendor_id'),
   stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
 

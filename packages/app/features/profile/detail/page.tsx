@@ -28,7 +28,10 @@ import { useRouter } from 'app/navigation/use-router'
 import { api } from 'app/trpc/client'
 import { Fragment } from 'react'
 import { formatMinutes } from 'app/features/profile/detail/book/page'
-import { formatCurrency, formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import {
+  formatCurrencyInteger,
+  formatUSD,
+} from 'app/features/stripe-connect/checkout/success/formatUSD'
 import { UpdateOnetimePlanModal } from 'app/features/plan/update/modal'
 import { CreateOnetimePlanForm } from 'app/features/plan/new/form'
 import {
@@ -318,7 +321,7 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
                   <View grow gap="$3">
                     <FormCard.Title>{plan.duration_mins} Minute Call</FormCard.Title>
                     <FormCard.Description>
-                      {formatCurrency[plan.currency]?.format(plan.price / 100)}
+                      {formatCurrencyInteger[plan.currency]?.format(plan.price / 100)}
                     </FormCard.Description>
                   </View>
 

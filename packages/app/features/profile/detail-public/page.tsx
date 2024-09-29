@@ -18,6 +18,7 @@ import { StripeCheckout } from 'app/features/stripe-connect/checkout/checkout'
 import { Scroll } from 'app/ds/Scroll'
 import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/provider'
 import { StripeCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
+import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -231,9 +232,17 @@ const CreateBooking_ConfirmOnBackend = ({ profileId }: { profileId: string | und
 }
 
 const CreateBooking_Link = ({ profileSlug }: { profileSlug: string }) => {
+  const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({
+    profile_slug: profileSlug,
+  })
+  const plans = plansQuery.data
+  const lastPlan = plans?.[plans.length - 1]
   return (
     <LinkButton themeInverse href={`/@${profileSlug}/book`}>
-      <ButtonText>Book a Call ($425+)</ButtonText>
+      <ButtonText>
+        Book a Call
+        {lastPlan && ` (${formatCurrencyInteger[lastPlan.currency]?.format(lastPlan.price / 100)})`}
+      </ButtonText>
     </LinkButton>
   )
 }

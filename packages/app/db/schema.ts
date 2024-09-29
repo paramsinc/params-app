@@ -7,9 +7,11 @@ import {
   boolean,
   serial,
   pgEnum,
+  jsonb,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 import { ulid } from 'ulid'
+import { availabilityRangesShape } from 'app/db/types'
 
 const timestampMixin = () => {
   return {
@@ -49,11 +51,12 @@ export const profiles = pgTable('profiles', {
       onDelete: 'restrict',
     })
     .notNull(),
+  availability_ranges: jsonb('availability_ranges')
+    .$type<Zod.infer<typeof availabilityRangesShape>>()
+    .default([]),
 
   ...timestampMixin(),
 })
-
-// export const currencyEnum = pgEnum('currency', ['usd'])
 
 export const profileOnetimePlans = pgTable('profile_onetime_plans', {
   id: text('id')

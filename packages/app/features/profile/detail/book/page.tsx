@@ -61,8 +61,6 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
   const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
   const { params, setParams } = useParams()
 
-  const amountCents = 425_00
-
   const [calBookingInput, setCalBookingInput] = useState<
     | Parameters<NonNullable<React.ComponentProps<typeof Calcom.Booker>['handleCreateBooking']>>[0]
     | null
@@ -72,68 +70,15 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
 
   let planId = params.planId
 
-  // if (plansQuery.data?.length === 1 && !planId) {
-  //   planId = plansQuery.data[0]!.id
-  // }
-
-  let eventTypeSlug = params.eventTypeSlug
-  console.log('params.slot', params.slot)
-
-  if (!eventTypeSlug && eventTypes.data?.length === 1) {
-    eventTypeSlug = eventTypes.data[0]!.slug
-  }
-
-  const renderEventTypePicker = () => {
-    const seenLengths = new Set<number>()
-    // TODO custom db event types
-    return (
-      <View bg="$color3" br="$3" overflow="hidden">
-        {eventTypes.data
-          ?.slice()
-          .sort((a, b) => {
-            return b.lengthInMinutes - a.lengthInMinutes
-          })
-          .map(({ id, slug, lengthInMinutes, title, price }, i) => {
-            if (seenLengths.has(lengthInMinutes)) {
-              return null
-            }
-            seenLengths.add(lengthInMinutes)
-            return (
-              <Fragment key={id}>
-                {i > 0 && <View h={1} bg="$color4" />}
-                <View
-                  p="$3"
-                  group
-                  row
-                  ai="center"
-                  hoverStyle={{ bg: '$color4' }}
-                  animation="quick"
-                  cursor="pointer"
-                  onPressIn={() => {
-                    setParams({ eventTypeSlug: slug })
-                  }}
-                >
-                  <View grow>
-                    <Text bold>{title}</Text>
-                    <View p="$1" bg="$color1" als="flex-start">
-                      <Text>{formatMinutes(lengthInMinutes)}</Text>
-                    </View>
-                  </View>
-
-                  <Lucide.ChevronRight size={16} />
-                </View>
-              </Fragment>
-            )
-          })}
-        <ErrorCard error={eventTypes.error} />
-      </View>
-    )
-  }
+  const plan = plansQuery.data?.find((p) => p.id === planId)
 
   const renderPlanPicker = () => {
     // TODO custom db event types
     return (
-      <View bg="$color3" br="$3" overflow="hidden">
+      <View bg="$color3" br="$3" overflow="hidden" gap="$3">
+        {!plansQuery.data && <Text>Loading...</Text>}
+        <ErrorCard error={plansQuery.error} />
+        {plansQuery.data?.length === 0 && <Text>This profile has disabled bookings for now.</Text>}
         {plansQuery.data?.map(({ id, duration_mins, price, currency }, i) => {
           return (
             <Fragment key={id}>
@@ -200,10 +145,10 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
         </View>
       )}
 
-      {!planId ? (
+      {!plan ? (
         renderPlanPicker()
       ) : calBookingInput ? (
-        <StripeProvider_ConfirmOnBackend amountCents={amountCents} currency="usd">
+        <StripeProvider_ConfirmOnBackend amountCents={plan.price} currency="usd">
           <View
             p="$3"
             gap="$3"
@@ -264,7 +209,7 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
               <StripeCheckoutForm_ConfirmOnBackend
                 profile_id={profile.id}
                 organization_id={null}
-                amount={amountCents}
+                amount={plan.price}
               />
             ) : null}
           </View>
@@ -283,25 +228,6 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
           }}
         />
       )}
-
-      {/* <Modal
-        open={createCalBookingInput != null}
-        onOpenChange={(next) => {
-          if (!next) {
-            setCalBookingInput(null)
-          }
-        }}
-      >
-        <ModalContent>
-          <ModalBackdrop />
-          <ModalDialog>
-            <Modal.Dialog.HeaderSmart title="Book a Call" />
-            <Scroll>
-              
-            </Scroll>
-          </ModalDialog>
-        </ModalContent>
-      </Modal> */}
     </View>
   )
 }

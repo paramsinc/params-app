@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ADD COLUMN "availability_ranges" jsonb DEFAULT '[]'::jsonb;

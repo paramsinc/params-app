@@ -48,7 +48,7 @@ export default async function handler(req: Request) {
 
     return new Response('OK', { status: 200 })
   } catch (error) {
-    console.error('[webhook][error]', error.message)
+    console.error('[webhook][error]', error)
     return new Response('Invalid stripe signature', { status: 400 })
   }
 }
@@ -107,6 +107,7 @@ async function createBookingFromOffer({
   })
 
   if (!googleCalendarEvent.data.id) {
+    // TODO log somewhere
     throw new Error('Failed to create google calendar event')
   }
 
@@ -123,4 +124,6 @@ async function createBookingFromOffer({
       timezone: offer.timezone,
     })
     .returning()
+
+  // TODO send email
 }

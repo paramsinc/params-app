@@ -11,7 +11,6 @@ import { api } from 'app/trpc/client'
 import { Highlight, themes } from 'prism-react-renderer'
 import { LinkButton } from 'app/ds/Button/link'
 import { platform } from 'app/ds/platform'
-import * as linking from 'expo-linking'
 import { env } from 'app/env'
 import { useState } from 'app/react'
 import { StripeCheckout } from 'app/features/stripe-connect/checkout/checkout'
@@ -22,14 +21,14 @@ import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/succ
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
-export function ProfileDetailPublicPage() {
+export function ProfileDetailPublicPage(props: { profileSlug?: string }) {
   const { params } = useParams()
 
   return (
     <Page.Root>
       <Page.Scroll>
         <Page.Content>
-          <Content profileSlug={params.profileSlug} />
+          <Content profileSlug={params.profileSlug ?? props.profileSlug} />
         </Page.Content>
       </Page.Scroll>
     </Page.Root>
@@ -43,12 +42,11 @@ function Content({ profileSlug }: { profileSlug: string }) {
       enabled: !!profileSlug,
     }
   )
+  console.log('[profileQuery]', profileQuery.data)
   if (!profileQuery.data) {
     return null
   }
   const profile = profileQuery.data
-  const loader =
-    profile.image_vendor && imageLoader[profile.image_vendor as keyof typeof imageLoader]
   const repos = profile.repos
   return (
     <View gap="$4" maw="$marketingPageWidth" als="center" w="100%">
@@ -63,6 +61,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
                 alt={profile.name}
                 contentFit="cover"
                 sizes="(max-width: 1200px) 100vw, 60vw"
+                priority
               />
             )}
             <View stretch center>

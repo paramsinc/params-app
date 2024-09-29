@@ -28,7 +28,7 @@ import { useRouter } from 'app/navigation/use-router'
 import { api } from 'app/trpc/client'
 import { Fragment } from 'react'
 import { formatMinutes } from 'app/features/profile/detail/book/page'
-import { formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import { formatCurrency, formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -231,6 +231,15 @@ function Content({ profileSlug }: { profileSlug: string }) {
           ) : null}
         </View>
         <View h={2} bg="$borderColor" />
+        <View row ai="center" jbtwn>
+          <Text bold>Plans</Text>
+
+          <Button>
+            <ButtonText>Add Plan</ButtonText>
+          </Button>
+        </View>
+        <PlansInternal profileSlug={profileSlug} />
+        <View h={2} bg="$borderColor" />
         <Open>
           <View row ai="center" jbtwn>
             <View grow>
@@ -285,7 +294,7 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
     return <ErrorCard error={plansQuery.error} />
   }
   return (
-    <View>
+    <View gap="$1">
       {plans.length === 0 ? (
         <Text>Time to create your first plan</Text>
       ) : (
@@ -293,8 +302,18 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
           {plans.map((plan) => {
             return (
               <Fragment key={plan.id}>
-                <Text bold>{formatMinutes(plan.duration_mins)}</Text>
-                <Text>{formatUSD.format(plan.price)}</Text>
+                <FormCard row>
+                  <View grow gap="$3">
+                    <FormCard.Title>{formatMinutes(plan.duration_mins)}</FormCard.Title>
+                    <FormCard.Description>
+                      {formatCurrency[plan.currency]?.format(plan.price)}
+                    </FormCard.Description>
+                  </View>
+
+                  <Button>
+                    <ButtonText>Edit</ButtonText>
+                  </Button>
+                </FormCard>
               </Fragment>
             )
           })}

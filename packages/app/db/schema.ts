@@ -53,7 +53,7 @@ export const profiles = pgTable('profiles', {
   ...timestampMixin(),
 })
 
-export const currencyEnum = pgEnum('currency', ['usd'])
+// export const currencyEnum = pgEnum('currency', ['usd'])
 
 export const profileOnetimePlans = pgTable('profile_onetime_plans', {
   id: text('id')
@@ -65,7 +65,7 @@ export const profileOnetimePlans = pgTable('profile_onetime_plans', {
       onDelete: 'cascade',
     }),
   price: integer('price').notNull(),
-  currency: currencyEnum('currency').notNull(),
+  currency: text('currency', { enum: ['usd'] }).notNull(),
   duration_mins: integer('duration_mins').notNull(),
   ...timestampMixin(),
 })

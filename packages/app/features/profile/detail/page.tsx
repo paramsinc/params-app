@@ -29,6 +29,13 @@ import { api } from 'app/trpc/client'
 import { Fragment } from 'react'
 import { formatMinutes } from 'app/features/profile/detail/book/page'
 import { formatCurrency, formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import { UpdateOnetimePlanModal } from 'app/features/plan/update/modal'
+import { CreateOnetimePlanForm } from 'app/features/plan/new/form'
+import {
+  CreateOnetimePlanModal,
+  CreateOnetimePlanModalContent,
+  CreateOnetimePlanModalTrigger,
+} from 'app/features/plan/new/modal'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -234,9 +241,14 @@ function Content({ profileSlug }: { profileSlug: string }) {
         <View row ai="center" jbtwn>
           <Text bold>Plans</Text>
 
-          <Button>
-            <ButtonText>Add Plan</ButtonText>
-          </Button>
+          <CreateOnetimePlanModal>
+            <CreateOnetimePlanModalTrigger>
+              <Button>
+                <ButtonText>Add Plan</ButtonText>
+              </Button>
+            </CreateOnetimePlanModalTrigger>
+            <CreateOnetimePlanModalContent profileId={profile.id} />
+          </CreateOnetimePlanModal>
         </View>
         <PlansInternal profileSlug={profileSlug} />
         <View h={2} bg="$borderColor" />
@@ -304,15 +316,21 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
               <Fragment key={plan.id}>
                 <FormCard row>
                   <View grow gap="$3">
-                    <FormCard.Title>{formatMinutes(plan.duration_mins)}</FormCard.Title>
+                    <FormCard.Title>{plan.duration_mins} Minute Call</FormCard.Title>
                     <FormCard.Description>
-                      {formatCurrency[plan.currency]?.format(plan.price)}
+                      {formatCurrency[plan.currency]?.format(plan.price / 100)}
                     </FormCard.Description>
                   </View>
 
-                  <Button>
-                    <ButtonText>Edit</ButtonText>
-                  </Button>
+                  <UpdateOnetimePlanModal>
+                    <UpdateOnetimePlanModal.Trigger>
+                      <Button>
+                        <ButtonText>Edit</ButtonText>
+                      </Button>
+                    </UpdateOnetimePlanModal.Trigger>
+
+                    <UpdateOnetimePlanModal.Content planId={plan.id} />
+                  </UpdateOnetimePlanModal>
                 </FormCard>
               </Fragment>
             )

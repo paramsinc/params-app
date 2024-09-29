@@ -1014,7 +1014,7 @@ const profilePlan = {
       if (!result) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Profile onetime plan couldn't get created.`,
+          message: `Failed to create plan.`,
         })
       }
 
@@ -1038,6 +1038,7 @@ const profilePlan = {
           d.eq(schema.profileOnetimePlans.profile_id, schema.profiles.id)
         )
         .where(d.eq(schema.profiles.slug, profile_slug))
+        .orderBy(d.desc(schema.profileOnetimePlans.duration_mins))
         .execute()
 
       const plans = results.map((result) => result.onetimePlan)
@@ -1159,6 +1160,21 @@ const profilePlan = {
         .execute()
 
       return result
+    }),
+
+  onetimePlanById_public: publicProcedure
+    .input(z.object({ plan_id: z.string() }))
+    .query(async ({ input: { plan_id } }) => {
+      const plan = await db.query.profileOnetimePlans.findFirst({
+        where: (profileOnetimePlans, { eq }) => eq(profileOnetimePlans.id, plan_id),
+        columns: {
+          id: true,
+          price: true,
+          currency: true,
+          duration_mins: true,
+        },
+      })
+      return plan
     }),
 }
 

@@ -1,4 +1,13 @@
-import { integer, pgTable, text, timestamp, unique, boolean, serial } from 'drizzle-orm/pg-core'
+import {
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  boolean,
+  serial,
+  pgEnum,
+} from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 import { ulid } from 'ulid'
 
@@ -44,6 +53,8 @@ export const profiles = pgTable('profiles', {
   ...timestampMixin(),
 })
 
+export const currencyEnum = pgEnum('currency', ['usd'])
+
 export const profileOnetimePlans = pgTable('profile_onetime_plans', {
   id: text('id')
     .primaryKey()
@@ -54,7 +65,7 @@ export const profileOnetimePlans = pgTable('profile_onetime_plans', {
       onDelete: 'cascade',
     }),
   price: integer('price').notNull(),
-  currency: text('currency').notNull(),
+  currency: currencyEnum('currency').notNull(),
   duration_mins: integer('duration_mins').notNull(),
   ...timestampMixin(),
 })

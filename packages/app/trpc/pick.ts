@@ -3,7 +3,9 @@ import { keys } from 'app/helpers/object'
 
 export const pick = <
   Table extends keyof typeof schema,
-  Columns extends Partial<Record<keyof (typeof schema)[Table], true>>
+  Columns extends Partial<{
+    [key in keyof (typeof schema)[Table]]: true
+  }>
 >(
   table: Table,
   customSchema: Columns

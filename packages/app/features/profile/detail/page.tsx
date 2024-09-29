@@ -26,7 +26,9 @@ import {
 import { createParam } from 'app/navigation/use-params'
 import { useRouter } from 'app/navigation/use-router'
 import { api } from 'app/trpc/client'
-import { getConfig } from 'tamagui'
+import { Fragment } from 'react'
+import { formatMinutes } from 'app/features/profile/detail/book/page'
+import { formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -272,5 +274,32 @@ function Content({ profileSlug }: { profileSlug: string }) {
         </Open>
       </View>
     </Calcom.Provider>
+  )
+}
+
+function PlansInternal({ profileSlug }: { profileSlug: string }) {
+  const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
+
+  const plans = plansQuery.data
+  if (!plans) {
+    return <ErrorCard error={plansQuery.error} />
+  }
+  return (
+    <View>
+      {plans.length === 0 ? (
+        <Text>Time to create your first plan</Text>
+      ) : (
+        <>
+          {plans.map((plan) => {
+            return (
+              <Fragment key={plan.id}>
+                <Text bold>{formatMinutes(plan.duration_mins)}</Text>
+                <Text>{formatUSD.format(plan.price)}</Text>
+              </Fragment>
+            )
+          })}
+        </>
+      )}
+    </View>
   )
 }

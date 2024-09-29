@@ -977,6 +977,169 @@ const calCom = {
   }),
 }
 
+const profilePlan = {
+  createOnetimePlan: authedProcedure
+    .input(
+      inserts.profileOnetimePlans.pick({
+        profile_id: true,
+        price: true,
+        currency: true,
+        duration_mins: true,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const myMembership = await db.query.profileMembers
+        .findFirst({
+          where: (profileMembers, { eq, and }) =>
+            and(
+              eq(profileMembers.profile_id, input.profile_id),
+              eq(profileMembers.user_id, ctx.auth.userId)
+            ),
+        })
+        .execute()
+
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const [result] = await db
+        .insert(schema.profileOnetimePlans)
+        .values(input)
+        .returning()
+        .execute()
+
+      if (!result) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Profile onetime plan couldn't get created.`,
+        })
+      }
+
+      return result
+    }),
+  onetimePlansByProfileSlug: authedProcedure
+    .input(z.object({ profile_slug: z.string() }))
+    .query(async ({ input: { profile_slug } }) => {
+      const results = await db
+        .select({
+          onetimePlan: pick('profileOnetimePlans', {
+            currency: true,
+            duration_mins: true,
+            price: true,
+            id: true,
+          }),
+        })
+        .from(schema.profiles)
+        .innerJoin(
+          schema.profileOnetimePlans,
+          d.eq(schema.profileOnetimePlans.profile_id, schema.profiles.id)
+        )
+        .where(d.eq(schema.profiles.slug, profile_slug))
+        .execute()
+
+      const plans = results.map((result) => result.onetimePlan)
+
+      return plans
+    }),
+  deleteOnetimePlan: authedProcedure
+    .input(z.object({ plan_id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [first] = await db
+        .select({
+          ...pick('profileOnetimePlans', {
+            id: true,
+          }),
+          myProfileMembership: pick(
+            'profileMembers',
+            publicSchema.profileMembers.ProfileMemberPublic
+          ),
+        })
+        .from(schema.profileOnetimePlans)
+        .leftJoin(
+          schema.profileMembers,
+          d.and(
+            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId)
+          )
+        )
+        .limit(1)
+        .execute()
+
+      if (!first?.myProfileMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      return input
+    }),
+  updateOnetimePlan: authedProcedure
+    .input(
+      z.object({
+        plan_id: z.string(),
+        patch: inserts.profileOnetimePlans
+          .pick({
+            price: true,
+            currency: true,
+            duration_mins: true,
+          })
+          .partial(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [first] = await db
+        .select({
+          ...pick('profileOnetimePlans', {
+            id: true,
+          }),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+          myProfileMembership: pick(
+            'profileMembers',
+            publicSchema.profileMembers.ProfileMemberPublic
+          ),
+        })
+        .from(schema.profileOnetimePlans)
+        .where(d.eq(schema.profileOnetimePlans.id, input.plan_id))
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.profileOnetimePlans.profile_id))
+        .leftJoin(
+          schema.profileMembers,
+          d.and(
+            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId)
+          )
+        )
+        .limit(1)
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Profile not found for that plan.`,
+        })
+      }
+
+      if (!first.myProfileMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const [result] = await db
+        .update(schema.profileOnetimePlans)
+        .set(input.patch)
+        .where(d.eq(schema.profileOnetimePlans.id, input.plan_id))
+        .returning()
+        .execute()
+
+      return result
+    }),
+}
+
 export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
@@ -996,6 +1159,7 @@ export const appRouter = router({
   ...profileMember,
   ...calCom,
   ...repository,
+  ...profilePlan,
   /**
    * @deprecated
    */

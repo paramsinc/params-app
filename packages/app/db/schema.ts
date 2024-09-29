@@ -44,6 +44,21 @@ export const profiles = pgTable('profiles', {
   ...timestampMixin(),
 })
 
+export const profileOnetimePlans = pgTable('profile_onetime_plans', {
+  id: text('id')
+    .primaryKey()
+    .$default(() => `profile_onetime_plan_${ulid()}`),
+  profile_id: text('profile_id')
+    .notNull()
+    .references(() => profiles.id, {
+      onDelete: 'cascade',
+    }),
+  price: integer('price').notNull(),
+  currency: text('currency').notNull(),
+  duration_mins: integer('duration_mins').notNull(),
+  ...timestampMixin(),
+})
+
 export const repositories = pgTable(
   'repositories',
   {

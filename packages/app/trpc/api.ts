@@ -1020,7 +1020,7 @@ const profilePlan = {
 
       return result
     }),
-  onetimePlansByProfileSlug: authedProcedure
+  onetimePlansByProfileSlug_public: publicProcedure
     .input(z.object({ profile_slug: z.string() }))
     .query(async ({ input: { profile_slug } }) => {
       const results = await db
@@ -1056,8 +1056,11 @@ const profilePlan = {
             'profileMembers',
             publicSchema.profileMembers.ProfileMemberPublic
           ),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
         })
         .from(schema.profileOnetimePlans)
+        .where(d.eq(schema.profileOnetimePlans.id, input.plan_id))
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.profileOnetimePlans.profile_id))
         .leftJoin(
           schema.profileMembers,
           d.and(
@@ -1068,6 +1071,13 @@ const profilePlan = {
         .limit(1)
         .execute()
 
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Profile plan not found.`,
+        })
+      }
+
       if (!first?.myProfileMembership) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
@@ -1075,7 +1085,19 @@ const profilePlan = {
         })
       }
 
-      return input
+      if (!first?.id) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Profile plan not found.`,
+        })
+      }
+
+      await db
+        .delete(schema.profileOnetimePlans)
+        .where(d.eq(schema.profileOnetimePlans.id, input.plan_id))
+        .execute()
+
+      return true
     }),
   updateOnetimePlan: authedProcedure
     .input(

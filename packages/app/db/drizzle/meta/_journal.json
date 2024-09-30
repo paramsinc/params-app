@@ -127,6 +127,13 @@
       "when": 1727649382275,
       "tag": "0017_lucky_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1727727805042,
+      "tag": "0018_far_rattler",
+      "breakpoints": true
     }
   ]
 }

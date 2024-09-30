@@ -1,6 +1,7 @@
 import { DateTime } from 'app/dates/date-time'
 import { Select } from 'app/db/client'
 import { PaymentIntentStatus } from 'app/db/enums'
+import { ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Card } from 'app/ds/Form/layout'
@@ -47,12 +48,9 @@ export function OfferPaymentIntentPublicPage() {
 
   const { start_datetime, timezone } = offer
 
-  const [hackDateIso, hackTimeIso] = start_datetime.split(' ')
-
-  const [hour, minute] = hackTimeIso?.split(':').map(Number) ?? []
-  const hackDateTime = DateTime.fromISO(hackDateIso ?? '', {
+  const hackDateTime = DateTime.fromISO(start_datetime, {
     zone: timezone,
-  }).set({ hour, minute })
+  })
 
   return (
     <Page.Root>
@@ -121,6 +119,10 @@ export function OfferPaymentIntentPublicPage() {
                 {profileMemberEmails.join(', ')}.
               </Card.Description>
             </Card>
+
+            <LinkButton href={`/@${offer.profile.slug}`} als="flex-start">
+              <ButtonText>Back to Profile</ButtonText>
+            </LinkButton>
           </View>
         </Page.Content>
       </Page.Scroll>

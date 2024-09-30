@@ -7,9 +7,11 @@ const serviceAccountKey = JSON.parse(serverEnv.GOOGLE_CAL_SERVICE_JSON)
 const auth = new google.auth.JWT({
   email: serviceAccountKey.client_email,
   key: serviceAccountKey.private_key,
-  scopes: ['https://www.googleapis.com/auth/calendar'],
+  scopes: ['https://www.googleapis.com/auth/calendar.events'],
   subject: serverEnv.GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR,
 })
+
+console.log('[google][email]', serverEnv.GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR)
 
 export async function createGoogleCalendarEventForOffer({
   offerId,
@@ -32,6 +34,8 @@ export async function createGoogleCalendarEventForOffer({
 
   // Insert the event into the user's primary calendar
   const response = await calendar.events.insert({
+    sendNotifications: true,
+    sendUpdates: 'all',
     auth,
     calendarId: 'primary',
     conferenceDataVersion: 1,
@@ -63,10 +67,10 @@ export async function createGoogleCalendarEventForOffer({
           },
         },
       },
-      guestsCanSeeOtherGuests: true,
-      guestsCanModify: false,
     },
   })
+
+  console.log('[google][created-event]', response)
 
   return response
 }

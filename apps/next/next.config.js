@@ -5,7 +5,7 @@ const path = require('path')
 const { join } = require('path')
 
 const disableExtraction =
-  process.env.DISABLE_EXTRACTION === 'true' || process.env.NODE_ENV === 'development'
+  true || process.env.DISABLE_EXTRACTION === 'true' || process.env.NODE_ENV === 'development'
 
 const plugins = [
   withBundleAnalyzer({
@@ -112,8 +112,11 @@ let config = {
     '@nandorojo/anchor',
   ],
   experimental: {
+    // https://blog.arcjet.com/structured-logging-in-json-for-next-js/
+    serverComponentsExternalPackages: ['pino', 'pino-pretty'],
     scrollRestoration: true,
     typedRoutes: true,
+    instrumentationHook: true,
     // nextScriptWorkers: true,
     // optimizeCss: true,
 

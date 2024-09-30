@@ -1,7 +1,7 @@
 import { select } from 'app/helpers/select'
 import { authedProcedure, publicProcedure, router } from './trpc'
 import { z } from 'zod'
-import { Insert, inserts, selects } from 'app/db/inserts-and-selects'
+import { inserts, selects } from 'app/db/inserts-and-selects'
 import { d, db, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
@@ -475,7 +475,6 @@ const profile = {
         .where(d.eq(schema.profiles.slug, slug))
         .limit(100)
         .execute()
-      console.log('[q]', profileRepoPairs)
       const repos = profileRepoPairs.map((p) => p.repo).filter(Boolean)
       const [first] = profileRepoPairs
       if (!first) {
@@ -1299,11 +1298,11 @@ const availability = {
             eq(bookings.profile_id, profile_id),
             gte(
               bookings.start_datetime,
-              DateTime.fromObject(start_date, { zone: profile.timezone }).toISO()!
+              DateTime.fromObject(start_date, { zone: profile.timezone }).toJSDate()!
             ),
             lt(
               bookings.start_datetime,
-              DateTime.fromObject(end_date, { zone: profile.timezone }).toISO()!
+              DateTime.fromObject(end_date, { zone: profile.timezone }).toJSDate()!
             )
           ),
       })
@@ -1437,7 +1436,7 @@ export const appRouter = router({
         )
     )
     .mutation(async ({ ctx, input }) => {
-      const { paymentIntent } = await db.transaction(async (tx) => {
+      const { offer, plan, profile } = await db.transaction(async (tx) => {
         if (!input.organization_id) {
           input.organization_id = await getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs({
             userId: ctx.auth.userId,
@@ -1500,7 +1499,9 @@ export const appRouter = router({
           })
         }
 
-        console.log('start_datetime', start_datetime.toISO())
+        const jsDate = start_datetime.toJSDate()
+
+        console.log('[createOfferAndPaymentIntent][start_datetime]', jsDate)
 
         const [offer] = await tx
           .insert(schema.offers)
@@ -1508,52 +1509,58 @@ export const appRouter = router({
             profile_id: profile.id,
             created_by_user_id: ctx.auth.userId,
             organization_id: input.organization_id,
-            start_datetime: start_datetime.toISO(),
+            start_datetime: jsDate,
             duration_minutes: plan.duration_mins,
             timezone: input.timezone,
           })
           .returning()
           .execute()
-        if (!offer) {
+        if (!offer?.id) {
           throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: `Offer couldn't get created.`,
           })
         }
 
-        const amount = plan.price
-        const currency = plan.currency
-        const application_fee_amount = plan.price * 0.1 // TODO calculate
+        console.log('[createOfferAndPaymentIntent][offer]', offer)
 
-        const paymentIntent = await stripe.paymentIntents.create(
-          {
-            amount,
-            currency,
-            confirm: true,
-            confirmation_token: stripe_confirmation_token_id,
-            application_fee_amount,
-            transfer_data: {
-              destination: profile.stripe_connect_account_id,
-            },
-            metadata: {
-              offer_id: offer.id,
-            },
-            payment_method_types: ['card'],
-          },
-          {
-            // is this correct?
-            idempotencyKey: offer.id,
-          }
-        )
+        console.log('[createOfferAndPaymentIntent][offer]', offer)
 
-        await tx
-          .update(schema.offers)
-          .set({ stripe_payment_intent_id: paymentIntent.id })
-          .where(d.eq(schema.offers.id, offer.id))
-          .execute()
-
-        return { paymentIntent }
+        return { offer, plan, profile }
       })
+
+      const amount = plan.price
+      const currency = plan.currency
+      const application_fee_amount = plan.price * 0.1 // TODO calculate
+
+      const paymentIntent = await stripe.paymentIntents.create(
+        {
+          amount,
+          currency,
+          confirm: true,
+          confirmation_token: input.stripe_confirmation_token_id,
+          application_fee_amount,
+          transfer_data: {
+            destination: profile.stripe_connect_account_id,
+          },
+          metadata: {
+            offer_id: offer.id,
+          },
+          payment_method_types: ['card'],
+        },
+        {
+          // is this correct?
+          idempotencyKey: offer.id,
+        }
+      )
+
+      console.log('[createOfferAndPaymentIntent][paymentIntent]', paymentIntent.id)
+
+      await db
+        .update(schema.offers)
+        .set({ stripe_payment_intent_id: paymentIntent.id })
+        .where(d.eq(schema.offers.id, offer.id))
+        .execute()
 
       return {
         paymentIntent: {

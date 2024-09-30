@@ -18,7 +18,7 @@ export const PlanDurationField = ({
 }) => {
   return (
     <Card theme={error ? 'red' : undefined}>
-      <Card.Title>Call Duration (Min)</Card.Title>
+      <Card.Title>Call Duration (Minutes)</Card.Title>
       <Input
         placeholder={'30'}
         value={minutes?.toString() ?? ''}
@@ -37,7 +37,6 @@ export const PlanDurationField = ({
         }}
         ref={inputRef}
       />
-      <Card.Description>{formatMinutes(minutes ?? 0)}</Card.Description>
     </Card>
   )
 }

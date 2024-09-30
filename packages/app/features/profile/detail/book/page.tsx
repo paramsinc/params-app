@@ -76,39 +76,44 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
     // TODO custom db event types
     return (
       <View bg="$color3" br="$3" overflow="hidden" gap="$3">
-        {!plansQuery.data && <Text>Loading...</Text>}
-        <ErrorCard error={plansQuery.error} />
-        {plansQuery.data?.length === 0 && <Text>This profile has disabled bookings for now.</Text>}
-        {plansQuery.data?.map(({ id, duration_mins, price, currency }, i) => {
-          return (
-            <Fragment key={id}>
-              {i > 0 && <View h={1} bg="$color4" />}
-              <View
-                p="$3"
-                group
-                row
-                ai="center"
-                hoverStyle={{ bg: '$color4' }}
-                animation="quick"
-                cursor="pointer"
-                onPressIn={() => {
-                  setParams({ planId: id })
-                }}
-              >
-                <View grow>
-                  <Text bold>
-                    {duration_mins} {'Minute'} Call
-                  </Text>
-                  <Text color="$color11">
-                    {formatCurrencyInteger[currency]?.format(price / 100)}
-                  </Text>
-                </View>
+        {!plansQuery.data ? (
+          <Text>Loading...</Text>
+        ) : plansQuery.data?.length === 0 ? (
+          <Text>This profile has disabled bookings for now.</Text>
+        ) : (
+          <View>
+            {plansQuery.data?.map(({ id, duration_mins, price, currency }, i) => {
+              return (
+                <Fragment key={id}>
+                  <View
+                    p="$3"
+                    group
+                    row
+                    ai="center"
+                    hoverStyle={{ bg: '$color4' }}
+                    animation="quick"
+                    cursor="pointer"
+                    btw={i && 1}
+                    boc="$borderColor"
+                    onPressIn={() => {
+                      setParams({ planId: id })
+                    }}
+                  >
+                    <View grow>
+                      <Text bold>{duration_mins} Minute Call</Text>
+                      <Text color="$color11">
+                        {formatCurrencyInteger[currency]?.format(price / 100)}
+                      </Text>
+                    </View>
 
-                <Lucide.ChevronRight size={16} />
-              </View>
-            </Fragment>
-          )
-        })}
+                    <Lucide.ChevronRight size={16} />
+                  </View>
+                </Fragment>
+              )
+            })}
+          </View>
+        )}
+        <ErrorCard error={plansQuery.error} />
         <ErrorCard error={eventTypes.error} />
       </View>
     )

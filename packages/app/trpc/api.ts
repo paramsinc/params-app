@@ -1489,15 +1489,26 @@ export const appRouter = router({
 
         const { profile, plan } = first
 
+        const start_datetime = DateTime.fromObject(input.start_datetime, {
+          zone: input.timezone,
+        })
+
+        if (!start_datetime.isValid) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Invalid start datetime.`,
+          })
+        }
+
+        console.log('start_datetime', start_datetime.toISO())
+
         const [offer] = await tx
           .insert(schema.offers)
           .values({
             profile_id: profile.id,
             created_by_user_id: ctx.auth.userId,
             organization_id: input.organization_id,
-            start_datetime: DateTime.fromObject(input.start_datetime, {
-              zone: input.timezone,
-            }).toISO()!,
+            start_datetime: start_datetime.toISO(),
             duration_minutes: plan.duration_mins,
             timezone: input.timezone,
           })
@@ -1555,7 +1566,7 @@ export const appRouter = router({
   offerByPaymentIntentId: publicProcedure
     .input(z.object({ payment_intent_id: z.string(), payment_intent_client_secret: z.string() }))
     .query(async ({ input: { payment_intent_id, payment_intent_client_secret } }) => {
-      const [offer] = await db
+      const results = await db
         .select({
           ...pick('offers', {
             id: true,
@@ -1565,39 +1576,38 @@ export const appRouter = router({
             voided: true,
             stripe_payment_intent_id: true,
             organization_id: true,
+            duration_minutes: true,
+            timezone: true,
+            start_datetime: true,
           }),
           profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+          organization: pick('organizations', { id: true, name: true }),
+          profileMember: pick('profileMembers', {
+            id: true,
+            profile_id: true,
+            email: true,
+          }),
         })
         .from(schema.offers)
+        .where(d.eq(schema.offers.stripe_payment_intent_id, payment_intent_id))
         .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.offers.profile_id))
+        .innerJoin(
+          schema.organizations,
+          d.eq(schema.organizations.id, schema.offers.organization_id)
+        )
+        .leftJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
         .execute()
 
-      if (!offer) {
+      const [first] = results
+
+      if (!first) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `Offer not found. Are you sure this is a valid URL?`,
         })
       }
 
-      // const offer = await db.query.offers.findFirst({
-      //   where: (offers, { eq }) => eq(offers.stripe_payment_intent_id, payment_intent_id),
-      //   columns: {
-      //     id: true,
-      //     profile_id: true,
-      //     created_at: true,
-      //     last_updated_at: true,
-      //     voided: true,
-      //     stripe_payment_intent_id: true,
-      //     organization_id: true,
-      //   },
-      // })
-
-      // if (!offer) {
-      //   throw new TRPCError({
-      //     code: 'NOT_FOUND',
-      //     message: `Offer not found. Are you sure this is a valid URL?`,
-      //   })
-      // }
+      const { profileMember: profileMembers, ...offer } = first
 
       const { stripe_payment_intent_id } = offer
 
@@ -1605,28 +1615,19 @@ export const appRouter = router({
         return null
       }
 
-      const { amount, status, client_secret } = await stripe.paymentIntents.retrieve(
+      const { amount, status, currency, next_action } = await stripe.paymentIntents.retrieve(
         stripe_payment_intent_id
       )
-
-      // if (client_secret !== payment_intent_client_secret) {
-      //   console.error('[invalid-payment-intent-request]', {
-      //     client_secret,
-      //     payment_intent_client_secret,
-      //   })
-      //   // sanity check
-      //   throw new TRPCError({
-      //     code: 'UNAUTHORIZED',
-      //     message: `Invalid payment intent client secret.`,
-      //   })
-      // }
 
       return {
         paymentIntent: {
           amount,
           status,
+          currency,
+          next_action,
         },
         offer,
+        profileMemberEmails: results.map((result) => result.profileMember?.email).filter(Boolean),
       }
     }),
 })

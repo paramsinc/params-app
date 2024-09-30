@@ -1,9 +1,15 @@
+import { DateTime } from 'app/dates/date-time'
 import { Select } from 'app/db/client'
 import { PaymentIntentStatus } from 'app/db/enums'
+import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
+import { Card } from 'app/ds/Form/layout'
+import { Lucide } from 'app/ds/Lucide'
 import { Page } from 'app/ds/Page'
 import { Text } from 'app/ds/Text'
 import { ThemeName } from 'app/ds/ThemeName'
+import { View } from 'app/ds/View'
+import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
 
@@ -35,14 +41,87 @@ export function OfferPaymentIntentPublicPage() {
     return <ErrorCard error={query.error} />
   }
 
-  const { paymentIntent, offer } = query.data
+  const { paymentIntent, offer, profileMemberEmails } = query.data
+
+  const { title, theme } = dipslayPaymentIntentStatus[paymentIntent.status]
+
+  const { start_datetime, timezone } = offer
+
+  const [hackDateIso, hackTimeIso] = start_datetime.split(' ')
+
+  const [hour, minute] = hackTimeIso?.split(':').map(Number) ?? []
+  const hackDateTime = DateTime.fromISO(hackDateIso ?? '', {
+    zone: timezone,
+  }).set({ hour, minute })
 
   return (
     <Page.Root>
       <Page.Scroll>
         <Page.Content>
           <ErrorCard error={query.error} />
-          <Text>{JSON.stringify(query.data, null, 2)}</Text>
+          <View gap="$3">
+            <Card theme={theme}>
+              <Card.Label>Order #{offer.id.slice(-5)}</Card.Label>
+              <Card.Title>
+                {formatCurrencyInteger.usd.format(paymentIntent.amount / 100)}
+              </Card.Title>
+              <Card.Description>{title}</Card.Description>
+            </Card>
+
+            <Card>
+              <Card.Title>Call Details</Card.Title>
+
+              <Card.Description>
+                {offer.organization.name} booked {offer.profile.name}.
+              </Card.Description>
+              {hackDateTime.isValid && (
+                <>
+                  <Card.IconRow>
+                    <Card.IconRow.Icon icon={Lucide.Calendar} />
+                    <Card.IconRow.Content>
+                      <Card.Description>
+                        {hackDateTime.toLocaleString({
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </Card.Description>
+                    </Card.IconRow.Content>
+                  </Card.IconRow>
+                  <Card.IconRow>
+                    <Card.IconRow.Icon icon={Lucide.Clock} />
+                    <Card.IconRow.Content>
+                      <Card.Description>
+                        {hackDateTime.toLocaleString({
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}{' '}
+                        -{' '}
+                        {hackDateTime.plus({ minutes: offer.duration_minutes }).toLocaleString({
+                          hour: 'numeric',
+                          minute: 'numeric',
+                          timeZoneName: 'short',
+                        })}
+                      </Card.Description>
+                    </Card.IconRow.Content>
+                  </Card.IconRow>
+                </>
+              )}
+              <Card.IconRow>
+                <Card.IconRow.Icon icon={Lucide.AlarmCheck} />
+                <Card.IconRow.Content>
+                  <Card.Description>{offer.duration_minutes} minutes</Card.Description>
+                </Card.IconRow.Content>
+              </Card.IconRow>
+            </Card>
+            <Card>
+              <Card.Title>Next Steps</Card.Title>
+              <Card.Description>
+                A calendar invite will be sent to the following emails:{' '}
+                {profileMemberEmails.join(', ')}.
+              </Card.Description>
+            </Card>
+          </View>
         </Page.Content>
       </Page.Scroll>
     </Page.Root>
@@ -51,11 +130,11 @@ export function OfferPaymentIntentPublicPage() {
 
 const dipslayPaymentIntentStatus = {
   succeeded: {
-    title: 'Succeeded',
+    title: 'Payment Successful',
     theme: 'green',
   },
   processing: {
-    title: 'Processing',
+    title: 'Processing Payment',
     theme: 'blue',
   },
   requires_payment_method: {
@@ -63,7 +142,7 @@ const dipslayPaymentIntentStatus = {
     theme: 'red',
   },
   requires_confirmation: {
-    title: 'Requires Confirmation',
+    title: 'Payment Requires Confirmation',
     theme: 'yellow',
   },
   requires_action: {

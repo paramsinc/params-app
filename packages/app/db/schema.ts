@@ -15,8 +15,8 @@ import { availabilityRangesShape } from 'app/db/types'
 
 const timestampMixin = () => {
   return {
-    created_at: timestamp('created_at', { mode: 'string' }).defaultNow(),
-    last_updated_at: timestamp('updated_at', { mode: 'string' })
+    created_at: timestamp('created_at', { mode: 'string', withTimezone: true }).defaultNow(),
+    last_updated_at: timestamp('updated_at', { mode: 'string', withTimezone: true })
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date().toISOString()),
@@ -146,7 +146,7 @@ export const offers = pgTable('offers', {
   created_by_user_id: text('created_by_user_id').references(() => users.id, {
     onDelete: 'set null',
   }),
-  start_datetime: timestamp('start_datetime', { mode: 'string' }).notNull(),
+  start_datetime: timestamp('start_datetime', { mode: 'string', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),
   timezone: text('timezone').notNull(),
   ...timestampMixin(),
@@ -179,7 +179,7 @@ export const bookings = pgTable('bookings', {
     onDelete: 'set null',
   }),
 
-  start_datetime: timestamp('start_datetime', { mode: 'string' }).notNull(),
+  start_datetime: timestamp('start_datetime', { mode: 'string', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),
   timezone: text('timezone').notNull(),
 

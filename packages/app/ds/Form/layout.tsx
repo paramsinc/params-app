@@ -16,7 +16,7 @@ const Label = styled(Text, {
   color: '$color11',
 })
 const CardDescription = styled(Text, {})
-export const FormCard = withStaticProperties(CardFrame, {
+export const Card = withStaticProperties(CardFrame, {
   Title: styled(Text, {
     bold: true,
   }),

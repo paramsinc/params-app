@@ -16,7 +16,7 @@ import { useState } from 'app/react'
 import { StripeCheckout } from 'app/features/stripe-connect/checkout/checkout'
 import { Scroll } from 'app/ds/Scroll'
 import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/provider'
-import { StripeCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
+import { OfferCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
 import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
 
 const { useParams } = createParam<{ profileSlug: string }>()
@@ -216,7 +216,7 @@ const CreateBooking_ConfirmOnBackend = ({ profileId }: { profileId: string | und
             <StripeProvider_ConfirmOnBackend amountCents={425_00} currency="usd">
               <View p="$3">
                 {profileId ? (
-                  <StripeCheckoutForm_ConfirmOnBackend
+                  <OfferCheckoutForm_ConfirmOnBackend
                     profile_id={profileId}
                     organization_id={null}
                   />

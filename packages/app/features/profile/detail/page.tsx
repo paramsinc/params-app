@@ -11,7 +11,7 @@ import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { Calcom } from 'app/features/cal-com/cal-com'
-import { FormCard } from 'app/ds/Form/layout'
+import { Card } from 'app/ds/Form/layout'
 import {
   ConnectAccountModal,
   ConnectAccountModalContent,
@@ -155,15 +155,15 @@ function Content({ profileSlug }: { profileSlug: string }) {
           {!!reposQuery.data?.length && (
             <View gap="$1">
               {reposQuery.data?.map((repo) => (
-                <FormCard key={repo.id} row jbtwn ai="center">
-                  <FormCard.Title>{repo.slug}</FormCard.Title>
+                <Card key={repo.id} row jbtwn ai="center">
+                  <Card.Title>{repo.slug}</Card.Title>
 
                   {!!repo.github_url && (
                     <LinkButton href={repo.github_url} target="_blank">
                       <ButtonText>View on GitHub</ButtonText>
                     </LinkButton>
                   )}
-                </FormCard>
+                </Card>
               ))}
             </View>
           )}
@@ -179,11 +179,11 @@ function Content({ profileSlug }: { profileSlug: string }) {
           {!!members.data?.length && (
             <View gap="$1">
               {members.data?.map((member) => (
-                <FormCard key={member.id} row jbtwn ai="center">
+                <Card key={member.id} row jbtwn ai="center">
                   <View grow>
-                    <FormCard.Title>
+                    <Card.Title>
                       {member.first_name} {member.last_name}
-                    </FormCard.Title>
+                    </Card.Title>
                     <Text color="$color11">{member.email}</Text>
                   </View>
 
@@ -199,7 +199,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
                   >
                     <ButtonText>{member.user_id === me.data?.id ? 'Leave' : 'Remove'}</ButtonText>
                   </Button>
-                </FormCard>
+                </Card>
               ))}
             </View>
           )}
@@ -317,12 +317,12 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
           {plans.map((plan) => {
             return (
               <Fragment key={plan.id}>
-                <FormCard row>
+                <Card row>
                   <View grow gap="$3">
-                    <FormCard.Title>{plan.duration_mins} Minute Call</FormCard.Title>
-                    <FormCard.Description>
+                    <Card.Title>{plan.duration_mins} Minute Call</Card.Title>
+                    <Card.Description>
                       {formatCurrencyInteger[plan.currency]?.format(plan.price / 100)}
-                    </FormCard.Description>
+                    </Card.Description>
                   </View>
 
                   <UpdateOnetimePlanModal>
@@ -334,7 +334,7 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
 
                     <UpdateOnetimePlanModal.Content planId={plan.id} />
                   </UpdateOnetimePlanModal>
-                </FormCard>
+                </Card>
               </Fragment>
             )
           })}

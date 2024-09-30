@@ -1,5 +1,5 @@
 import { Currency } from 'app/db/enums'
-import { FormCard } from 'app/ds/Form/layout'
+import { Card } from 'app/ds/Form/layout'
 import { Input } from 'app/ds/Input'
 import { Text } from 'app/ds/Text'
 import { formatMinutes } from 'app/features/profile/detail/book/page'
@@ -17,8 +17,8 @@ export const PlanDurationField = ({
   inputRef?: React.Ref<Input>
 }) => {
   return (
-    <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Title>Call Duration (Min)</FormCard.Title>
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Title>Call Duration (Min)</Card.Title>
       <Input
         placeholder={'30'}
         value={minutes?.toString() ?? ''}
@@ -37,8 +37,8 @@ export const PlanDurationField = ({
         }}
         ref={inputRef}
       />
-      <FormCard.Description>{formatMinutes(minutes ?? 0)}</FormCard.Description>
-    </FormCard>
+      <Card.Description>{formatMinutes(minutes ?? 0)}</Card.Description>
+    </Card>
   )
 }
 
@@ -55,8 +55,8 @@ export const PlanPriceField = ({
 }) => {
   const currency = 'usd' satisfies Currency
   return (
-    <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Title>Price ({currency})</FormCard.Title>
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Title>Price ({currency})</Card.Title>
       <Input
         placeholder={'100'}
         value={typeof price === 'number' ? (price / 100).toString() : ''}
@@ -76,6 +76,6 @@ export const PlanPriceField = ({
         ref={inputRef}
       />
       {<Text color="$green11">{formatCurrencyInteger[currency]?.format((price ?? 0) / 100)}</Text>}
-    </FormCard>
+    </Card>
   )
 }

@@ -16,6 +16,9 @@ const queryClient = new QueryClient({
         }) // refetch all active queries when mutation succeeds...
       },
     },
+    queries: {
+      refetchOnMount: true,
+    },
   },
 })
 

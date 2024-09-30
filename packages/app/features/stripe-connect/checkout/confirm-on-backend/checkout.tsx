@@ -10,14 +10,27 @@ import { OfferPaymentIntentPublicPageParams } from 'app/features/offer/payment-i
 import { formatUSD } from 'app/features/stripe-connect/checkout/success/formatUSD'
 import { DateTime } from 'app/dates/date-time'
 
-export function StripeCheckoutForm_ConfirmOnBackend({
+export function OfferCheckoutForm_ConfirmOnBackend({
   profile_id,
   organization_id,
   amount,
+  plan_id,
+  insert,
 }: {
   profile_id: string
   organization_id: string | null
   amount: number
+  plan_id: string
+  insert: {
+    start_datetime: {
+      year: number
+      month: number
+      day: number
+      hour: number
+      minute: number
+    }
+    timezone: string
+  }
 }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -41,20 +54,20 @@ export function StripeCheckoutForm_ConfirmOnBackend({
         throw new Error(error.message)
       }
 
+      const { year, month, day, hour, minute } = insert.start_datetime
       const { paymentIntent } = await createOfferAndPaymentIntentMutation.mutateAsync({
         profile_id,
         stripe_confirmation_token_id: confirmationToken.id,
         organization_id,
-        duration_minutes: 60,
-        start_datetime: DateTime.fromObject({
-          hour: 15,
-          minute: 0,
-          second: 0,
-          millisecond: 0,
-        })
-          .plus({ day: 1 })
-          .toISO()!,
-        timezone: 'America/New_York',
+        plan_id,
+        start_datetime: {
+          year,
+          month,
+          day,
+          hour,
+          minute,
+        },
+        timezone: insert.timezone,
       })
 
       const redirect = (paymentIntentId: string) => {

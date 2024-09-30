@@ -451,14 +451,27 @@ const profile = {
         profile_slug: z.string(),
       })
     )
-    .query(async ({ input: { profile_slug: slug } }) => {
+    .query(async ({ input: { profile_slug: slug }, ctx }) => {
       const profileRepoPairs = await db
         .select({
-          ...pick('profiles', publicSchema.profiles.ProfilePublic),
+          publicProfile: pick('profiles', publicSchema.profiles.ProfilePublic),
           repo: pick('repositories', publicSchema.repositories.RepositoryPublic),
+          myMembership: pick('profileMembers', { id: true, user_id: true }),
         })
         .from(schema.profiles)
         .leftJoin(schema.repositories, d.eq(schema.repositories.profile_id, schema.profiles.id))
+        .leftJoin(
+          schema.profileMembers,
+          d.and(
+            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
+            ...[
+              d.eq(
+                schema.profileMembers.user_id,
+                ctx.auth.userId ?? '' // it's fine, this wouldn't happen
+              ),
+            ]
+          )
+        )
         .where(d.eq(schema.profiles.slug, slug))
         .limit(100)
         .execute()
@@ -468,12 +481,14 @@ const profile = {
       if (!first) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Profile not found.` })
       }
+      const amIAMember = profileRepoPairs.some((p) => p.myMembership)
 
-      const { repo: _, ...publicProfile } = first
+      const { publicProfile } = first
 
       return {
         ...publicProfile,
         repos,
+        canIEdit: amIAMember,
       }
     }),
   profileBySlug: authedProcedure
@@ -1404,14 +1419,20 @@ export const appRouter = router({
       inserts.offers
         .pick({
           profile_id: true,
-          start_datetime: true,
-          duration_minutes: true,
           timezone: true,
         })
         .merge(
           z.object({
             stripe_confirmation_token_id: z.string(),
             organization_id: z.string().nullable(),
+            plan_id: z.string(),
+            start_datetime: z.object({
+              year: z.number(),
+              month: z.number(),
+              day: z.number(),
+              hour: z.number(),
+              minute: z.number(),
+            }),
           })
         )
     )
@@ -1447,12 +1468,14 @@ export const appRouter = router({
           .select({
             profile: schema.profiles,
             calcomUser: schema.calcomUsers,
+            plan: schema.profileOnetimePlans,
           })
           .from(schema.profiles)
           .innerJoin(
             schema.calcomUsers,
             d.eq(schema.calcomUsers.id, schema.profiles.calcom_user_id)
           )
+          .innerJoin(schema.profileOnetimePlans, d.eq(schema.profileOnetimePlans.id, input.plan_id))
           .where(d.eq(schema.profiles.id, profile_id))
           .limit(1)
           .execute()
@@ -1464,7 +1487,7 @@ export const appRouter = router({
           })
         }
 
-        const { profile } = first
+        const { profile, plan } = first
 
         const [offer] = await tx
           .insert(schema.offers)
@@ -1472,8 +1495,10 @@ export const appRouter = router({
             profile_id: profile.id,
             created_by_user_id: ctx.auth.userId,
             organization_id: input.organization_id,
-            start_datetime: input.start_datetime,
-            duration_minutes: input.duration_minutes,
+            start_datetime: DateTime.fromObject(input.start_datetime, {
+              zone: input.timezone,
+            }).toISO()!,
+            duration_minutes: plan.duration_mins,
             timezone: input.timezone,
           })
           .returning()
@@ -1485,9 +1510,9 @@ export const appRouter = router({
           })
         }
 
-        const amount = 10_00 // TODO pull from a plan or something
-        const currency = 'usd' // TODO make this dynamic
-        const application_fee_amount = 123 // TODO calculate
+        const amount = plan.price
+        const currency = plan.currency
+        const application_fee_amount = plan.price * 0.1 // TODO calculate
 
         const paymentIntent = await stripe.paymentIntents.create(
           {

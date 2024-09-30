@@ -11,7 +11,7 @@ import { Lucide } from 'app/ds/Lucide'
 import { Modal, ModalBackdrop, ModalContent, ModalDialog, ModalTrigger } from 'app/ds/Modal'
 import { Button, ButtonText } from 'app/ds/Button'
 import { Scroll } from 'app/ds/Scroll'
-import { StripeCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
+import { OfferCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
 import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/provider'
 import { useState } from 'app/react'
 import { DateTime } from 'app/dates/date-time'
@@ -206,10 +206,17 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
               </View>
             </View>
             {profile ? (
-              <StripeCheckoutForm_ConfirmOnBackend
+              <OfferCheckoutForm_ConfirmOnBackend
                 profile_id={profile.id}
                 organization_id={null}
                 amount={plan.price}
+                plan_id={plan.id}
+                insert={{
+                  start_datetime: DateTime.fromISO(calBookingInput.start, {
+                    zone: calBookingInput.timeZone,
+                  })!,
+                  timezone: calBookingInput.timeZone,
+                }}
               />
             ) : null}
           </View>

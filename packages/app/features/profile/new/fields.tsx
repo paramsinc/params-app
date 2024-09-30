@@ -9,7 +9,7 @@ import { TextArea } from 'app/ds/TextArea'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { env } from 'app/env'
-import { FormCard } from 'app/ds/Form/layout'
+import { Card } from 'app/ds/Form/layout'
 import useDebounce from 'app/helpers/use-debounce'
 import { CDNVendor } from 'app/multi-media/CDNVendor'
 import { api } from 'app/trpc/client'
@@ -47,8 +47,8 @@ export const ProfileCoverImageField = ({
     >
       {(props) => {
         return (
-          <FormCard {...(props?.isDragAccept && { theme: 'green' })}>
-            <FormCard.Label>Cover Image</FormCard.Label>
+          <Card {...(props?.isDragAccept && { theme: 'green' })}>
+            <Card.Label>Cover Image</Card.Label>
 
             <View
               aspectRatio={16 / 9}
@@ -82,10 +82,10 @@ export const ProfileCoverImageField = ({
               )}
             </View>
 
-            <FormCard.Description>
+            <Card.Description>
               The main image for your developer profile. Choose a high-res image in 16x9 aspect
               ratio that highlights you personally.
-            </FormCard.Description>
+            </Card.Description>
 
             <View row gap="$1" jbtwn ai="center">
               <Button onPress={props?.open}>
@@ -106,7 +106,7 @@ export const ProfileCoverImageField = ({
                 </View>
               </View>
             )}
-          </FormCard>
+          </Card>
         )
       }}
     </Dropzone>
@@ -125,15 +125,15 @@ export const ProfileNameField = ({
   inputRef: any
 }) => {
   return (
-    <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Label>Profile Name</FormCard.Label>
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>Profile Name</Card.Label>
       <Input onChangeText={onChange} value={name} placeholder="Developer Name" ref={inputRef} />
 
-      <FormCard.Description>
+      <Card.Description>
         This is the name that will be displayed on your profile. Either your personal name or
         company name, depending on what users should see.
-      </FormCard.Description>
-    </FormCard>
+      </Card.Description>
+    </Card>
   )
 }
 export const ProfileBioField = ({
@@ -148,8 +148,8 @@ export const ProfileBioField = ({
   inputRef: any
 }) => {
   return (
-    <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Label>Bio (Markdown)</FormCard.Label>
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>Bio (Markdown)</Card.Label>
       <TextArea
         onChangeText={onChange}
         value={bio ?? ''}
@@ -157,7 +157,7 @@ export const ProfileBioField = ({
         styled
         ref={inputRef}
       />
-    </FormCard>
+    </Card>
   )
 }
 export const ProfileSlugField = ({
@@ -183,10 +183,10 @@ export const ProfileSlugField = ({
   )
 
   return (
-    <FormCard>
-      <FormCard.Label>Slug</FormCard.Label>
+    <Card>
+      <Card.Label>Slug</Card.Label>
       <View row gap="$1" ai="center">
-        <FormCard.Description>{env.APP_URL}/@</FormCard.Description>
+        <Card.Description>{env.APP_URL}/@</Card.Description>
         <Input
           onChangeText={(next) => onChange(slugify(next))}
           onChange={(e) => e.preventDefault()}
@@ -211,16 +211,12 @@ export const ProfileSlugField = ({
           }
         >
           {isAvailableQuery.data?.isAvailable === true ? (
-            <FormCard.Description color="$color11">
-              Congrats, that slug is available!
-            </FormCard.Description>
+            <Card.Description color="$color11">Congrats, that slug is available!</Card.Description>
           ) : (
-            <FormCard.Description color="$color11">
-              This slug is already taken...
-            </FormCard.Description>
+            <Card.Description color="$color11">This slug is already taken...</Card.Description>
           )}
         </View>
       )}
-    </FormCard>
+    </Card>
   )
 }

@@ -1,6 +1,9 @@
+import { Select } from 'app/db/client'
+import { PaymentIntentStatus } from 'app/db/enums'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Page } from 'app/ds/Page'
 import { Text } from 'app/ds/Text'
+import { ThemeName } from 'app/ds/ThemeName'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
 
@@ -45,3 +48,40 @@ export function OfferPaymentIntentPublicPage() {
     </Page.Root>
   )
 }
+
+const dipslayPaymentIntentStatus = {
+  succeeded: {
+    title: 'Succeeded',
+    theme: 'green',
+  },
+  processing: {
+    title: 'Processing',
+    theme: 'blue',
+  },
+  requires_payment_method: {
+    title: 'Requires Payment Method',
+    theme: 'red',
+  },
+  requires_confirmation: {
+    title: 'Requires Confirmation',
+    theme: 'yellow',
+  },
+  requires_action: {
+    title: 'Requires Action',
+    theme: 'yellow',
+  },
+  canceled: {
+    title: 'Canceled',
+    theme: 'red',
+  },
+  requires_capture: {
+    title: 'Requires Capture',
+    theme: 'yellow',
+  },
+} satisfies Record<
+  PaymentIntentStatus,
+  {
+    title: string
+    theme: ThemeName
+  }
+>

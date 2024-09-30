@@ -1,4 +1,4 @@
-import { FormCard } from 'app/ds/Form/layout'
+import { Card } from 'app/ds/Form/layout'
 import { Input } from 'app/ds/Input'
 import { View } from 'app/ds/View'
 import { env } from 'app/env'
@@ -18,15 +18,15 @@ export const UserFirstNameField = ({
   inputRef: any
 }) => {
   return (
-    <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Label>First Name</FormCard.Label>
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>First Name</Card.Label>
       <Input
         onChangeText={onChange}
         value={firstName}
         placeholder="Enter your first name"
         ref={inputRef}
       />
-    </FormCard>
+    </Card>
   )
 }
 
@@ -42,15 +42,15 @@ export const UserLastNameField = ({
   inputRef: any
 }) => {
   return (
-    <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Label>Last Name</FormCard.Label>
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>Last Name</Card.Label>
       <Input
         onChangeText={onChange}
         value={lastName}
         placeholder="Enter your last name"
         ref={inputRef}
       />
-    </FormCard>
+    </Card>
   )
 }
 
@@ -66,8 +66,8 @@ export const UserEmailField = ({
   inputRef: any
 }) => {
   return (
-    <FormCard theme={error ? 'red' : undefined}>
-      <FormCard.Label>Email</FormCard.Label>
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>Email</Card.Label>
       <Input
         onChangeText={onChange}
         value={email}
@@ -75,6 +75,6 @@ export const UserEmailField = ({
         keyboardType="email-address"
         ref={inputRef}
       />
-    </FormCard>
+    </Card>
   )
 }

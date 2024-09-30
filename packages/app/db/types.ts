@@ -7,6 +7,6 @@ export const availabilityRangesShape = z.array(
   z.object({
     start_time: time,
     end_time: time,
-    days_of_week: dow,
+    day_of_week: dow,
   })
 )

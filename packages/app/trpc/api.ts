@@ -17,6 +17,8 @@ import { isValidSlug, slugify } from 'app/trpc/slugify'
 import { getOnlyOrg_OrCreateOrg_OrThrowIfUserHasMultipleOrgs } from 'app/trpc/routes/organization'
 import { cdn } from 'app/multi-media/cdn'
 import { keys } from 'app/helpers/object'
+import { availabilityRangesShape } from 'app/db/types'
+import { DateTime } from 'app/dates/date-time'
 
 async function createUser(
   insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
@@ -1178,6 +1180,191 @@ const profilePlan = {
     }),
 }
 
+export const upcomingSlotsShape = z.object({
+  slots: z.array(
+    z.object({
+      date: z.object({
+        year: z.number(),
+        month: z.number(),
+        day: z.number(),
+      }),
+      time: z.object({
+        hour: z.number(),
+        minute: z.number(),
+      }),
+      duration_mins: z.number(),
+    })
+  ),
+  timezone: z.string(),
+})
+
+const availability = {
+  updateProfileAvailability: authedProcedure
+    .input(z.object({ availability_ranges: availabilityRangesShape, profile_id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const myMembership = await db.query.profileMembers
+        .findFirst({
+          where: (profileMembers, { eq, and }) =>
+            and(
+              eq(profileMembers.profile_id, input.profile_id),
+              eq(profileMembers.user_id, ctx.auth.userId)
+            ),
+        })
+        .execute()
+
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const [first] = await db
+        .update(schema.profiles)
+        .set({ availability_ranges: input.availability_ranges })
+        .where(d.eq(schema.profiles.id, input.profile_id))
+        .returning({ id: schema.profiles.id })
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to update availability.`,
+        })
+      }
+
+      return first
+    }),
+  upcomingProfileSlots_public: publicProcedure
+    .input(
+      z.object({
+        profile_id: z.string(),
+        plan_id: z.string(),
+        start_date: z
+          .object({
+            year: z.number(),
+            month: z.number(),
+            day: z.number(),
+          })
+          .describe('Inclusive'),
+        end_date: z
+          .object({
+            year: z.number(),
+            month: z.number(),
+            day: z.number(),
+          })
+          .describe('Exclusive'),
+      })
+    )
+    .output(upcomingSlotsShape)
+    .query(async ({ input: { profile_id, plan_id, start_date, end_date } }) => {
+      const [first] = await db
+        .select({
+          profile: schema.profiles,
+          plan: schema.profileOnetimePlans,
+        })
+        .from(schema.profileOnetimePlans)
+        .where(d.eq(schema.profileOnetimePlans.id, plan_id))
+        .limit(1)
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.profileOnetimePlans.profile_id))
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Profile not found for that plan.`,
+        })
+      }
+
+      const { profile, plan } = first
+
+      const bookings = await db.query.bookings.findMany({
+        where: (bookings, { eq, and, gte, lt }) =>
+          and(
+            eq(bookings.profile_id, profile_id),
+            gte(
+              bookings.start_datetime,
+              DateTime.fromObject(start_date, { zone: profile.timezone }).toISO()!
+            ),
+            lt(
+              bookings.start_datetime,
+              DateTime.fromObject(end_date, { zone: profile.timezone }).toISO()!
+            )
+          ),
+      })
+
+      const slots: Zod.infer<typeof upcomingSlotsShape>['slots'] = []
+      const weekdayToEnum: Record<
+        number,
+        Zod.infer<typeof availabilityRangesShape>[0]['day_of_week']
+      > = {
+        1: 'monday',
+        2: 'tuesday',
+        3: 'wednesday',
+        4: 'thursday',
+        5: 'friday',
+        6: 'saturday',
+        7: 'sunday',
+      }
+
+      let dateTime = DateTime.fromObject(start_date, { zone: profile.timezone }).startOf('day')
+      const endDateTime = DateTime.fromObject(end_date, { zone: profile.timezone }).startOf('day')
+      while (dateTime.startOf('day') < endDateTime) {
+        const queuedAvailRanges = profile.availability_ranges?.slice()
+
+        while (queuedAvailRanges?.length) {
+          const range = queuedAvailRanges.shift()!
+          if (range.day_of_week !== weekdayToEnum[dateTime.weekday]) {
+            continue
+          }
+          const rangeStart = dateTime.set(range.start_time)
+          const rangeEnd = dateTime.set(range.end_time)
+
+          let start = rangeStart
+          while (start.plus({ minutes: plan.duration_mins }) <= rangeEnd) {
+            const slotEnd = start.plus({ minutes: plan.duration_mins })
+            const hasConflictingBooking = bookings.some((booking): boolean => {
+              // this may feel slow because it's doing so many loops. however, it's probably fine?
+              const bookingStart = DateTime.fromISO(booking.start_datetime, {
+                zone: booking.timezone,
+              })
+              const bookingEnd = bookingStart.plus({ minutes: booking.duration_minutes })
+
+              if (bookingStart >= start && bookingStart <= slotEnd) {
+                return true
+              }
+
+              if (bookingEnd >= start && bookingEnd <= slotEnd) {
+                return true
+              }
+              return false
+            })
+            if (!hasConflictingBooking) {
+              slots.push({
+                date: {
+                  year: dateTime.year,
+                  month: dateTime.month,
+                  day: dateTime.day,
+                },
+                duration_mins: plan.duration_mins,
+                time: { hour: start.hour, minute: start.minute },
+              })
+            }
+
+            start = start.plus({ minute: plan.duration_mins })
+          }
+        }
+
+        dateTime = dateTime.plus({ day: 1 })
+      }
+
+      return {
+        slots,
+        timezone: profile.timezone,
+      }
+    }),
+}
+
 export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
@@ -1198,6 +1385,7 @@ export const appRouter = router({
   ...calCom,
   ...repository,
   ...profilePlan,
+  ...availability,
   /**
    * @deprecated
    */

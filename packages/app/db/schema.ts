@@ -54,6 +54,7 @@ export const profiles = pgTable('profiles', {
   availability_ranges: jsonb('availability_ranges')
     .$type<Zod.infer<typeof availabilityRangesShape>>()
     .default([]),
+  timezone: text('timezone').notNull().default('America/New_York'),
 
   ...timestampMixin(),
 })

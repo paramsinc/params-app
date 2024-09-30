@@ -29,15 +29,12 @@ const getToken = async (): Promise<string | null> => {
 function UserTrigger({ children }: { children?: React.ReactElement }) {
   return (
     <Font>
-      <UserButton
-        children={children}
-        customMenuItems={[
-          {
-            label: 'Developer Dashboard',
-            href: '/dashboard',
-          },
-        ]}
-      />
+      <UserButton>
+        {children}
+        <UserButton.MenuItems>
+          <UserButton.Action label="Dashboard" labelIcon={null} open="/dashboard" />
+        </UserButton.MenuItems>
+      </UserButton>
     </Font>
   )
 }

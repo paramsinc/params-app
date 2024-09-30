@@ -120,6 +120,13 @@
       "when": 1727648910261,
       "tag": "0016_exotic_fallen_one",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1727649382275,
+      "tag": "0017_lucky_vulcan",
+      "breakpoints": true
     }
   ]
 }

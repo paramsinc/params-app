@@ -22,6 +22,7 @@ export const publicSchema = {
       image_vendor_id: true,
       created_at: true,
       last_updated_at: true,
+      availability_ranges: true,
     },
     ProfilePublic: {
       id: true,

@@ -6820,6 +6820,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bun@npm:^1.1.10":
+  version: 1.1.10
+  resolution: "@types/bun@npm:1.1.10"
+  dependencies:
+    bun-types: "npm:1.1.29"
+  checksum: 10/a2a0dbc9d412fd4437bfbac2bde454715c8e1e991edcd301275bd460f141e29f21c393e9a66812f5887e689a5c9bd6f9d1b8693a1740d29e5875558eb03c6144
+  languageName: node
+  linkType: hard
+
 "@types/connect@npm:*":
   version: 3.4.38
   resolution: "@types/connect@npm:3.4.38"
@@ -6998,6 +7007,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:~20.12.8":
+  version: 20.12.14
+  resolution: "@types/node@npm:20.12.14"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/8ce987f0b7e15116e92894c51ee53fe0cbd98dafb5693a2e7d490f16396552528114d055ca1b144d3fdc5ba7d5f5ce28ad091a693c24337615f047cefc3faa36
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
@@ -7100,7 +7118,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ws@npm:^8":
+"@types/ws@npm:^8, @types/ws@npm:~8.5.10":
   version: 8.5.12
   resolution: "@types/ws@npm:8.5.12"
   dependencies:
@@ -8359,6 +8377,16 @@ __metadata:
   version: 1.0.3
   resolution: "builtins@npm:1.0.3"
   checksum: 10/8f756616bd3d92611bcb5bcc3008308e7cdaadbc4603a5ce6fe709193198bc115351d138524d79e5269339ef7ba5ba73185da541c7b4bc076b00dd0124f938f6
+  languageName: node
+  linkType: hard
+
+"bun-types@npm:1.1.29":
+  version: 1.1.29
+  resolution: "bun-types@npm:1.1.29"
+  dependencies:
+    "@types/node": "npm:~20.12.8"
+    "@types/ws": "npm:~8.5.10"
+  checksum: 10/33456e845b069e644191e6a2827a39062f5642d2c1ec952e00adbb8710c6aab94efa9347f4bcebceb3be00a2a02b7daacc447d7da77ff85b3754caba3953e3e1
   languageName: node
   linkType: hard
 
@@ -17605,6 +17633,7 @@ __metadata:
   resolution: "solito-blank@workspace:."
   dependencies:
     "@total-typescript/ts-reset": "npm:^0.6.1"
+    "@types/bun": "npm:^1.1.10"
     "@types/react": "npm:^18.2.21"
     "@typescript-eslint/eslint-plugin": "npm:^8.6.0"
     "@typescript-eslint/parser": "npm:^8.6.0"

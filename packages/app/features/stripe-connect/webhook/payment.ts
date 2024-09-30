@@ -37,6 +37,11 @@ export default async function handler(req: Request) {
         return new Response('Missing offer_id', { status: 400 })
       }
 
+      await db
+        .update(schema.offers)
+        .set({ stripe_payment_intent_id: event.data.object.id })
+        .where(d.eq(schema.offers.id, offer_id))
+
       await createBookingFromOffer({ offerId: offer_id, paymentIntentId: event.data.object.id })
 
       return new Response('OK', { status: 200 })
@@ -47,7 +52,10 @@ export default async function handler(req: Request) {
         return new Response('Missing offer_id', { status: 400 })
       }
 
-      await db.update(schema.offers).set({ voided: true }).where(d.eq(schema.offers.id, offer_id))
+      await db
+        .update(schema.offers)
+        .set({ voided: true, stripe_payment_intent_id: event.data.object.id })
+        .where(d.eq(schema.offers.id, offer_id))
     }
 
     return new Response('OK', { status: 200 })

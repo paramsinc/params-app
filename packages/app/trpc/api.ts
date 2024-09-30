@@ -267,6 +267,7 @@ const profile = {
             email: me.email,
             user_id: me.id,
           }
+          // TODO remove this from the transaction?
           const calcomUser = await tx.query.calcomUsers.findFirst({
             where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
           })
@@ -1555,12 +1556,6 @@ export const appRouter = router({
       )
 
       console.log('[createOfferAndPaymentIntent][paymentIntent]', paymentIntent.id)
-
-      await db
-        .update(schema.offers)
-        .set({ stripe_payment_intent_id: paymentIntent.id })
-        .where(d.eq(schema.offers.id, offer.id))
-        .execute()
 
       return {
         paymentIntent: {

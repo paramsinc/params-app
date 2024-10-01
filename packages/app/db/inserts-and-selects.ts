@@ -9,7 +9,7 @@ export const selects = Object.fromEntries(
 }
 
 export const inserts = Object.fromEntries(
-  entries(schema).map(([key, table]) => [key, createInsertSchema(table)])
+  entries(schema).map(([key, table]) => [key, createInsertSchema(table).strict()])
 ) as any as {
   [key in keyof typeof schema]: ReturnType<typeof createInsertSchema<(typeof schema)[key]>>
 }

@@ -979,6 +979,129 @@ const repository = {
 
       return repos
     }),
+  updateRepo: authedProcedure
+    .input(
+      z.object({
+        repo_id: z.string(),
+        patch: inserts.repositories
+          .pick({
+            slug: true,
+            github_url: true,
+          })
+          .partial(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [first] = await db
+        .select({
+          ...pick('repositories', {
+            id: true,
+          }),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+          myProfileMembership: pick(
+            'profileMembers',
+            publicSchema.profileMembers.ProfileMemberPublic
+          ),
+        })
+        .from(schema.repositories)
+        .where(d.eq(schema.repositories.id, input.repo_id))
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.repositories.profile_id))
+        .leftJoin(
+          schema.profileMembers,
+          d.and(
+            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId)
+          )
+        )
+        .limit(1)
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Profile not found for that repository.`,
+        })
+      }
+
+      if (!first.myProfileMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const [result] = await db
+        .update(schema.repositories)
+        .set(input.patch)
+        .where(d.eq(schema.repositories.id, input.repo_id))
+        .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
+        .execute()
+
+      return result
+    }),
+
+  deleteRepo: authedProcedure
+    .input(z.object({ repo_id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [first] = await db
+        .select({
+          ...pick('repositories', {
+            id: true,
+          }),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+          myProfileMembership: pick(
+            'profileMembers',
+            publicSchema.profileMembers.ProfileMemberPublic
+          ),
+        })
+        .from(schema.repositories)
+        .where(d.eq(schema.repositories.id, input.repo_id))
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.repositories.profile_id))
+        .leftJoin(
+          schema.profileMembers,
+          d.and(
+            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId)
+          )
+        )
+        .limit(1)
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Repository not found.`,
+        })
+      }
+
+      if (!first.myProfileMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      await db
+        .delete(schema.repositories)
+        .where(d.eq(schema.repositories.id, input.repo_id))
+        .execute()
+
+      return true
+    }),
+
+  repoById: publicProcedure
+    .input(z.object({ repo_id: z.string() }))
+    .query(async ({ input: { repo_id } }) => {
+      const repo = await db.query.repositories.findFirst({
+        where: (repositories, { eq }) => eq(repositories.id, repo_id),
+        columns: {
+          id: true,
+          slug: true,
+          github_url: true,
+        },
+      })
+      return repo
+    }),
 }
 
 const calCom = {

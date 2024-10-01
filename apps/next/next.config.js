@@ -40,6 +40,7 @@ const plugins = [
       'Animated',
       // 'Modal',
     ],
+    useTamaguiSVG: false,
   }),
   (nextConfig) => {
     return {

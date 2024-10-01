@@ -39,6 +39,11 @@ import {
   CreateOnetimePlanModalContent,
   CreateOnetimePlanModalTrigger,
 } from 'app/features/plan/new/modal'
+import {
+  UpdateRepositoryModal,
+  UpdateRepositoryModalContent,
+  UpdateRepositoryModalTrigger,
+} from 'app/features/repository/update/modal'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -155,14 +160,24 @@ function Content({ profileSlug }: { profileSlug: string }) {
           {!!reposQuery.data?.length && (
             <View gap="$1">
               {reposQuery.data?.map((repo) => (
-                <Card key={repo.id} row jbtwn ai="center">
-                  <Card.Title>{repo.slug}</Card.Title>
+                <Card key={repo.id} row ai="center">
+                  <View grow>
+                    <Card.Title>{repo.slug}</Card.Title>
+                  </View>
 
                   {!!repo.github_url && (
                     <LinkButton href={repo.github_url} target="_blank">
-                      <ButtonText>View on GitHub</ButtonText>
+                      <ButtonText>GitHub</ButtonText>
                     </LinkButton>
                   )}
+                  <UpdateRepositoryModal>
+                    <UpdateRepositoryModalTrigger>
+                      <Button>
+                        <ButtonText>Edit</ButtonText>
+                      </Button>
+                    </UpdateRepositoryModalTrigger>
+                    <UpdateRepositoryModalContent repoId={repo.id} />
+                  </UpdateRepositoryModal>
                 </Card>
               ))}
             </View>

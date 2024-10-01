@@ -18,15 +18,13 @@ export const RepositorySlugField = ({
   return (
     <Card theme={error ? 'red' : undefined}>
       <Card.Label>Repo Name</Card.Label>
-      <View row gap="$1" ai="center">
-        <Input
-          onChangeText={(next) => onChange(slugify(next))}
-          onChange={(e) => e.preventDefault()}
-          value={slug}
-          placeholder="repo-name"
-          ref={inputRef}
-        />
-      </View>
+      <Input
+        onChangeText={(next) => onChange(slugify(next))}
+        onChange={(e) => e.preventDefault()}
+        value={slug}
+        placeholder="repo-name"
+        ref={inputRef}
+      />
       <Card.Description>Lowercase letters, numbers, and dashes. Shown publicly.</Card.Description>
     </Card>
   )

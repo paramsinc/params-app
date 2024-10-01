@@ -80,4 +80,4 @@ build/**
 !.yarn/sdks
 !.yarn/versions
 
-.tamagui
+apps/next/.tamagui

@@ -267,60 +267,24 @@ const profile = {
             email: me.email,
             user_id: me.id,
           }
-          // TODO remove this from the transaction?
-          const calcomUser = await tx.query.calcomUsers.findFirst({
-            where: (calcomUsers, { eq }) => eq(calcomUsers.email, memberInsert.email),
-          })
-          let calcom_user_id = calcomUser?.id
-          if (!calcom_user_id) {
-            const createdCalcomUser = await createCalcomUser({
-              email: memberInsert.email,
-              name: [memberInsert.first_name, memberInsert.last_name].filter(Boolean).join(' '),
-              timeFormat: (timeFormat as 12 | 24) ?? 12,
-              weekStart,
-              timeZone,
-            })
-            if (createdCalcomUser.status !== 'success') {
-              throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: `Couldn't create your calendar account for ${memberInsert.email}. Please try again.`,
-              })
-            }
-            await tx
-              .insert(schema.calcomUsers)
-              .values({
-                id: createdCalcomUser.data.user.id,
-                email: createdCalcomUser.data.user.email,
-                access_token: createdCalcomUser.data.accessToken,
-                refresh_token: createdCalcomUser.data.refreshToken,
-              })
-              .returning()
-              .execute()
-              .catch(async (e) => {
-                // garbage collect the stale calcom user if db insertion fails
-                await deleteCalcomAccount(createdCalcomUser.data.user.id)
 
-                throw e
-              })
-            calcom_user_id = createdCalcomUser.data.user.id
-          }
+          const stripe_connect_account_id = await stripe.accounts
+            .create({
+              settings: {
+                payouts: {
+                  schedule: {
+                    interval: 'manual',
+                  },
+                },
+              },
+            })
+            .then((account) => account.id)
 
           const [profile] = await tx
             .insert(schema.profiles)
             .values({
               ...input,
-              stripe_connect_account_id: await stripe.accounts
-                .create({
-                  settings: {
-                    payouts: {
-                      schedule: {
-                        interval: 'manual',
-                      },
-                    },
-                  },
-                })
-                .then((account) => account.id),
-              calcom_user_id,
+              stripe_connect_account_id,
             })
             .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
             .execute()
@@ -904,14 +868,25 @@ const profileMember = {
 
 const repository = {
   repoBySlug: publicProcedure
-    .input(z.object({ slug: z.string(), profile_slug: z.string() }))
-    .query(async ({ input: { slug, profile_slug } }) => {
-      const repository = await db.query.repositories
-        .findFirst({
-          where: (repositories, { eq, and }) =>
-            and(eq(repositories.slug, slug), eq(schema.profiles.slug, profile_slug)),
+    .input(z.object({ repo_slug: z.string(), profile_slug: z.string() }))
+    .query(async ({ input: { repo_slug, profile_slug } }) => {
+      const [repository] = await db
+        .select({
+          ...pick('repositories', publicSchema.repositories.RepositoryPublic),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
         })
+        .from(schema.repositories)
+        .where(d.eq(schema.repositories.slug, repo_slug))
+        .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
+        .limit(1)
         .execute()
+
+      if (!repository) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Repository not found.`,
+        })
+      }
 
       return repository
     }),
@@ -1340,6 +1315,7 @@ const availability = {
   updateProfileAvailability: authedProcedure
     .input(z.object({ availability_ranges: availabilityRangesShape, profile_id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      console.log('updateProfileAvailability', input.profile_id)
       const myMembership = await db.query.profileMembers
         .findFirst({
           where: (profileMembers, { eq, and }) =>
@@ -1361,7 +1337,10 @@ const availability = {
         .update(schema.profiles)
         .set({ availability_ranges: input.availability_ranges })
         .where(d.eq(schema.profiles.id, input.profile_id))
-        .returning({ id: schema.profiles.id })
+        .returning({
+          ...pick('profiles', publicSchema.profiles.ProfilePublic),
+          availability_ranges: schema.profiles.availability_ranges,
+        })
         .execute()
 
       if (!first) {
@@ -1376,7 +1355,7 @@ const availability = {
   upcomingProfileSlots_public: publicProcedure
     .input(
       z.object({
-        profile_id: z.string(),
+        profile_slug: z.string(),
         plan_id: z.string(),
         start_date: z
           .object({
@@ -1395,16 +1374,22 @@ const availability = {
       })
     )
     .output(upcomingSlotsShape)
-    .query(async ({ input: { profile_id, plan_id, start_date, end_date } }) => {
+    .query(async ({ input: { profile_slug, plan_id, start_date, end_date } }) => {
       const [first] = await db
         .select({
           profile: schema.profiles,
           plan: schema.profileOnetimePlans,
         })
-        .from(schema.profileOnetimePlans)
-        .where(d.eq(schema.profileOnetimePlans.id, plan_id))
+        .from(schema.profiles)
+        .where(d.eq(schema.profiles.slug, profile_slug))
         .limit(1)
-        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.profileOnetimePlans.profile_id))
+        .innerJoin(
+          schema.profileOnetimePlans,
+          d.and(
+            d.eq(schema.profileOnetimePlans.profile_id, schema.profiles.id),
+            d.eq(schema.profileOnetimePlans.id, plan_id)
+          )
+        )
         .execute()
 
       if (!first) {
@@ -1416,18 +1401,35 @@ const availability = {
 
       const { profile, plan } = first
 
+      const startDate = DateTime.fromObject(start_date, { zone: profile.timezone })
+      const endDate = DateTime.fromObject(end_date, { zone: profile.timezone })
+      if (!startDate.isValid) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Invalid start date.`,
+        })
+      }
+      if (!endDate.isValid) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Invalid end date.`,
+        })
+      }
       const bookings = await db.query.bookings.findMany({
         where: (bookings, { eq, and, gte, lt }) =>
           and(
-            eq(bookings.profile_id, profile_id),
-            gte(
-              bookings.start_datetime,
-              DateTime.fromObject(start_date, { zone: profile.timezone }).toJSDate()!
-            ),
-            lt(
-              bookings.start_datetime,
-              DateTime.fromObject(end_date, { zone: profile.timezone }).toJSDate()!
-            )
+            eq(bookings.profile_id, profile_slug),
+            gte(bookings.start_datetime, startDate.toJSDate()),
+            lt(bookings.start_datetime, endDate.toJSDate())
+          ),
+      })
+      const offers = await db.query.offers.findMany({
+        where: (offers, { eq, and, gte, lt }) =>
+          and(
+            eq(offers.profile_id, profile_slug),
+            gte(offers.start_datetime, startDate.toJSDate()),
+            lt(offers.start_datetime, endDate.toJSDate()),
+            eq(offers.voided, false)
           ),
       })
 
@@ -1445,9 +1447,9 @@ const availability = {
         7: 'sunday',
       }
 
-      let dateTime = DateTime.fromObject(start_date, { zone: profile.timezone }).startOf('day')
-      const endDateTime = DateTime.fromObject(end_date, { zone: profile.timezone }).startOf('day')
-      while (dateTime.startOf('day') < endDateTime) {
+      let dateTime = DateTime.fromObject(start_date, { zone: profile.timezone })
+      const endDateTime = DateTime.fromObject(end_date, { zone: profile.timezone })
+      while (dateTime.startOf('day') < endDateTime.startOf('day')) {
         const queuedAvailRanges = profile.availability_ranges?.slice()
 
         while (queuedAvailRanges?.length) {
@@ -1458,26 +1460,28 @@ const availability = {
           const rangeStart = dateTime.set(range.start_time)
           const rangeEnd = dateTime.set(range.end_time)
 
-          let start = rangeStart
-          while (start.plus({ minutes: plan.duration_mins }) <= rangeEnd) {
-            const slotEnd = start.plus({ minutes: plan.duration_mins })
+          let slotStart = rangeStart
+          while (slotStart.plus({ minutes: plan.duration_mins }) <= rangeEnd) {
+            const slotEnd = slotStart.plus({ minutes: plan.duration_mins })
+
+            const hasConflictingOffer = offers.some((offer): boolean => {
+              const offerStart = DateTime.fromJSDate(offer.start_datetime, {
+                zone: offer.timezone,
+              })
+              const offerEnd = offerStart.plus({ minutes: offer.duration_minutes })
+              return offerStart < slotEnd && offerEnd > slotStart
+            })
+
             const hasConflictingBooking = bookings.some((booking): boolean => {
               // this may feel slow because it's doing so many loops. however, it's probably fine?
-              const bookingStart = DateTime.fromISO(booking.start_datetime, {
+              const bookingStart = DateTime.fromJSDate(booking.start_datetime, {
                 zone: booking.timezone,
               })
               const bookingEnd = bookingStart.plus({ minutes: booking.duration_minutes })
 
-              if (bookingStart >= start && bookingStart <= slotEnd) {
-                return true
-              }
-
-              if (bookingEnd >= start && bookingEnd <= slotEnd) {
-                return true
-              }
-              return false
+              return bookingStart < slotEnd && bookingEnd > slotStart
             })
-            if (!hasConflictingBooking) {
+            if (!hasConflictingBooking && !hasConflictingOffer) {
               slots.push({
                 date: {
                   year: dateTime.year,
@@ -1485,11 +1489,11 @@ const availability = {
                   day: dateTime.day,
                 },
                 duration_mins: plan.duration_mins,
-                time: { hour: start.hour, minute: start.minute },
+                time: { hour: slotStart.hour, minute: slotStart.minute },
               })
             }
 
-            start = start.plus({ minute: plan.duration_mins })
+            slotStart = slotStart.plus({ minute: plan.duration_mins })
           }
         }
 

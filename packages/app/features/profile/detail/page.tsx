@@ -44,6 +44,10 @@ import {
   UpdateRepositoryModalContent,
   UpdateRepositoryModalTrigger,
 } from 'app/features/repository/update/modal'
+import { ProfileAvailsForm } from 'app/features/profile/detail/avails'
+import { DateTime } from 'app/dates/date-time'
+import { group } from 'app/helpers/dash'
+import { entries } from 'app/helpers/object'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -95,224 +99,275 @@ function Content({ profileSlug }: { profileSlug: string }) {
   }
   const profile = profileQuery.data
   return (
-    <Calcom.Provider profileSlug={profileSlug}>
-      <View gap="$4">
-        <View gap="$3" $gtMd={{ row: true }}>
-          <View $gtMd={{ grow: true }}>
-            <View aspectRatio={16 / 9} bg="$color3">
-              {profile.image_vendor_id && profile.image_vendor ? (
-                <Image
-                  src={profile.image_vendor_id}
-                  loader={profile.image_vendor}
-                  contentFit="cover"
-                  fill
-                  sizes="(min-width: 1200px) 80vw, 100vw"
-                />
-              ) : null}
-            </View>
-          </View>
-          <View $md={{ row: true, jbtwn: true }} $gtMd={{ w: 400 }} gap="$3">
-            <View>
-              <Text bold>{profile.name}</Text>
-              <Text>@{profile.slug}</Text>
-            </View>
-
-            <View row gap="$1">
-              <UpdateProfileModal>
-                <UpdateProfileModal.Trigger>
-                  <Button>
-                    <ButtonText>Edit</ButtonText>
-                  </Button>
-                </UpdateProfileModal.Trigger>
-                <UpdateProfileModal.Content
-                  profileSlug={profileSlug}
-                  onDidUpdateProfile={(patch) => {
-                    if (patch.slug !== profile.slug) {
-                      router.replace(`/dashboard/profiles/${patch.slug}`)
-                    }
-                  }}
-                />
-              </UpdateProfileModal>
-              <LinkButton href={`/@${profile.slug}`}>
-                <ButtonText>View Public Profile</ButtonText>
-              </LinkButton>
-            </View>
+    <View gap="$4">
+      <View gap="$3" $gtMd={{ row: true }}>
+        <View $gtMd={{ grow: true }}>
+          <View aspectRatio={16 / 9} bg="$color3">
+            {profile.image_vendor_id && profile.image_vendor ? (
+              <Image
+                src={profile.image_vendor_id}
+                loader={profile.image_vendor}
+                contentFit="cover"
+                fill
+                sizes="(min-width: 1200px) 80vw, 100vw"
+              />
+            ) : null}
           </View>
         </View>
+        <View $md={{ row: true, jbtwn: true }} $gtMd={{ w: 400 }} gap="$3">
+          <View>
+            <Text bold>{profile.name}</Text>
+            <Text>@{profile.slug}</Text>
+          </View>
 
-        <View h={2} bg="$borderColor" />
-        <View gap="$3">
-          <View row ai="center" jbtwn>
-            <Text bold>Repositories</Text>
-
-            <NewRepositoryModal>
-              <NewRepositoryModalTrigger>
+          <View row gap="$1">
+            <UpdateProfileModal>
+              <UpdateProfileModal.Trigger>
                 <Button>
-                  <ButtonText>Add Repository</ButtonText>
+                  <ButtonText>Edit</ButtonText>
                 </Button>
-              </NewRepositoryModalTrigger>
-
-              <NewRepositoryModalContent profileId={profile.id} />
-            </NewRepositoryModal>
-          </View>
-
-          {reposQuery.data?.length === 0 && <Text color="$color11">Add your first repository</Text>}
-          {!!reposQuery.data?.length && (
-            <View gap="$1">
-              {reposQuery.data?.map((repo) => (
-                <Card key={repo.id} row ai="center">
-                  <View grow>
-                    <Card.Title>{repo.slug}</Card.Title>
-                  </View>
-
-                  {!!repo.github_url && (
-                    <LinkButton href={repo.github_url} target="_blank">
-                      <ButtonText>GitHub</ButtonText>
-                    </LinkButton>
-                  )}
-                  <UpdateRepositoryModal>
-                    <UpdateRepositoryModalTrigger>
-                      <Button>
-                        <ButtonText>Edit</ButtonText>
-                      </Button>
-                    </UpdateRepositoryModalTrigger>
-                    <UpdateRepositoryModalContent repoId={repo.id} />
-                  </UpdateRepositoryModal>
-                </Card>
-              ))}
-            </View>
-          )}
-        </View>
-
-        <View h={2} bg="$borderColor" />
-        <View gap="$3">
-          <View row ai="center" jbtwn>
-            <Text bold>Members</Text>
-          </View>
-
-          {members.data?.length === 0 && <Text color="$color11">Add your first member</Text>}
-          {!!members.data?.length && (
-            <View gap="$1">
-              {members.data?.map((member) => (
-                <Card key={member.id} row jbtwn ai="center">
-                  <View grow>
-                    <Card.Title>
-                      {member.first_name} {member.last_name}
-                    </Card.Title>
-                    <Text color="$color11">{member.email}</Text>
-                  </View>
-
-                  <Button
-                    theme="red"
-                    loading={
-                      deleteProfileMember.isPending &&
-                      deleteProfileMember.variables.id === member.id
-                    }
-                    onPress={() => {
-                      deleteProfileMember.mutate({ id: member.id })
-                    }}
-                  >
-                    <ButtonText>{member.user_id === me.data?.id ? 'Leave' : 'Remove'}</ButtonText>
-                  </Button>
-                </Card>
-              ))}
-            </View>
-          )}
-        </View>
-
-        <View h={2} bg="$borderColor" />
-        <View
-          gap="$3"
-          theme={
-            connectAccountQuery.data?.payouts_enabled === false
-              ? 'red'
-              : connectAccountQuery.data?.payouts_enabled === true
-              ? 'green'
-              : undefined
-          }
-        >
-          <View row ai="center" jbtwn>
-            <Text bold>Payouts</Text>
-
-            <ConnectAccountModal>
-              <ConnectAccountModalTrigger>
-                <Button
-                  themeInverse={connectAccountQuery.data?.payouts_enabled === false}
-                  loading={connectAccountQuery.isLoading}
-                >
-                  <ButtonText>Configure</ButtonText>
-                </Button>
-              </ConnectAccountModalTrigger>
-              <ConnectAccountModalContent profileSlug={profileSlug} />
-            </ConnectAccountModal>
-          </View>
-
-          {connectAccountQuery.data?.payouts_enabled === false ? (
-            <Text color="$color11">
-              You cannot receive payouts. Please complete your payment onboarding.
-            </Text>
-          ) : connectAccountQuery.data?.payouts_enabled === true ? (
-            <Text color="$color11">Payouts configured successfully.</Text>
-          ) : null}
-        </View>
-        <View h={2} bg="$borderColor" />
-        <View row ai="center" jbtwn>
-          <Text bold>Plans</Text>
-
-          <CreateOnetimePlanModal>
-            <CreateOnetimePlanModalTrigger>
-              <Button>
-                <ButtonText>Add Plan</ButtonText>
-              </Button>
-            </CreateOnetimePlanModalTrigger>
-            <CreateOnetimePlanModalContent profileId={profile.id} />
-          </CreateOnetimePlanModal>
-        </View>
-        <PlansInternal profileSlug={profileSlug} />
-        <View h={2} bg="$borderColor" />
-        <Open>
-          <View row ai="center" jbtwn>
-            <View grow>
-              <Text>Calendar Settings</Text>
-              <Text color="$color11">
-                Sync Google Calendar, block off dates, and set your availability.
-              </Text>
-            </View>
-            <OpenTrigger>
-              <Button>
-                <ButtonText>Settings</ButtonText>
-              </Button>
-            </OpenTrigger>
-          </View>
-          <OpenContent>
-            {true && <Calcom.CalendarSettings />}
-            <Calcom.Connect.Google />
-            {true && (
-              <Calcom.AvailabilitySettings
-                enableOverrides={true}
-                customClassNames={{
-                  subtitlesClassName: 'text-red-500',
-                  ctaClassName: 'border p-4 rounded-md',
-                  editableHeadingClassName: 'underline font-semibold',
-                }}
-                onUpdateSuccess={() => {
-                  console.log('Updated successfully')
-                }}
-                onUpdateError={() => {
-                  console.log('update error')
-                }}
-                onDeleteError={() => {
-                  console.log('delete error')
-                }}
-                onDeleteSuccess={() => {
-                  console.log('Deleted successfully')
+              </UpdateProfileModal.Trigger>
+              <UpdateProfileModal.Content
+                profileSlug={profileSlug}
+                onDidUpdateProfile={(patch) => {
+                  if (patch.slug !== profile.slug) {
+                    router.replace(`/dashboard/profiles/${patch.slug}`)
+                  }
                 }}
               />
-            )}
-          </OpenContent>
-        </Open>
+            </UpdateProfileModal>
+            <LinkButton href={`/@${profile.slug}`}>
+              <ButtonText>View Public Profile</ButtonText>
+            </LinkButton>
+          </View>
+        </View>
       </View>
-    </Calcom.Provider>
+
+      <View h={2} bg="$borderColor" />
+      <View gap="$3">
+        <View row ai="center" jbtwn>
+          <Text bold>Repositories</Text>
+
+          <NewRepositoryModal>
+            <NewRepositoryModalTrigger>
+              <Button>
+                <ButtonText>Add Repository</ButtonText>
+              </Button>
+            </NewRepositoryModalTrigger>
+
+            <NewRepositoryModalContent profileId={profile.id} />
+          </NewRepositoryModal>
+        </View>
+
+        {reposQuery.data?.length === 0 && <Text color="$color11">Add your first repository</Text>}
+        {!!reposQuery.data?.length && (
+          <View gap="$1">
+            {reposQuery.data?.map((repo) => (
+              <Card key={repo.id} row ai="center">
+                <View grow>
+                  <Card.Title>{repo.slug}</Card.Title>
+                </View>
+
+                {!!repo.github_url && (
+                  <LinkButton href={repo.github_url} target="_blank">
+                    <ButtonText>GitHub</ButtonText>
+                  </LinkButton>
+                )}
+                <UpdateRepositoryModal>
+                  <UpdateRepositoryModalTrigger>
+                    <Button>
+                      <ButtonText>Edit</ButtonText>
+                    </Button>
+                  </UpdateRepositoryModalTrigger>
+                  <UpdateRepositoryModalContent repoId={repo.id} />
+                </UpdateRepositoryModal>
+              </Card>
+            ))}
+          </View>
+        )}
+      </View>
+
+      <View h={2} bg="$borderColor" />
+      <View gap="$3">
+        <View row ai="center" jbtwn>
+          <Text bold>Members</Text>
+        </View>
+
+        {members.data?.length === 0 && <Text color="$color11">Add your first member</Text>}
+        {!!members.data?.length && (
+          <View gap="$1">
+            {members.data?.map((member) => (
+              <Card key={member.id} row jbtwn ai="center">
+                <View grow>
+                  <Card.Title>
+                    {member.first_name} {member.last_name}
+                  </Card.Title>
+                  <Text color="$color11">{member.email}</Text>
+                </View>
+
+                <Button
+                  theme="red"
+                  loading={
+                    deleteProfileMember.isPending && deleteProfileMember.variables.id === member.id
+                  }
+                  onPress={() => {
+                    deleteProfileMember.mutate({ id: member.id })
+                  }}
+                >
+                  <ButtonText>{member.user_id === me.data?.id ? 'Leave' : 'Remove'}</ButtonText>
+                </Button>
+              </Card>
+            ))}
+          </View>
+        )}
+      </View>
+
+      <View h={2} bg="$borderColor" />
+      <View
+        gap="$3"
+        theme={
+          connectAccountQuery.data?.payouts_enabled === false
+            ? 'red'
+            : connectAccountQuery.data?.payouts_enabled === true
+            ? 'green'
+            : undefined
+        }
+      >
+        <View row ai="center" jbtwn>
+          <Text bold>Payouts</Text>
+
+          <ConnectAccountModal>
+            <ConnectAccountModalTrigger>
+              <Button
+                themeInverse={connectAccountQuery.data?.payouts_enabled === false}
+                loading={connectAccountQuery.isLoading}
+              >
+                <ButtonText>Configure</ButtonText>
+              </Button>
+            </ConnectAccountModalTrigger>
+            <ConnectAccountModalContent profileSlug={profileSlug} />
+          </ConnectAccountModal>
+        </View>
+
+        {connectAccountQuery.data?.payouts_enabled === false ? (
+          <Text color="$color11">
+            You cannot receive payouts. Please complete your payment onboarding.
+          </Text>
+        ) : connectAccountQuery.data?.payouts_enabled === true ? (
+          <Text color="$color11">Payouts configured successfully.</Text>
+        ) : null}
+      </View>
+      <View h={2} bg="$borderColor" />
+      <View row ai="center" jbtwn>
+        <Text bold>Plans</Text>
+
+        <CreateOnetimePlanModal>
+          <CreateOnetimePlanModalTrigger>
+            <Button>
+              <ButtonText>Add Plan</ButtonText>
+            </Button>
+          </CreateOnetimePlanModalTrigger>
+          <CreateOnetimePlanModalContent profileId={profile.id} />
+        </CreateOnetimePlanModal>
+      </View>
+      <PlansInternal profileSlug={profileSlug} />
+      <View h={2} bg="$borderColor" />
+      <ProfileAvailsForm.Provider profileSlug={profileSlug}>
+        <View row ai="center" jbtwn>
+          <Text bold>Availability</Text>
+          <ProfileAvailsForm.Submit />
+        </View>
+        <ProfileAvailsForm />
+      </ProfileAvailsForm.Provider>
+      <View h={2} bg="$borderColor" />
+      <Text>Slots</Text>
+      <AllPlanSlots profileSlug={profileSlug} />
+    </View>
+  )
+}
+
+const now = DateTime.now()
+const end = now.plus({ days: 30 })
+
+function AllPlanSlots({ profileSlug }: { profileSlug: string }) {
+  const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
+
+  return (
+    <>
+      {plansQuery.data?.map((plan) => {
+        return (
+          <View key={plan.id} gap="$3">
+            <Text bold>{plan.duration_mins} Minute Call</Text>
+            <SlotsInternal profileSlug={profileSlug} planId={plan.id} />
+          </View>
+        )
+      })}
+    </>
+  )
+}
+
+function SlotsInternal({ profileSlug, planId }: { profileSlug: string; planId: string }) {
+  const slotsQuery = api.upcomingProfileSlots_public.useQuery({
+    profile_slug: profileSlug,
+    start_date: {
+      year: now.year,
+      month: now.month,
+      day: now.day,
+    },
+    end_date: {
+      year: end.year,
+      month: end.month,
+      day: end.day,
+    },
+    plan_id: planId,
+  })
+
+  if (!slotsQuery.data) {
+    return <ErrorCard error={slotsQuery.error} />
+  }
+  const { slots, timezone } = slotsQuery.data
+  const slotsByDay = group(
+    slotsQuery.data.slots,
+    (slot) => DateTime.fromObject(slot.date, { zone: timezone }).toISODate()!
+  )
+  return (
+    <View gap="$4">
+      {entries(slotsByDay).map(([day, slots]) => {
+        const dt = DateTime.fromISO(day, { zone: timezone }).setZone('local')
+        return (
+          <Fragment key={day}>
+            <View gap="$2">
+              <Text>
+                {dt.toLocaleString({
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </Text>
+              <View row flexWrap="wrap" gap="$1">
+                {slots?.map((slot, index) => {
+                  const time = dt.set({ hour: slot.time.hour, minute: slot.time.minute })
+                  const format = (dt: DateTime) =>
+                    dt.toLocaleString({ hour: 'numeric', minute: 'numeric' })
+                  return (
+                    <Button key={index} minWidth={88}>
+                      <ButtonText
+                        fontVariant={['tabular-nums']}
+                        style={{ fontVariant: 'tabular-nums' }}
+                      >
+                        {format(time)}
+                        {/* - {format(time.plus({ minutes: slot.duration_mins }))} */}
+                      </ButtonText>
+                    </Button>
+                  )
+                })}
+              </View>
+            </View>
+          </Fragment>
+        )
+      })}
+    </View>
   )
 }
 
@@ -333,8 +388,8 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
             return (
               <Fragment key={plan.id}>
                 <Card row>
-                  <View grow gap="$3">
-                    <Card.Title>{plan.duration_mins} Minute Call</Card.Title>
+                  <View grow>
+                    <Card.Label>{plan.duration_mins} Minute Call</Card.Label>
                     <Card.Description>
                       {formatCurrencyInteger[plan.currency]?.format(plan.price / 100)}
                     </Card.Description>

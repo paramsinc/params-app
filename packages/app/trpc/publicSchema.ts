@@ -20,9 +20,8 @@ export const publicSchema = {
       github_username: true,
       image_vendor: true,
       image_vendor_id: true,
-      // created_at: true,
-      // last_updated_at: true,
       availability_ranges: true,
+      timezone: true,
     },
     ProfilePublic: {
       id: true,
@@ -32,8 +31,7 @@ export const publicSchema = {
       github_username: true,
       image_vendor: true,
       image_vendor_id: true,
-      // created_at: true,
-      // last_updated_at: true,
+      timezone: true,
     },
   },
   profileMembers: {
@@ -77,3 +75,26 @@ export const publicSchema = {
     [t: string]: Partial<Record<keyof Zod.infer<(typeof selects)[table]>, true>>
   }
 }>
+
+type Intersection<T> = {
+  [K in AllKeys<T>]: T[K]
+}
+
+type AllKeys<T> = T extends any ? keyof T : never
+
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void
+  ? I
+  : never
+
+type Pretty<T> = {
+  [K in keyof T]: T[K]
+}
+export type shape = Pretty<
+  UnionToIntersection<
+    {
+      [table in keyof typeof publicSchema]: {
+        [schema in keyof (typeof publicSchema)[table]]: (typeof publicSchema)[table][schema]
+      }
+    }[keyof typeof publicSchema]
+  >
+>

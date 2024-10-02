@@ -11,6 +11,7 @@ const CardFrame = styled(View, {
   // borderRadius: '$3',
   bg: '$color2',
   gap: '$3',
+  br: '$3',
 })
 const Label = styled(Text, {
   bold: true,

@@ -7720,7 +7720,7 @@ __metadata:
     trpc-openapi: "npm:^1.2.0"
     ulid: "npm:^2.3.0"
     ws: "npm:^8.18.0"
-    zeego: "npm:^1.10.0"
+    zeego: "npm:^2.0.0-alpha.1"
     zod: "npm:^3.23.8"
     zustand: "npm:^4.5.2"
   languageName: unknown
@@ -10963,7 +10963,7 @@ __metadata:
     react: "npm:18.2.0"
     react-native: "npm:0.74.5"
     react-native-gesture-handler: "npm:~2.16.1"
-    react-native-reanimated: "npm:~3.10.1"
+    react-native-reanimated: "npm:3.10.1"
     react-native-safe-area-context: "npm:4.10.5"
     react-native-screens: "npm:3.31.1"
     react-native-svg: "npm:^15.7.1"
@@ -14770,6 +14770,7 @@ __metadata:
     postcss: "npm:^8.4.47"
     raf: "npm:^3.4.1"
     react-dom: "npm:18.2.0"
+    react-native-reanimated: "npm:3.10.1"
     react-native-web: "npm:~0.19.10"
     setimmediate: "npm:^1.0.5"
     tailwindcss: "npm:^3.4.12"
@@ -16505,7 +16506,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:~3.10.1":
+"react-native-reanimated@npm:3.10.1":
   version: 3.10.1
   resolution: "react-native-reanimated@npm:3.10.1"
   dependencies:
@@ -20149,9 +20150,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zeego@npm:^1.10.0":
-  version: 1.10.0
-  resolution: "zeego@npm:1.10.0"
+"zeego@npm:^2.0.0-alpha.1":
+  version: 2.0.0-alpha.1
+  resolution: "zeego@npm:2.0.0-alpha.1"
   dependencies:
     "@radix-ui/react-context-menu": "npm:^2.0.1"
     "@radix-ui/react-dropdown-menu": "npm:^2.0.1"
@@ -20160,8 +20161,8 @@ __metadata:
     "@react-native-menu/menu": "*"
     react: "*"
     react-native: "*"
-    react-native-ios-context-menu: ^2.3.2
-  checksum: 10/82ddd762e3db293b77ecb9970629c1a93f36ebb6219c79fe5c89b344c8de09438c43b92375d6735e23d1e4be4dc5e82d4287c4761576bd0f0405a99b5976639f
+    react-native-ios-context-menu: ~2.5.1
+  checksum: 10/dde1bd6926c778c52416739f1e45d2611af50973d50f1858feb26748af80c1ef9b5b35954640a832d4f110c79ba3506444cb5c85b4732b894b1ffd664248ce1b
   languageName: node
   linkType: hard
 

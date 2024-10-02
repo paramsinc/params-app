@@ -53,7 +53,11 @@ export const tamaguiConfig = createTamagui({
   defaultFont: 'body',
 
   tokens: createTokens({
-    color,
+    color: {
+      ...color,
+      brand: 'red',
+      brandContrast: 'white',
+    },
     radius: {
       ...radius,
       rounded: 999999,

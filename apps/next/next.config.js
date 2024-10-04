@@ -108,9 +108,12 @@ let config = {
     'expo-modules-core',
     'expo-image-picker',
     'expo-web-browser',
+    'expo-auth-session',
     'react-native-gesture-handler',
     'geist',
     '@nandorojo/anchor',
+    'expo-auth-session',
+    'expo-crypto',
   ],
   experimental: {
     // https://blog.arcjet.com/structured-logging-in-json-for-next-js/

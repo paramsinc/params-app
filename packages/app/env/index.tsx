@@ -11,6 +11,7 @@ export const env = z
     STRIPE_PUBLISHABLE_KEY: z.string(),
     APP_NAME: z.string(),
     CLOUDINARY_CLOUD_NAME: z.string(),
+    GOOGLE_CLIENT_ID_WEB: z.string(),
   })
   .parse({
     CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
@@ -21,4 +22,5 @@ export const env = z
     STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     APP_NAME: process.env.NEXT_PUBLIC_APP_NAME ?? 'Params',
     CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUDNAME,
+    GOOGLE_CLIENT_ID_WEB: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
   })

@@ -25,6 +25,18 @@ export const serverEnv = z
     GOOGLE_CAL_SERVICE_JSON: z.string(),
     GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR: z.string(),
     STRIPE_WEBHOOK_SECRET: z.string(),
+    GOOGLE_API_CREDENTIALS_JSON: z.object({
+      web: z.object({
+        client_id: z.string(),
+        project_id: z.string(),
+        auth_uri: z.string(),
+        token_uri: z.string(),
+        auth_provider_x509_cert_url: z.string(),
+        client_secret: z.string(),
+        redirect_uris: z.array(z.string()),
+        javascript_origins: z.array(z.string()),
+      }),
+    }),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
@@ -39,4 +51,5 @@ export const serverEnv = z
     GOOGLE_CAL_SERVICE_JSON: process.env.GOOGLE_CAL_SERVICE_JSON,
     GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR: process.env.GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    GOOGLE_API_CREDENTIALS_JSON: JSON.parse(process.env.GOOGLE_API_CREDENTIALS_JSON!),
   })

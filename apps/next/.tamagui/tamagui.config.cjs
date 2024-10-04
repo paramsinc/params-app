@@ -45757,7 +45757,11 @@ var tamaguiConfig = createTamagui({
   },
   defaultFont: "body",
   tokens: (0, import_core57.createTokens)({
-    color: color2,
+    color: {
+      ...color2,
+      brand: "red",
+      brandContrast: "white"
+    },
     radius: {
       ...radius2,
       rounded: 999999

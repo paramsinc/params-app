@@ -1,5 +1,5 @@
 // import { } from 'expo-router'
 
-export function usePathname() {
+export function useCurrentPath() {
   throw new Error('usePathname not implemented')
 }

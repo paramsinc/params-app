@@ -1,7 +1,7 @@
 import { DateTime } from 'app/dates/date-time'
 import { d, db, schema } from 'app/db/db'
 import { env } from 'app/env'
-import { createGoogleCalendarEventForOffer } from 'app/vendor/calendar/google/google-calendar'
+import { createGoogleCalendarEventForOffer } from 'app/vendor/google/google-calendar'
 
 export async function createBookingFromOffer({
   offerId,

@@ -4,7 +4,7 @@ import { env } from 'app/env'
 import { serverEnv } from 'app/env/env.server'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
 import { createBookingFromOffer } from 'app/features/stripe-connect/webhook/createBookingFromOffer'
-import { createGoogleCalendarEventForOffer } from 'app/vendor/calendar/google/google-calendar'
+import { createGoogleCalendarEventForOffer } from 'app/vendor/google/google-calendar'
 
 export const config = {
   api: {

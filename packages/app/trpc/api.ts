@@ -19,6 +19,11 @@ import { cdn } from 'app/multi-media/cdn'
 import { keys } from 'app/helpers/object'
 import { availabilityRangesShape } from 'app/db/types'
 import { DateTime } from 'app/dates/date-time'
+import {
+  exchangeCodeForTokens,
+  getGoogleOauthUrl,
+  googleOauth,
+} from 'app/vendor/google/google-oauth'
 
 async function createUser(
   insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
@@ -1507,6 +1512,49 @@ const availability = {
     }),
 }
 
+const googleOauthRoutes = {
+  googleOauthUrl: authedProcedure
+    .input(z.object({ redirect_url: z.string() }))
+    .output(z.string())
+    .query(async ({ ctx, input }) => {
+      return googleOauth.getOauthUrl(input.redirect_url)
+    }),
+  googleOauthExchangeCode: authedProcedure
+    .input(z.object({ code: z.string(), redirect_url: z.string(), profile_slug: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [myMembership] = await db
+        .select({
+          membership: schema.profileMembers,
+          profile: schema.profiles,
+        })
+        .from(schema.profiles)
+        .where(d.eq(schema.profiles.slug, input.profile_slug))
+        .innerJoin(
+          schema.profileMembers,
+          d.eq(schema.profileMembers.profile_id, schema.profiles.id)
+        )
+        .limit(1)
+        .execute()
+
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const tokens = await googleOauth.exchangeCodeForTokens(input.code, input.redirect_url)
+
+      console.log('[googleOauthExchangeCode] tokens', tokens)
+
+      return tokens
+
+      // TODO create calendar integration in db
+
+      // return calendar integrations
+    }),
+}
+
 export const appRouter = router({
   hello: publicProcedure.query(({ ctx }) => {
     return 'hello there sir'
@@ -1528,6 +1576,7 @@ export const appRouter = router({
   ...repository,
   ...profilePlan,
   ...availability,
+  ...googleOauthRoutes,
   /**
    * @deprecated
    */

@@ -54,5 +54,6 @@ export default ({ profileSlug }: { profileSlug: string }) => {
   return {
     prompt: promptAsync,
     isLoading: exchangeCodeMutation.isPending,
+    error: exchangeCodeMutation.error ?? authUrlQuery.error,
   }
 }

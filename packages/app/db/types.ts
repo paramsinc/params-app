@@ -10,3 +10,5 @@ export const availabilityRangesShape = z.array(
     day_of_week: dow,
   })
 )
+
+export const googleCalendarsToBlockForAvailsShape = z.array(z.string())

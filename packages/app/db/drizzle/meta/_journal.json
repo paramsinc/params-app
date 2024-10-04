@@ -141,6 +141,27 @@
       "when": 1727798660501,
       "tag": "0019_misty_fabian_cortez",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1728062389497,
+      "tag": "0020_free_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1728062729493,
+      "tag": "0021_complex_phalanx",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1728063015150,
+      "tag": "0022_lyrical_reavers",
+      "breakpoints": true
     }
   ]
 }

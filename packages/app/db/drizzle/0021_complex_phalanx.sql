@@ -1,0 +1,1 @@
+ALTER TABLE "google_calendar_integrations" ALTER COLUMN "expires_at_ms" SET DATA TYPE bigint;

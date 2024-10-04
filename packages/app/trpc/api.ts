@@ -1547,11 +1547,71 @@ const googleOauthRoutes = {
 
       console.log('[googleOauthExchangeCode] tokens', tokens)
 
-      return tokens
+      if (!tokens.access_token) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to exchange code for access token.`,
+        })
+      }
 
-      // TODO create calendar integration in db
+      if (!tokens.id_token) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to exchange code for ID token.`,
+        })
+      }
 
-      // return calendar integrations
+      if (!tokens.refresh_token) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to exchange code for refresh token.`,
+        })
+      }
+
+      if (tokens.expires_at_ms == null) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to exchange code with expiration time.`,
+        })
+      }
+
+      const googleUser = await googleOauth.getUserInfo({ accessToken: tokens.access_token })
+
+      console.log('[googleOauthExchangeCode] googleUser', googleUser)
+
+      if (!googleUser.id) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to get Google user info.`,
+        })
+      }
+
+      const oauthResult = await db
+        .insert(schema.googleCalendarIntegrations)
+        .values({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          expires_at_ms: Number(tokens.expires_at_ms),
+          id_token: tokens.id_token,
+          profile_id: myMembership.profile.id,
+          calendars_for_avail_blocking: [],
+          google_user_id: googleUser.id,
+        })
+        .onConflictDoUpdate({
+          target: schema.googleCalendarIntegrations.google_user_id,
+          set: {
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+            expires_at_ms: Number(tokens.expires_at_ms),
+            id_token: tokens.id_token,
+          },
+        })
+        .returning()
+        .execute()
+
+      console.log('[googleOauthExchangeCode] oauthResult', oauthResult)
+
+      return true
     }),
 }
 

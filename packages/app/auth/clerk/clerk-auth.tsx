@@ -45,6 +45,7 @@ function Font({ children }: { children: React.ReactNode }) {
     <div
       style={{
         fontFamily: getVariableValue(config.fonts.body?.family),
+        display: 'contents',
       }}
     >
       {children}

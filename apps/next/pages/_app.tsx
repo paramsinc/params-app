@@ -47,7 +47,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
       <style jsx global>
         {`
           body {
-            background-color: var(--color1);
+            background-color: var(--backgroundStrong);
             font-family: var(--f-family);
           }
         `}

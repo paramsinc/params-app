@@ -5,18 +5,23 @@ import { View } from 'app/ds/View'
 import { withStaticProperties } from 'app/ds/withStaticProperties'
 import { createStyledContext } from 'tamagui'
 
-const height = 30
+const height = 32
 
 const context = createStyledContext<{ loading?: boolean }>({
   loading: false,
 })
 
+const borderWidth = 2
+
 const Frame = styled(View, {
   px: '$2',
   height,
-  bg: '$color4',
-  // bw: 1,
-  boc: '$color11',
+  bg: '$color3',
+  bw: borderWidth,
+  boc: '$color6',
+  hoverStyle: {
+    bg: '$color4',
+  },
   context,
   variants: {
     loading: {
@@ -41,6 +46,7 @@ const Frame = styled(View, {
   jc: 'center',
   tag: 'button',
   row: true,
+  br: 6,
 })
 
 const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
@@ -63,11 +69,10 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
 })
 
 export const ButtonText = styled(Text, {
-  // textDecorationLine: 'underline',
   context,
   userSelect: 'none',
 
-  lineHeight: height,
+  lineHeight: height - borderWidth * 2,
   bold: true,
   variants: {
     loading: {

@@ -1,3 +1,4 @@
+import { Gradient } from 'app/ds/Gradient'
 import { Lucide } from 'app/ds/Lucide'
 import { styled } from 'app/ds/styled'
 import { Text } from 'app/ds/Text'
@@ -6,10 +7,8 @@ import { withStaticProperties } from 'app/ds/withStaticProperties'
 
 const CardFrame = styled(View, {
   p: '$3',
-  bw: 1,
+  bw: 2,
   boc: '$borderColor',
-  // borderRadius: '$3',
-  bg: '$color2',
   gap: '$3',
   br: '$3',
 })
@@ -32,14 +31,27 @@ const IconRowContent = styled(View, {
   grow: true,
 })
 
-export const Card = withStaticProperties(CardFrame, {
-  Title: styled(Text, {
-    bold: true,
+export const Card = withStaticProperties(
+  CardFrame.styleable(function Frame(props) {
+    return (
+      <CardFrame {...props} ov="hidden">
+        <Gradient
+          gradient={(f) => `linear-gradient(${f('color2')} 0%, ${f('color1')} 100%)`}
+          stretch
+        />
+        {props.children}
+      </CardFrame>
+    )
   }),
-  Label: Label,
-  Description: CardDescription,
-  IconRow: withStaticProperties(IconRow, {
-    Icon: Icon,
-    Content: IconRowContent,
-  }),
-})
+  {
+    Title: styled(Text, {
+      bold: true,
+    }),
+    Label: Label,
+    Description: CardDescription,
+    IconRow: withStaticProperties(IconRow, {
+      Icon: Icon,
+      Content: IconRowContent,
+    }),
+  }
+)

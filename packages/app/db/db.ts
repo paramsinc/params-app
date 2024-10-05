@@ -6,6 +6,7 @@ import ws from 'ws'
 neonConfig.webSocketConstructor = ws
 
 export * as d from 'drizzle-orm'
+export * as pg from 'drizzle-orm/pg-core'
 import { Pool } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-serverless'
 

@@ -162,6 +162,13 @@
       "when": 1728063015150,
       "tag": "0022_lyrical_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1728063293669,
+      "tag": "0023_stormy_black_knight",
+      "breakpoints": true
     }
   ]
 }

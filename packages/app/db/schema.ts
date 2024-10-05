@@ -216,23 +216,29 @@ export const organizationMembers = pgTable('organization_members', {
   ...timestampMixin(),
 })
 
-export const googleCalendarIntegrations = pgTable('google_calendar_integrations', {
-  access_token: text('access_token').notNull(),
-  refresh_token: text('refresh_token').notNull(),
-  expires_at_ms: bigint('expires_at_ms', {
-    mode: 'number',
-  }).notNull(),
-  id_token: text('id_token').notNull(),
-  profile_id: text('profile_id')
-    .notNull()
-    .references(() => profiles.id, {
-      onDelete: 'cascade',
-    }),
-  calendars_for_avail_blocking: jsonb('calendars_for_avail_blocking')
-    .$type<Zod.infer<typeof googleCalendarsToBlockForAvailsShape>>()
-    .notNull(),
-  google_user_id: text('google_user_id').primaryKey().unique().notNull(),
-  picture_url: text('picture_url'),
-  email: text('email').notNull(),
-  ...timestampMixin(),
-})
+export const googleCalendarIntegrations = pgTable(
+  'google_calendar_integrations',
+  {
+    access_token: text('access_token').notNull(),
+    refresh_token: text('refresh_token').notNull(),
+    expires_at_ms: bigint('expires_at_ms', {
+      mode: 'number',
+    }).notNull(),
+    id_token: text('id_token').notNull(),
+    profile_id: text('profile_id')
+      .notNull()
+      .references(() => profiles.id, {
+        onDelete: 'cascade',
+      }),
+    calendars_for_avail_blocking: jsonb('calendars_for_avail_blocking')
+      .$type<Zod.infer<typeof googleCalendarsToBlockForAvailsShape>>()
+      .notNull(),
+    google_user_id: text('google_user_id').unique().notNull(),
+    picture_url: text('picture_url'),
+    email: text('email').unique().notNull(),
+    ...timestampMixin(),
+  },
+  (table) => ({
+    uniqueProfileId: unique().on(table.profile_id, table.google_user_id),
+  })
+)

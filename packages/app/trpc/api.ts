@@ -1,16 +1,10 @@
-import { select } from 'app/helpers/select'
 import { authedProcedure, publicProcedure, router } from './trpc'
 import { z } from 'zod'
 import { inserts, selects } from 'app/db/inserts-and-selects'
-import { d, db, schema } from 'app/db/db'
+import { d, db, pg, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
-import {
-  createCalcomUser as createCalcomUser,
-  deleteCalcomAccount,
-  getCalcomUser,
-  getCalcomUsers,
-} from 'app/trpc/routes/cal-com'
+import { deleteCalcomAccount, getCalcomUser, getCalcomUsers } from 'app/trpc/routes/cal-com'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
@@ -19,11 +13,7 @@ import { cdn } from 'app/multi-media/cdn'
 import { keys } from 'app/helpers/object'
 import { availabilityRangesShape } from 'app/db/types'
 import { DateTime } from 'app/dates/date-time'
-import {
-  exchangeCodeForTokens,
-  getGoogleOauthUrl,
-  googleOauth,
-} from 'app/vendor/google/google-oauth'
+import { googleOauth } from 'app/vendor/google/google-oauth'
 
 async function createUser(
   insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
@@ -326,17 +316,17 @@ const profile = {
       z.object({
         id: z.string(),
         patch: inserts.profiles
-
           .pick({
             name: true,
             slug: true,
             bio: true,
             github_username: true,
             image_vendor_id: true,
+            image_vendor: true,
           })
           .merge(
             z.object({
-              image_vendor: imageVendor,
+              availability_ranges: availabilityRangesShape,
             })
           )
           .partial(),
@@ -347,7 +337,15 @@ const profile = {
         ctx,
         input: {
           id,
-          patch: { bio, github_username, image_vendor, image_vendor_id, name, slug },
+          patch: {
+            bio,
+            github_username,
+            image_vendor,
+            image_vendor_id,
+            name,
+            slug,
+            availability_ranges,
+          },
         },
       }) => {
         let profileMembers = await db.query.profileMembers
@@ -372,6 +370,7 @@ const profile = {
             image_vendor_id,
             name,
             slug,
+            availability_ranges,
           })
           .where(d.eq(schema.profiles.id, id))
           .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
@@ -410,8 +409,6 @@ const profile = {
       if (!profile) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Profile not found.` })
       }
-
-      await deleteCalcomAccount(profile.calcom_user_id)
 
       return true
     }),
@@ -1317,46 +1314,6 @@ export const upcomingSlotsShape = z.object({
 })
 
 const availability = {
-  updateProfileAvailability: authedProcedure
-    .input(z.object({ availability_ranges: availabilityRangesShape, profile_id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      console.log('updateProfileAvailability', input.profile_id)
-      const myMembership = await db.query.profileMembers
-        .findFirst({
-          where: (profileMembers, { eq, and }) =>
-            and(
-              eq(profileMembers.profile_id, input.profile_id),
-              eq(profileMembers.user_id, ctx.auth.userId)
-            ),
-        })
-        .execute()
-
-      if (!myMembership) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: `You are not a member of this profile.`,
-        })
-      }
-
-      const [first] = await db
-        .update(schema.profiles)
-        .set({ availability_ranges: input.availability_ranges })
-        .where(d.eq(schema.profiles.id, input.profile_id))
-        .returning({
-          ...pick('profiles', publicSchema.profiles.ProfilePublic),
-          availability_ranges: schema.profiles.availability_ranges,
-        })
-        .execute()
-
-      if (!first) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to update availability.`,
-        })
-      }
-
-      return first
-    }),
   upcomingProfileSlots_public: publicProcedure
     .input(
       z.object({
@@ -1406,8 +1363,8 @@ const availability = {
 
       const { profile, plan } = first
 
-      const startDate = DateTime.fromObject(start_date, { zone: profile.timezone })
-      const endDate = DateTime.fromObject(end_date, { zone: profile.timezone })
+      const startDate = DateTime.fromObject(start_date, { zone: profile.timezone }).startOf('day')
+      const endDate = DateTime.fromObject(end_date, { zone: profile.timezone }).startOf('day')
       if (!startDate.isValid) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -1420,23 +1377,42 @@ const availability = {
           message: `Invalid end date.`,
         })
       }
-      const bookings = await db.query.bookings.findMany({
-        where: (bookings, { eq, and, gte, lt }) =>
-          and(
-            eq(bookings.profile_id, profile_slug),
-            gte(bookings.start_datetime, startDate.toJSDate()),
-            lt(bookings.start_datetime, endDate.toJSDate())
+
+      const conflicts = await pg.union(
+        db
+          .select(
+            pick('bookings', {
+              start_datetime: true,
+              duration_minutes: true,
+              timezone: true,
+            })
+          )
+          .from(schema.bookings)
+          .where(
+            d.and(
+              d.eq(schema.bookings.profile_id, profile.id),
+              d.gte(schema.bookings.start_datetime, startDate.toJSDate()),
+              d.lt(schema.bookings.start_datetime, endDate.toJSDate())
+            )
           ),
-      })
-      const offers = await db.query.offers.findMany({
-        where: (offers, { eq, and, gte, lt }) =>
-          and(
-            eq(offers.profile_id, profile_slug),
-            gte(offers.start_datetime, startDate.toJSDate()),
-            lt(offers.start_datetime, endDate.toJSDate()),
-            eq(offers.voided, false)
-          ),
-      })
+        db
+          .select(
+            pick('offers', {
+              timezone: true,
+              start_datetime: true,
+              duration_minutes: true,
+            })
+          )
+          .from(schema.offers)
+          .where(
+            d.and(
+              d.eq(schema.offers.profile_id, profile.id),
+              d.gte(schema.offers.start_datetime, startDate.toJSDate()),
+              d.lt(schema.offers.start_datetime, endDate.toJSDate()),
+              d.eq(schema.offers.voided, false)
+            )
+          )
+      )
 
       const slots: Zod.infer<typeof upcomingSlotsShape>['slots'] = []
       const weekdayToEnum: Record<
@@ -1469,7 +1445,7 @@ const availability = {
           while (slotStart.plus({ minutes: plan.duration_mins }) <= rangeEnd) {
             const slotEnd = slotStart.plus({ minutes: plan.duration_mins })
 
-            const hasConflictingOffer = offers.some((offer): boolean => {
+            const hasConflictingOffer = conflicts.some((offer): boolean => {
               const offerStart = DateTime.fromJSDate(offer.start_datetime, {
                 zone: offer.timezone,
               })
@@ -1477,16 +1453,7 @@ const availability = {
               return offerStart < slotEnd && offerEnd > slotStart
             })
 
-            const hasConflictingBooking = bookings.some((booking): boolean => {
-              // this may feel slow because it's doing so many loops. however, it's probably fine?
-              const bookingStart = DateTime.fromJSDate(booking.start_datetime, {
-                zone: booking.timezone,
-              })
-              const bookingEnd = bookingStart.plus({ minutes: booking.duration_minutes })
-
-              return bookingStart < slotEnd && bookingEnd > slotStart
-            })
-            if (!hasConflictingBooking && !hasConflictingOffer) {
+            if (!hasConflictingOffer) {
               slots.push({
                 date: {
                   year: dateTime.year,
@@ -1510,6 +1477,39 @@ const availability = {
         timezone: profile.timezone,
       }
     }),
+}
+
+async function hydrateTokensForGoogleIntegration(current: {
+  profile_id: string
+  google_user_id: string
+  access_token: string
+  refresh_token: string
+}) {
+  const next = await googleOauth.refreshAccessToken({
+    refreshToken: current.refresh_token,
+    accessToken: current.access_token,
+  })
+  if (next.access_token !== current.access_token) {
+    await db
+      .update(schema.googleCalendarIntegrations)
+      .set({
+        access_token: next.access_token,
+        refresh_token: next.refresh_token,
+        expires_at_ms: next.expires_at_ms,
+      })
+      .where(
+        d.and(
+          d.eq(schema.googleCalendarIntegrations.google_user_id, current.google_user_id),
+          d.eq(schema.googleCalendarIntegrations.profile_id, current.profile_id)
+        )
+      )
+      .execute()
+  }
+  return {
+    access_token: next.access_token,
+    refresh_token: next.refresh_token,
+    expires_at_ms: next.expires_at_ms,
+  }
 }
 
 const googleOauthRoutes = {
@@ -1586,6 +1586,24 @@ const googleOauthRoutes = {
         })
       }
 
+      if (!googleUser.email) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to get Google user email.`,
+        })
+      }
+
+      const calendars = await googleOauth.getCalendarsList({
+        refreshToken: tokens.refresh_token,
+      })
+
+      const calendarIdsForAvailBlocking: string[] = []
+      for (const calendar of calendars.items ?? []) {
+        if (calendar.id && calendar.primary) {
+          calendarIdsForAvailBlocking.push(calendar.id)
+        }
+      }
+
       const oauthResult = await db
         .insert(schema.googleCalendarIntegrations)
         .values({
@@ -1594,8 +1612,10 @@ const googleOauthRoutes = {
           expires_at_ms: Number(tokens.expires_at_ms),
           id_token: tokens.id_token,
           profile_id: myMembership.profile.id,
-          calendars_for_avail_blocking: [],
+          calendars_for_avail_blocking: calendarIdsForAvailBlocking,
           google_user_id: googleUser.id,
+          email: googleUser.email,
+          picture_url: googleUser.picture,
         })
         .onConflictDoUpdate({
           target: schema.googleCalendarIntegrations.google_user_id,
@@ -1604,6 +1624,7 @@ const googleOauthRoutes = {
             refresh_token: tokens.refresh_token,
             expires_at_ms: Number(tokens.expires_at_ms),
             id_token: tokens.id_token,
+            picture_url: googleUser.picture,
           },
         })
         .returning()
@@ -1612,6 +1633,234 @@ const googleOauthRoutes = {
       console.log('[googleOauthExchangeCode] oauthResult', oauthResult)
 
       return true
+    }),
+  googleIntegrationsByProfileSlug: authedProcedure
+    .input(z.object({ profile_slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const calendarIntegrationFields = pick('googleCalendarIntegrations', {
+        email: true,
+        picture_url: true,
+        google_user_id: true,
+        refresh_token: true,
+        expires_at_ms: true,
+        calendars_for_avail_blocking: true,
+        access_token: true,
+      })
+
+      const integrations = await db
+        .select({
+          googleCalendarIntegration: calendarIntegrationFields,
+          profile: pick('profiles', {
+            id: true,
+            slug: true,
+          }),
+        })
+        .from(schema.googleCalendarIntegrations)
+        .innerJoin(schema.profiles, d.eq(schema.profiles.slug, input.profile_slug))
+        // ensure membership
+        .where(
+          d.exists(
+            db
+              .select({ profile_id: schema.profileMembers.profile_id })
+              .from(schema.profileMembers)
+              .where(
+                d.and(
+                  d.eq(schema.profileMembers.user_id, ctx.auth.userId),
+                  d.eq(schema.profileMembers.profile_id, schema.profiles.id)
+                )
+              )
+          )
+        )
+        .execute()
+
+      const all = await Promise.all(
+        integrations.map(async (integration) => {
+          const { profile } = integration
+          let { googleCalendarIntegration } = integration
+          // if (Date.now() >= googleCalendarIntegration.expires_at_ms) {
+          //   const refreshedTokens = await googleOauth.refreshAccessToken({
+          //     refreshToken: googleCalendarIntegration.refresh_token,
+          //     accessToken: googleCalendarIntegration.access_token,
+          //   })
+
+          //   const [result] = await db
+          //     .update(schema.googleCalendarIntegrations)
+          //     .set({
+          //       access_token: refreshedTokens.access_token,
+          //       refresh_token: refreshedTokens.refresh_token,
+          //       expires_at_ms: Number(refreshedTokens.expires_at_ms),
+          //       id_token: refreshedTokens.id_token,
+          //     })
+          //     .where(
+          //       d.and(
+          //         d.eq(
+          //           schema.googleCalendarIntegrations.google_user_id,
+          //           googleCalendarIntegration.google_user_id
+          //         ),
+          //         d.eq(schema.googleCalendarIntegrations.profile_id, profile.id)
+          //       )
+          //     )
+          //     .returning(calendarIntegrationFields)
+          //     .execute()
+
+          //   if (!result) {
+          //     throw new TRPCError({
+          //       code: 'INTERNAL_SERVER_ERROR',
+          //       message: `Failed to refresh Google calendar integration.`,
+          //     })
+          //   }
+
+          //   googleCalendarIntegration = result
+          // }
+          const { refresh_token } = await hydrateTokensForGoogleIntegration({
+            profile_id: profile.id,
+            google_user_id: googleCalendarIntegration.google_user_id,
+            access_token: googleCalendarIntegration.access_token,
+            refresh_token: googleCalendarIntegration.refresh_token,
+          })
+          const calendars = await googleOauth.getCalendarsList({
+            refreshToken: refresh_token,
+          })
+
+          return {
+            email: googleCalendarIntegration.email,
+            picture_url: googleCalendarIntegration.picture_url,
+            google_user_id: googleCalendarIntegration.google_user_id,
+            calendars_for_avail_blocking: googleCalendarIntegration.calendars_for_avail_blocking,
+            calendars: calendars.items,
+          }
+        })
+      )
+
+      return all
+    }),
+  deleteProfileGoogleIntegration: authedProcedure
+    .input(z.object({ google_user_id: z.string(), profile_id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [first] = await db
+        .delete(schema.googleCalendarIntegrations)
+        .where(
+          d.and(
+            d.eq(schema.googleCalendarIntegrations.google_user_id, input.google_user_id),
+            d.eq(schema.googleCalendarIntegrations.profile_id, input.profile_id)
+          )
+        )
+        .returning()
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Google integration not found.`,
+        })
+      }
+
+      return true
+    }),
+  googleCalendarEventsByProfileSlug: authedProcedure
+    .input(
+      z.object({
+        profile_slug: z.string(),
+        start_date: z.object({
+          year: z.number(),
+          month: z.number(),
+          day: z.number(),
+        }),
+        end_date: z.object({
+          year: z.number(),
+          month: z.number(),
+          day: z.number(),
+        }),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const results = await db
+        .select({
+          ...pick('googleCalendarIntegrations', {
+            refresh_token: true,
+            google_user_id: true,
+            email: true,
+            profile_id: true,
+            access_token: true,
+            expires_at_ms: true,
+            calendars_for_avail_blocking: true,
+          }),
+          timezone: schema.profiles.timezone,
+        })
+        .from(schema.profiles)
+        .where(d.eq(schema.profiles.slug, input.profile_slug))
+        .innerJoin(
+          schema.googleCalendarIntegrations,
+          d.eq(schema.googleCalendarIntegrations.profile_id, schema.profiles.id)
+        )
+        .innerJoin(
+          schema.profileMembers,
+          d.and(
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId),
+            d.eq(schema.profileMembers.profile_id, schema.profiles.id)
+          )
+        )
+        .execute()
+      console.log('[googleCalendarEventsByProfileSlug] results', results)
+      return await Promise.all(
+        results.map(async (result) => {
+          const { refresh_token, timezone, google_user_id, access_token } = result
+          const minDateTime = DateTime.fromObject(
+            {
+              year: input.start_date.year,
+              month: input.start_date.month,
+              day: input.start_date.day,
+            },
+            {
+              zone: timezone,
+            }
+          ).startOf('day')
+          const maxDateTime = DateTime.fromObject(
+            {
+              year: input.end_date.year,
+              month: input.end_date.month,
+              day: input.end_date.day,
+            },
+            {
+              zone: timezone,
+            }
+          ).endOf('day')
+          if (!minDateTime.isValid) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `Invalid start date.`,
+            })
+          }
+          if (!maxDateTime.isValid) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `Invalid end date.`,
+            })
+          }
+          const hydratedTokens = await hydrateTokensForGoogleIntegration({
+            profile_id: result.profile_id,
+            google_user_id: result.google_user_id,
+            access_token: result.access_token,
+            refresh_token: result.refresh_token,
+          })
+          const events = (
+            await Promise.all(
+              result.calendars_for_avail_blocking.map(
+                async (calendarId) =>
+                  await googleOauth.getCalendarEvents({
+                    refreshToken: hydratedTokens.refresh_token,
+                    minDateTime,
+                    maxDateTime,
+                    calendarId,
+                  })
+              )
+            )
+          ).flat()
+          return {
+            events,
+          }
+        })
+      )
     }),
 }
 

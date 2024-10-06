@@ -1,0 +1,11 @@
+.md {
+  color: var(--color12);
+}
+
+.md h2 {
+  margin-bottom: 1rem;
+}
+
+.md h3 {
+  margin-bottom: 0.75rem;
+}

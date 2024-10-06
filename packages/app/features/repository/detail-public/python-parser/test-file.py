@@ -165,9 +165,7 @@ our model.
 
 There are two ways you could be using the `data_augmentation` preprocessor:
 
-**Option 1: Make it part of the model**, like this:
-
-```python
+**Option 1: Make it part of the model**, like this:```python
 inputs = keras.Input(shape=input_shape)
 x = data_augmentation(inputs)
 x = layers.Rescaling(1./255)(x)
@@ -323,3 +321,4 @@ img_array = keras.ops.expand_dims(img_array, 0)  # Create batch axis
 predictions = model.predict(img_array)
 score = float(keras.ops.sigmoid(predictions[0][0]))
 print(f"This image is {100 * (1 - score):.2f}% cat and {100 * score:.2f}% dog.")
+

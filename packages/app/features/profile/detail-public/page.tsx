@@ -18,6 +18,8 @@ import { Scroll } from 'app/ds/Scroll'
 import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/provider'
 import { OfferCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
 import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import { Link } from 'app/ds/Link'
+import { Card } from 'app/ds/Form/layout'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -94,52 +96,47 @@ function Content({ profileSlug }: { profileSlug: string }) {
         <Text bold>Repositories</Text>
         <View gap="$1">
           {repos.map((repo, i) => (
-            <View key={repo.id} p="$3" bg="$color2" gap="$3" bw={2} boc="$borderColor">
-              <View row gap="$3" ai="flex-start">
-                <View grow>
-                  <Text color="$color11">{`#${repo.index.toString().padStart(3, '0')} `}</Text>
-                  <Text textDecorationLine="underline" textDecorationColor="transparent">
-                    <Text bold>{repo.slug}</Text>{' '}
-                  </Text>
-
-                  <Text>
-                    <Text gap="$1" color="$color11">
-                      by {profile.name}
+            <Link href={`/@${profileSlug}/${repo.slug}`} key={repo.id}>
+              <Card>
+                <View row gap="$3" ai="flex-start">
+                  <View grow>
+                    <Text color="$color11">{`#${repo.index.toString().padStart(3, '0')} `}</Text>
+                    <Text textDecorationLine="underline" textDecorationColor="transparent">
+                      <Text bold>{repo.slug}</Text>{' '}
                     </Text>
-                  </Text>
-                </View>
-                {!!repo.github_url && (
-                  <View>
-                    <LinkButton href={repo.github_url} target="_blank" als="flex-start">
-                      <ButtonText>view code on github</ButtonText>
-                    </LinkButton>
+
+                    <Text>
+                      <Text gap="$1" color="$color11">
+                        by {profile.name}
+                      </Text>
+                    </Text>
                   </View>
-                )}
-              </View>
-              <Highlight
-                theme={themes.shadesOfPurple}
-                code={`import wandb
+                </View>
+                <Highlight
+                  theme={themes.shadesOfPurple}
+                  code={`import wandb
 from wandb.integration.keras import WandbMetricsLogger, WandbModelCheckpoint
 ​
 wandb.login()`}
-                language="python"
-              >
-                {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                  <pre style={{ ...style, padding: '8px 0', maxWidth: 800, display: 'none' }}>
-                    {tokens.map((line, i) => (
-                      <div key={i} {...getLineProps({ line })}>
-                        <span style={{ width: 30, display: 'inline-block', paddingLeft: 6 }}>
-                          {i + 1}
-                        </span>
-                        {line.map((token, key) => (
-                          <span key={key} {...getTokenProps({ token })} />
-                        ))}
-                      </div>
-                    ))}
-                  </pre>
-                )}
-              </Highlight>
-            </View>
+                  language="python"
+                >
+                  {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                    <pre style={{ ...style, padding: '8px 0', maxWidth: 800, display: 'none' }}>
+                      {tokens.map((line, i) => (
+                        <div key={i} {...getLineProps({ line })}>
+                          <span style={{ width: 30, display: 'inline-block', paddingLeft: 6 }}>
+                            {i + 1}
+                          </span>
+                          {line.map((token, key) => (
+                            <span key={key} {...getTokenProps({ token })} />
+                          ))}
+                        </div>
+                      ))}
+                    </pre>
+                  )}
+                </Highlight>
+              </Card>
+            </Link>
           ))}
         </View>
       </View>

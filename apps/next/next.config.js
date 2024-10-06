@@ -114,6 +114,7 @@ let config = {
     '@nandorojo/anchor',
     'expo-auth-session',
     'expo-crypto',
+    'react-syntax-highlighter',
   ],
   experimental: {
     // https://blog.arcjet.com/structured-logging-in-json-for-next-js/

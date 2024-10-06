@@ -20,7 +20,5 @@ export default View.styleable<
 
   console.log('gradient', gradient)
 
-  return (
-    <View stretch={stretch} {...p} backgroundImage={gradient} testID="gradient" debug="verbose" />
-  )
+  return <View stretch={stretch} {...p} backgroundImage={gradient} />
 })

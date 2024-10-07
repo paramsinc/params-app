@@ -1398,9 +1398,9 @@ const availability = {
         db
           .select(
             pick('offers', {
-              timezone: true,
               start_datetime: true,
               duration_minutes: true,
+              timezone: true,
             })
           )
           .from(schema.offers)
@@ -1430,6 +1430,7 @@ const availability = {
 
       let dateTime = DateTime.fromObject(start_date, { zone: profile.timezone })
       const endDateTime = DateTime.fromObject(end_date, { zone: profile.timezone })
+      const now = DateTime.now()
       while (dateTime.startOf('day') < endDateTime.startOf('day')) {
         const queuedAvailRanges = profile.availability_ranges?.slice()
 
@@ -1445,24 +1446,26 @@ const availability = {
           while (slotStart.plus({ minutes: plan.duration_mins }) <= rangeEnd) {
             const slotEnd = slotStart.plus({ minutes: plan.duration_mins })
 
-            const hasConflictingOffer = conflicts.some((offer): boolean => {
-              const offerStart = DateTime.fromJSDate(offer.start_datetime, {
-                zone: offer.timezone,
+            const isPast = slotStart < now
+            if (!isPast) {
+              const hasConflict = conflicts.some((offer): boolean => {
+                const offerStart = DateTime.fromJSDate(offer.start_datetime, {
+                  zone: offer.timezone,
+                })
+                const offerEnd = offerStart.plus({ minutes: offer.duration_minutes })
+                return offerStart < slotEnd && offerEnd > slotStart
               })
-              const offerEnd = offerStart.plus({ minutes: offer.duration_minutes })
-              return offerStart < slotEnd && offerEnd > slotStart
-            })
-
-            if (!hasConflictingOffer) {
-              slots.push({
-                date: {
-                  year: dateTime.year,
-                  month: dateTime.month,
-                  day: dateTime.day,
-                },
-                duration_mins: plan.duration_mins,
-                time: { hour: slotStart.hour, minute: slotStart.minute },
-              })
+              if (!hasConflict) {
+                slots.push({
+                  date: {
+                    year: dateTime.year,
+                    month: dateTime.month,
+                    day: dateTime.day,
+                  },
+                  duration_mins: plan.duration_mins,
+                  time: { hour: slotStart.hour, minute: slotStart.minute },
+                })
+              }
             }
 
             slotStart = slotStart.plus({ minute: plan.duration_mins })
@@ -1952,14 +1955,9 @@ export const appRouter = router({
         const [first] = await tx
           .select({
             profile: schema.profiles,
-            calcomUser: schema.calcomUsers,
             plan: schema.profileOnetimePlans,
           })
           .from(schema.profiles)
-          .innerJoin(
-            schema.calcomUsers,
-            d.eq(schema.calcomUsers.id, schema.profiles.calcom_user_id)
-          )
           .innerJoin(schema.profileOnetimePlans, d.eq(schema.profileOnetimePlans.id, input.plan_id))
           .where(d.eq(schema.profiles.id, profile_id))
           .limit(1)
@@ -2001,19 +1999,17 @@ export const appRouter = router({
           })
           .returning()
           .execute()
-        if (!offer?.id) {
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: `Offer couldn't get created.`,
-          })
-        }
-
-        console.log('[createOfferAndPaymentIntent][offer]', offer)
-
-        console.log('[createOfferAndPaymentIntent][offer]', offer)
-
         return { offer, plan, profile }
       })
+
+      if (!offer?.id) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Offer couldn't get created.`,
+        })
+      }
+
+      console.log('[createOfferAndPaymentIntent][offer]', offer)
 
       const amount = plan.price
       const currency = plan.currency

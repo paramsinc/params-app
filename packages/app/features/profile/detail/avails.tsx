@@ -10,9 +10,14 @@ import { makeForm } from 'app/form'
 import { entries } from 'app/helpers/object'
 import { api } from 'app/trpc/client'
 
-const { useMutation } = api.updateProfileAvailability
+const { useMutation } = api.updateProfile
 
-const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
+type Args = Parameters<ReturnType<typeof useMutation>['mutate']>[0]
+
+const Form = makeForm<{
+  profile_id: Args['id']
+  availability_ranges: Args['patch']['availability_ranges']
+}>()
 
 export function ProfileAvailsForm() {
   const {
@@ -164,6 +169,7 @@ function Provider({ children, profileSlug }: { children: React.ReactNode; profil
         availability_ranges: profile.availability_ranges ?? [],
         profile_id: profile.id,
       }}
+      key={profile.id}
       devtools
     >
       {children}
@@ -187,8 +193,10 @@ function Submit() {
               onPress={handleSubmit(async ({ availability_ranges, profile_id }) => {
                 await mutation
                   .mutateAsync({
-                    availability_ranges,
-                    profile_id,
+                    patch: {
+                      availability_ranges,
+                    },
+                    id: profile_id,
                   })
                   .then(({ availability_ranges }) => {
                     form.reset(

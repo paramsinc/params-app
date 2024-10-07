@@ -17,6 +17,11 @@ import { useState } from 'app/react'
 import { DateTime } from 'app/dates/date-time'
 import { Image } from 'app/ds/Image'
 import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import { group } from 'app/helpers/dash'
+import { entries } from 'app/helpers/object'
+import { Card } from 'app/ds/Form/layout'
+import { LinkButton } from 'app/ds/Button/link'
+import { Link } from 'app/ds/Link'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -44,7 +49,7 @@ export function ProfileDetailBookPage() {
 }
 
 const now = DateTime.now()
-const end = DateTime.now().plus({ days: 60 })
+const end = DateTime.now().plus({ days: 20 })
 
 function Booker({ profileSlug }: { profileSlug: string }) {
   const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
@@ -52,38 +57,15 @@ function Booker({ profileSlug }: { profileSlug: string }) {
 
   const { params, setParams } = useParams()
 
-  const [calBookingInput, setCalBookingInput] = useState<
-    | Parameters<NonNullable<React.ComponentProps<typeof Calcom.Booker>['handleCreateBooking']>>[0]
-    | null
-  >(null)
-
   const error = profileQuery.error
 
   let planId = params.planId
 
-  const slotsQuery = api.upcomingProfileSlots_public.useQuery(
-    {
-      profile_slug: profileSlug,
-      start_date: {
-        year: now.year,
-        month: now.month,
-        day: now.day,
-      },
-      end_date: {
-        year: end.year,
-        month: end.month,
-        day: end.day,
-      },
-      plan_id: planId!,
-    },
-    {
-      enabled: !!planId,
-    }
-  )
+  const slotsQuery = useSlots({ planId, profileSlug })
 
-  const [slot, setSlot] = useState<NonNullable<(typeof slotsQuery)['data']>['slots'][0] | null>(
-    null
-  )
+  const [slot, setSlot] = useState<
+    NonNullable<ReturnType<typeof useSlots>['data']>['slots'][0] | null
+  >(null)
 
   const plan = plansQuery.data?.find((p) => p.id === planId)
 
@@ -92,9 +74,9 @@ function Booker({ profileSlug }: { profileSlug: string }) {
     return (
       <View bg="$color3" br="$3" overflow="hidden" gap="$3">
         {!plansQuery.data ? (
-          <Text>Loading...</Text>
+          <Text p="$3">Loading...</Text>
         ) : plansQuery.data?.length === 0 ? (
-          <Text>This profile has disabled bookings for now.</Text>
+          <Text p="$3">This profile has disabled bookings for now.</Text>
         ) : (
           <View>
             {plansQuery.data?.map(({ id, duration_mins, price, currency }, i) => {
@@ -135,11 +117,15 @@ function Booker({ profileSlug }: { profileSlug: string }) {
 
   const profile = profileQuery.data
 
+  if (!profile) {
+    return <ErrorCard error={profileQuery.error} />
+  }
+
   return (
     <View gap="$3">
       <ErrorCard error={error} />
 
-      {profile && (
+      <Link href={`/@${profile.slug}`}>
         <View center gap="$3">
           {profile.image_vendor && profile.image_vendor_id ? (
             <View w={250}>
@@ -162,88 +148,143 @@ function Booker({ profileSlug }: { profileSlug: string }) {
             Book a meeting
           </Text>
         </View>
-      )}
+      </Link>
 
       {!plan ? (
-        renderPlanPicker()
-      ) : calBookingInput ? (
-        <StripeProvider_ConfirmOnBackend amountCents={plan.price} currency="usd">
-          <View
-            p="$3"
-            gap="$3"
-            bg="$color3"
-            maw={760}
-            w="100%"
-            als="center"
-            x={0}
-            o={1}
-            enterStyle={{
-              x: 10,
-              o: 0,
-            }}
-            animation="quick"
-          >
-            <View p="$3" bg="$color1" gap="$3">
-              <Button onPress={() => setCalBookingInput(null)} als="flex-start">
+        <View maw={760} w="100%" als="center" gap="$3">
+          <View row ai="center" gap="$3">
+            <LinkButton href={`/@${profile.slug}`}>
+              <ButtonText>Back</ButtonText>
+            </LinkButton>
+          </View>
+          {renderPlanPicker()}
+        </View>
+      ) : slot ? (
+        (() => {
+          const dateTime = DateTime.fromObject(
+            {
+              hour: slot.time.hour,
+              minute: slot.time.minute,
+              day: slot.date.day,
+              month: slot.date.month,
+              year: slot.date.year,
+            },
+            {
+              zone: profile.timezone,
+            }
+          )
+          return (
+            <StripeProvider_ConfirmOnBackend amountCents={plan.price} currency="usd">
+              <View
+                p="$3"
+                gap="$3"
+                bg="$color3"
+                maw={760}
+                w="100%"
+                als="center"
+                x={0}
+                o={1}
+                enterStyle={{
+                  x: 10,
+                  o: 0,
+                }}
+                animation="quick"
+              >
+                <View p="$3" bg="$color1" gap="$3">
+                  <Button onPress={() => setSlot(null)} als="flex-start">
+                    <ButtonText>Back</ButtonText>
+                  </Button>
+                  <View>
+                    <Text>
+                      {dateTime.toLocaleString({
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                    <Text bold>
+                      {[
+                        dateTime.toLocaleString({
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        }),
+
+                        dateTime.plus({ minutes: plan.duration_mins }).toLocaleString({
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        }),
+                      ].join(' - ')}{' '}
+                      ({dateTime.toFormat('ZZZZ')})
+                    </Text>
+                  </View>
+                </View>
+                {profile ? (
+                  <OfferCheckoutForm_ConfirmOnBackend
+                    profile_id={profile.id}
+                    organization_id={null}
+                    amount={plan.price}
+                    plan_id={plan.id}
+                    insert={{
+                      start_datetime: {
+                        year: dateTime.year,
+                        month: dateTime.month,
+                        day: dateTime.day,
+                        hour: dateTime.hour,
+                        minute: dateTime.minute,
+                      },
+                      timezone: profile.timezone,
+                    }}
+                  />
+                ) : null}
+              </View>
+            </StripeProvider_ConfirmOnBackend>
+          )
+        })()
+      ) : (
+        <View w="100%" maw={760} als="center" gap="$3">
+          <View row ai="center" gap="$3">
+            {(plansQuery.data?.length ?? 0) > 1 && (
+              <Button
+                onPress={() => {
+                  setParams({ planId: undefined })
+                }}
+              >
                 <ButtonText>Back</ButtonText>
               </Button>
-              <View>
-                <Text>
-                  {DateTime.fromISO(calBookingInput.start, {
-                    zone: calBookingInput.timeZone,
-                  }).toLocaleString({
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </Text>
-                <Text bold>
-                  {[
-                    DateTime.fromISO(calBookingInput.start, {
-                      zone: calBookingInput.timeZone,
-                    }).toLocaleString({
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    }),
-                    calBookingInput.end &&
-                      DateTime.fromISO(calBookingInput.end, {
-                        zone: calBookingInput.timeZone,
-                      }).toLocaleString({
-                        hour: 'numeric',
-                        minute: 'numeric',
-                      }),
-                  ]
-                    .filter(Boolean)
-                    .join(' - ')}{' '}
-                  (
-                  {DateTime.fromISO(calBookingInput.start, {
-                    zone: calBookingInput.timeZone,
-                  }).toFormat('ZZZZ')}
-                  )
-                </Text>
-              </View>
+            )}
+
+            <View grow>
+              <Text>{formatMinutes(plan.duration_mins)} Call</Text>
             </View>
-            {profile ? (
-              <OfferCheckoutForm_ConfirmOnBackend
-                profile_id={profile.id}
-                organization_id={null}
-                amount={plan.price}
-                plan_id={plan.id}
-                insert={{
-                  start_datetime: DateTime.fromISO(calBookingInput.start, {
-                    zone: calBookingInput.timeZone,
-                  })!,
-                  timezone: calBookingInput.timeZone,
-                }}
-              />
-            ) : null}
           </View>
-        </StripeProvider_ConfirmOnBackend>
-      ) : (
-        <Text>TODO slots picker</Text>
+          <SlotPicker planId={planId} profileSlug={profileSlug} onSelectSlot={setSlot} />
+        </View>
       )}
     </View>
+  )
+}
+
+function useSlots({ planId, profileSlug }: { planId: string | undefined; profileSlug: string }) {
+  return api.upcomingProfileSlots_public.useQuery(
+    {
+      profile_slug: profileSlug,
+      start_date: {
+        year: now.year,
+        month: now.month,
+        day: now.day,
+      },
+      end_date: {
+        year: end.year,
+        month: end.month,
+        day: end.day,
+      },
+      plan_id: planId!,
+    },
+    {
+      enabled: !!planId,
+      trpc: { context: { batch: false } },
+    }
   )
 }
 
@@ -251,4 +292,68 @@ export const formatMinutes = (minutes: number) => {
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
   return [hours && `${hours}h`, mins && `${mins}m`].filter(Boolean).join(', ') || '0m'
+}
+
+type Q = (typeof api)['upcomingProfileSlots_public']['useQuery']
+
+const SlotPicker = ({
+  planId,
+  profileSlug,
+  onSelectSlot,
+}: {
+  planId: string | undefined
+  profileSlug: string
+  onSelectSlot: (slot: NonNullable<ReturnType<typeof useSlots>['data']>['slots'][0]) => void
+}) => {
+  const slotsQuery = useSlots({ planId, profileSlug })
+
+  if (!slotsQuery.data) {
+    return <Text>Loading...</Text>
+  }
+  const timezone = slotsQuery.data.timezone
+  const slotsByDate = group(
+    slotsQuery.data.slots,
+    ({ date }) => DateTime.fromObject(date).toISODate()!
+  )
+  return (
+    <View gap="$3">
+      <Text color="$color11">
+        All times are in{' '}
+        {DateTime.fromObject({}, { zone: slotsQuery.data.timezone }).toFormat('ZZZZ')} timezone.
+      </Text>
+      <View gap="$1">
+        {entries(slotsByDate).map(([date, slots]) => {
+          const dateObj = DateTime.fromISO(date, { zone: timezone })
+          if (!dateObj.isValid) {
+            return null
+          }
+          return (
+            <View key={date}>
+              <Card>
+                <Text bold>{dateObj.toLocaleString({ dateStyle: 'full' })}</Text>
+                <View gap="$1" row flexWrap="wrap">
+                  {slots?.map((slot, index) => {
+                    return (
+                      <Button key={index} onPress={() => onSelectSlot(slot)}>
+                        <ButtonText>
+                          {dateObj
+                            .set({
+                              hour: slot.time.hour,
+                              minute: slot.time.minute,
+                            })
+                            .toLocaleString({
+                              timeStyle: 'short',
+                            })}
+                        </ButtonText>
+                      </Button>
+                    )
+                  })}
+                </View>
+              </Card>
+            </View>
+          )
+        })}
+      </View>
+    </View>
+  )
 }

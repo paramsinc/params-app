@@ -115,8 +115,7 @@ export function OfferPaymentIntentPublicPage() {
             <Card>
               <Card.Title>Next Steps</Card.Title>
               <Card.Description>
-                A calendar invite will be sent to the following emails:{' '}
-                {profileMemberEmails.join(', ')}.
+                A calendar invite will be sent to {profileMemberEmails.join(', ')}.
               </Card.Description>
             </Card>
 

@@ -45753,7 +45753,8 @@ var tamaguiConfig = createTamagui({
   },
   fonts: {
     heading: roundFont,
-    body: monoFont
+    body: monoFont,
+    mono: monoFont
   },
   defaultFont: "body",
   tokens: (0, import_core57.createTokens)({

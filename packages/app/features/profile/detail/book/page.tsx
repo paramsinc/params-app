@@ -22,7 +22,7 @@ const { useParams } = createParam<{
   profileSlug: string
   planId: string | undefined
   eventTypeSlug: string | undefined
-  slot?: string
+  slotId: string | undefined
 }>()
 
 export function ProfileDetailBookPage() {
@@ -30,24 +30,12 @@ export function ProfileDetailBookPage() {
     params: { profileSlug },
   } = useParams()
 
-  const calUserNameQuery = api.calUserByProfileSlug_public.useQuery({
-    profileSlug,
-  })
-
-  const calUserName = calUserNameQuery.data
-
   return (
     <Calcom.ProviderPublic>
       <Page.Root>
         <Page.Scroll>
           <Page.Content>
-            {calUserName ? (
-              <Booker profileSlug={profileSlug} calUsername={calUserName} />
-            ) : (
-              <>
-                <ErrorCard error={calUserNameQuery.error} />
-              </>
-            )}
+            <Booker profileSlug={profileSlug} />
           </Page.Content>
         </Page.Scroll>
       </Page.Root>
@@ -55,10 +43,13 @@ export function ProfileDetailBookPage() {
   )
 }
 
-function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername: string }) {
+const now = DateTime.now()
+const end = DateTime.now().plus({ days: 60 })
+
+function Booker({ profileSlug }: { profileSlug: string }) {
   const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
-  const eventTypes = useEventTypes(calUsername)
   const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
+
   const { params, setParams } = useParams()
 
   const [calBookingInput, setCalBookingInput] = useState<
@@ -66,9 +57,33 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
     | null
   >(null)
 
-  const error = profileQuery.error ?? eventTypes.error
+  const error = profileQuery.error
 
   let planId = params.planId
+
+  const slotsQuery = api.upcomingProfileSlots_public.useQuery(
+    {
+      profile_slug: profileSlug,
+      start_date: {
+        year: now.year,
+        month: now.month,
+        day: now.day,
+      },
+      end_date: {
+        year: end.year,
+        month: end.month,
+        day: end.day,
+      },
+      plan_id: planId!,
+    },
+    {
+      enabled: !!planId,
+    }
+  )
+
+  const [slot, setSlot] = useState<NonNullable<(typeof slotsQuery)['data']>['slots'][0] | null>(
+    null
+  )
 
   const plan = plansQuery.data?.find((p) => p.id === planId)
 
@@ -114,7 +129,6 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
           </View>
         )}
         <ErrorCard error={plansQuery.error} />
-        <ErrorCard error={eventTypes.error} />
       </View>
     )
   }
@@ -227,18 +241,7 @@ function Booker({ profileSlug, calUsername }: { profileSlug: string; calUsername
           </View>
         </StripeProvider_ConfirmOnBackend>
       ) : (
-        <Calcom.Booker
-          eventSlug={'sixty-minutes-video'}
-          username={calUsername}
-          hideBranding
-          handleCreateBooking={(e) => {
-            setCalBookingInput(e)
-          }}
-          customClassNames={{
-            // no border radius tailwind
-            bookerContainer: 'radius-none',
-          }}
-        />
+        <Text>TODO slots picker</Text>
       )}
     </View>
   )

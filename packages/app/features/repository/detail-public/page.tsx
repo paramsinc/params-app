@@ -10,11 +10,14 @@ import { Fragment } from 'app/react'
 import { api } from 'app/trpc/client'
 import Markdown from 'react-markdown'
 import { dynamic } from 'app/helpers/dynamic'
-// const SyntaxHighlighter = dynamic(() => import('react-syntax-highlighter/dist/esm/prism-light'), {
-//   ssr: false,
-// })
-// import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+const SyntaxHighlighter = dynamic(() => import('react-syntax-highlighter/dist/esm/prism-light'), {
+  ssr: false,
+})
+import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import './page.css'
+import { Highlight, themes } from 'prism-react-renderer'
+import { Image } from 'app/ds/Image'
+import { Lucide } from 'app/ds/Lucide'
 
 const { useParams } = createParam<{ profileSlug: string; repoSlug: string }>()
 
@@ -37,12 +40,56 @@ function RepositoryDetailPublicPageContent({
     return null
   }
   const repo = repoQuery.data
+  const profile = repo.profile
   return (
     <Page.Root>
       <Page.Scroll>
-        <View row>
-          <View grow />
-          <Page.Content maw={850} gap="$4">
+        <Page.Content maw="100%" gap="$3" $gtMd={{ row: true, gap: '$4' }}>
+          <View $gtLg={{ width: 400 }} gap="$3">
+            <Card>
+              {!!repo.profile.image_vendor_id && (
+                <View ai="center">
+                  <View br="$rounded" als="center" ov="hidden">
+                    <Image
+                      src={repo.profile.image_vendor_id}
+                      loader={repo.profile.image_vendor || 'raw'}
+                      width={100}
+                      height={100}
+                      alt={repo.profile.name}
+                      contentFit="cover"
+                    />
+                  </View>
+                </View>
+              )}
+
+              <Text center bold>
+                {repo.profile.name}
+              </Text>
+
+              <View row gap="$1">
+                <LinkButton grow href={`/@${repo.profile.slug}`}>
+                  <ButtonText>Profile</ButtonText>
+                </LinkButton>
+
+                <LinkButton grow href={`/@${repo.profile.slug}/book`} themeInverse>
+                  <ButtonText>Book a Call</ButtonText>
+                </LinkButton>
+              </View>
+              {!!repo.profile.bio && (
+                <>
+                  <View h={2} bg="$borderColor" />
+                  <View gap="$2">
+                    <Text color="$color11" bold>
+                      About {repo.profile.name}
+                    </Text>
+
+                    <Text>{repo.profile.bio}</Text>
+                  </View>
+                </>
+              )}
+            </Card>
+          </View>
+          <View w="100%" maw={900} gap="$3">
             <Card>
               <View row ai="center">
                 <Text flexGrow={1} flexBasis={2} bold fontSize={24}>
@@ -55,7 +102,28 @@ function RepositoryDetailPublicPageContent({
                 )}
               </View>
             </Card>
-            <View gap="$4">
+            <View aspectRatio={16 / 9} bg="$borderColor" br="$3" ov="hidden">
+              {!!profile.image_vendor && !!profile.image_vendor_id && (
+                <Image
+                  fill
+                  loader={profile.image_vendor}
+                  src={profile.image_vendor_id}
+                  alt={profile.name}
+                  contentFit="cover"
+                  sizes="(max-width: 1200px) 100vw, 60vw"
+                  priority
+                  style={{
+                    transform: 'rotateY(180deg)',
+                  }}
+                />
+              )}
+              <View stretch center>
+                <View br="$rounded" box={75} bg="white" center pl={2}>
+                  <Lucide.Play color="black" size={29} />
+                </View>
+              </View>
+            </View>
+            <View>
               {testFile.map((block, i) => {
                 return (
                   <Fragment key={i}>
@@ -69,8 +137,20 @@ function RepositoryDetailPublicPageContent({
                                 <Text
                                   tag="p"
                                   fontFamily="$heading"
-                                  mb="$1"
+                                  mb="$3"
+                                  fontSize={16}
                                   children={props.children}
+                                  color="$color12"
+                                  display="block"
+                                />
+                              ),
+                              code: (props) => (
+                                <Text
+                                  tag="code"
+                                  fontFamily="$mono"
+                                  fontSize={16}
+                                  children={props.children}
+                                  color="$color12"
                                 />
                               ),
                             }}
@@ -79,14 +159,49 @@ function RepositoryDetailPublicPageContent({
                           </Markdown>
                         </View>
                       )
-                    ) : null}
+                    ) : (
+                      <>
+                        <Highlight
+                          theme={themes.vsDark}
+                          code={block.content}
+                          language={block.language}
+                        >
+                          {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                            <pre
+                              style={{
+                                ...style,
+                                padding: '16px',
+                                borderRadius: 12,
+                                marginBottom: 16,
+                              }}
+                            >
+                              {tokens.map((line, i) => (
+                                <div key={i} {...getLineProps({ line })}>
+                                  {/* <span
+                                    style={{ width: 30, display: 'inline-block', paddingLeft: 12 }}
+                                  >
+                                    {i + 1}
+                                  </span> */}
+                                  {line.map((token, key) => (
+                                    <span key={key} {...getTokenProps({ token })} />
+                                  ))}
+                                </div>
+                              ))}
+                            </pre>
+                          )}
+                        </Highlight>
+                        {/* <SyntaxHighlighter language="python" style={dark}>
+                          {block.content}
+                        </SyntaxHighlighter> */}
+                      </>
+                    )}
                   </Fragment>
                 )
               })}
             </View>
-          </Page.Content>
-          <View grow />
-        </View>
+          </View>
+          {/* <View $gtMd={{ grow: true }} /> */}
+        </Page.Content>
       </Page.Scroll>
     </Page.Root>
   )

@@ -325,7 +325,7 @@ function SlotsInternal({ profileSlug, planId }: { profileSlug: string; planId: s
   if (!slotsQuery.data) {
     return <ErrorCard error={slotsQuery.error} />
   }
-  const { slots, timezone } = slotsQuery.data
+  const { timezone } = slotsQuery.data
   const slotsByDay = group(
     slotsQuery.data.slots,
     (slot) => DateTime.fromObject(slot.date, { zone: timezone }).toISODate()!

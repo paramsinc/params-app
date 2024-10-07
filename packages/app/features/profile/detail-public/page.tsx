@@ -44,7 +44,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
       enabled: !!profileSlug,
     }
   )
-  console.log('[profileQuery]', profileQuery.data)
   if (!profileQuery.data) {
     return null
   }
@@ -80,8 +79,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
             </Text>
           </View>
 
-          {/* <CreateBooking profileSlug={profileSlug} /> */}
-          {/* <CreateBooking_ConfirmOnBackend profileId={profile.id} /> */}
           <CreateBooking_Link profileSlug={profileSlug} />
           <View gap="$3">
             <Text color="$color11" bold>
@@ -141,89 +138,6 @@ wandb.login()`}
         </View>
       </View>
     </View>
-  )
-}
-
-// TODO make this a page
-const CreateBooking = ({ profileSlug }: { profileSlug: string }) => {
-  const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
-  const sessionMutation = api.createProfileCheckoutSession.useMutation()
-  const profile = profileQuery.data
-  const clientSecret = sessionMutation.data?.clientSecret
-  return (
-    <Modal
-      open={clientSecret != null}
-      onOpenChange={(next) => {
-        if (!next) {
-          sessionMutation.reset()
-        }
-      }}
-    >
-      <Button
-        themeInverse
-        loading={sessionMutation.isPending}
-        disabled={!profile}
-        onPress={() => {
-          if (!profile) {
-            return
-          }
-          const route = `/booking-checkout/success?session_id={CHECKOUT_SESSION_ID}`
-          sessionMutation.mutate({
-            profile_id: profile.id,
-            return_success_url:
-              platform.OS === 'web'
-                ? `${window.location.origin}${route}`
-                : `https://${env.APP_URL}${route}`,
-          })
-        }}
-      >
-        <ButtonText>Book a Call ($425+)</ButtonText>
-      </Button>
-      <ModalContent>
-        <ModalBackdrop />
-        <ModalDialog>
-          <Modal.Dialog.HeaderSmart title="Book a Call" />
-          <Scroll>
-            <StripeCheckout clientSecret={clientSecret} />
-          </Scroll>
-        </ModalDialog>
-        {/* <View pointerEvents="box-none" grow center>
-          {calUserQuery.data && (
-            <Calcom.Booker eventSlug="sixty-minutes-video" username={calUserQuery.data?.username} />
-          )}
-        </View> */}
-      </ModalContent>
-    </Modal>
-  )
-}
-
-const CreateBooking_ConfirmOnBackend = ({ profileId }: { profileId: string | undefined }) => {
-  return (
-    <Modal>
-      <ModalTrigger>
-        <Button themeInverse disabled={!profileId}>
-          <ButtonText>Book a Call ($425+)</ButtonText>
-        </Button>
-      </ModalTrigger>
-      <ModalContent>
-        <ModalBackdrop />
-        <ModalDialog>
-          <Modal.Dialog.HeaderSmart title="Book a Call" />
-          <Scroll>
-            <StripeProvider_ConfirmOnBackend amountCents={425_00} currency="usd">
-              <View p="$3">
-                {profileId ? (
-                  <OfferCheckoutForm_ConfirmOnBackend
-                    profile_id={profileId}
-                    organization_id={null}
-                  />
-                ) : null}
-              </View>
-            </StripeProvider_ConfirmOnBackend>
-          </Scroll>
-        </ModalDialog>
-      </ModalContent>
-    </Modal>
   )
 }
 

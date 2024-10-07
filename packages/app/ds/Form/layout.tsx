@@ -38,6 +38,7 @@ export const Card = withStaticProperties(
         <Gradient
           gradient={(f) => `linear-gradient(${f('color2')} 0%, ${f('color1')} 100%)`}
           stretch
+          zi={-1}
         />
         {props.children}
       </CardFrame>

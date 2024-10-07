@@ -44,25 +44,6 @@ export const parsePy = (py: string): Blocks => {
         }
       }
       continue
-      if (currentBlock) {
-        if (currentBlock.content) {
-          blocks.push(currentBlock)
-        }
-        currentBlock = null
-      } else {
-        const language = line.trim().slice(commentDelimiter.length)
-        if (language) {
-          currentBlock = {
-            language: language,
-            content: '',
-          }
-        } else {
-          currentBlock = {
-            language: 'markdown',
-            content: '',
-          }
-        }
-      }
     } else if (currentBlock) {
       if (currentBlock?.content) {
         currentBlock.content += '\n'

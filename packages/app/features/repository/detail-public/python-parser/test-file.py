@@ -165,7 +165,9 @@ our model.
 
 There are two ways you could be using the `data_augmentation` preprocessor:
 
-**Option 1: Make it part of the model**, like this:```python
+**Option 1: Make it part of the model**, like this:
+
+```python
 inputs = keras.Input(shape=input_shape)
 x = data_augmentation(inputs)
 x = layers.Rescaling(1./255)(x)

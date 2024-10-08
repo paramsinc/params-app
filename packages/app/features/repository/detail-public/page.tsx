@@ -10,10 +10,7 @@ import { Fragment } from 'app/react'
 import { api } from 'app/trpc/client'
 import Markdown from 'react-markdown'
 import { dynamic } from 'app/helpers/dynamic'
-const SyntaxHighlighter = dynamic(() => import('react-syntax-highlighter/dist/esm/prism-light'), {
-  ssr: false,
-})
-import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import './github-markdown.css'
 import './page.css'
 import { Highlight, themes } from 'prism-react-renderer'
 import { Image } from 'app/ds/Image'
@@ -49,7 +46,7 @@ function RepositoryDetailPublicPageContent({
             gap="$3"
             $gtLg={{
               width: 400,
-              position: 'sticky',
+              position: 'sticky' as any,
               top: 48 + 32,
               left: 0,
               alignSelf: 'flex-start',
@@ -134,77 +131,16 @@ function RepositoryDetailPublicPageContent({
                 </View>
               </View>
             </View>
-            <View>
+            <View className="markdown-body">
               {testFile.map((block, i) => {
                 return (
                   <Fragment key={i}>
                     {block.language === 'markdown' ? (
                       i === 0 ? null : (
-                        <View>
-                          <Markdown
-                            className="md"
-                            components={{
-                              p: (props) => (
-                                <Text
-                                  tag="p"
-                                  fontFamily="$heading"
-                                  mb="$3"
-                                  fontSize={16}
-                                  children={props.children}
-                                  color="$color12"
-                                  display="block"
-                                />
-                              ),
-                              code: (props) => (
-                                <Text
-                                  tag="code"
-                                  fontFamily="$mono"
-                                  fontSize={16}
-                                  children={props.children}
-                                  color="$color12"
-                                />
-                              ),
-                            }}
-                          >
-                            {block.content}
-                          </Markdown>
-                        </View>
+                        <Markdown>{block.content}</Markdown>
                       )
                     ) : (
-                      <>
-                        <Highlight
-                          theme={themes.vsDark}
-                          code={block.content}
-                          language={block.language}
-                        >
-                          {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                            <pre
-                              style={{
-                                ...style,
-                                padding: '16px',
-                                borderRadius: 12,
-                                marginBottom: 16,
-                              }}
-                            >
-                              {tokens.map((line, i) => (
-                                <div key={i} {...getLineProps({ line })}>
-                                  {/* <span
-                                    style={{ width: 30, display: 'inline-block', paddingLeft: 12 }}
-                                  >
-                                    {i + 1}
-                                  </span> */}
-                                  {line.map((token, key) => (
-                                    <span key={key} {...getTokenProps({ token })} />
-                                  ))}
-                                </div>
-                              ))}
-                            </pre>
-                          )}
-                        </Highlight>
-                        {/* <SyntaxHighlighter language="python" style={dark}>
-                          {block.content}
-                        </SyntaxHighlighter> */}
-                      </>
+                      <Codeblock content={block.content} language={block.language} />
                     )}
                   </Fragment>
                 )
@@ -215,5 +151,42 @@ function RepositoryDetailPublicPageContent({
         </Page.Content>
       </Page.Scroll>
     </Page.Root>
+  )
+}
+
+function Codeblock({
+  content,
+  language,
+  lineNumbers = false,
+}: {
+  content: string
+  language: string
+  lineNumbers?: boolean
+}) {
+  return (
+    <Highlight theme={themes.vsDark} code={content} language={language}>
+      {({ className, style, tokens, getLineProps, getTokenProps }) => (
+        <pre
+          style={{
+            ...style,
+            padding: '16px',
+            borderRadius: 12,
+            marginBottom: 16,
+          }}
+          className={className}
+        >
+          {tokens.map((line, i) => (
+            <div key={i} {...getLineProps({ line })}>
+              {lineNumbers && (
+                <span style={{ width: 30, display: 'inline-block', paddingLeft: 12 }}>{i + 1}</span>
+              )}
+              {line.map((token, key) => (
+                <span key={key} {...getTokenProps({ token })} />
+              ))}
+            </div>
+          ))}
+        </pre>
+      )}
+    </Highlight>
   )
 }

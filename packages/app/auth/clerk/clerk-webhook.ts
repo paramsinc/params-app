@@ -1,22 +1,10 @@
 import { Webhook } from 'svix'
 import { WebhookEvent } from '@clerk/nextjs/server'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { buffer } from 'micro'
 import { serverEnv } from 'app/env/env.server'
 import { db, schema } from 'app/db/db'
 import { slugify } from 'app/trpc/slugify'
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405)
-  }
-  // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
+export async function POST(req: Request) {
   const WEBHOOK_SECRET = serverEnv.CLERK_WEBHOOK_SECRET
 
   if (!WEBHOOK_SECRET) {
@@ -24,18 +12,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // Get the Svix headers for verification
-  const svix_id = req.headers['svix-id'] as string
-  const svix_timestamp = req.headers['svix-timestamp'] as string
-  const svix_signature = req.headers['svix-signature'] as string
+  const svix_id = req.headers.get('svix-id') as string
+  const svix_timestamp = req.headers.get('svix-timestamp') as string
+  const svix_signature = req.headers.get('svix-signature') as string
 
   // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return res.status(400).json({ error: 'Error occured -- no svix headers' })
+    return new Response('Error occured -- no svix headers', { status: 400 })
   }
 
   console.log('headers', req.headers, svix_id, svix_signature, svix_timestamp)
   // Get the body
-  const body = (await buffer(req)).toString()
+  const body = await req.text()
 
   // Create a new Svix instance with your secret.
   const wh = new Webhook(WEBHOOK_SECRET)
@@ -53,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }) as WebhookEvent
   } catch (err) {
     console.error('Error verifying webhook:', err)
-    return res.status(400).json({ Error: err })
+    return new Response('Error verifying webhook', { status: 400 })
   }
 
   // Do something with the payload
@@ -101,5 +89,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (eventType === 'user.deleted') {
   }
 
-  return res.status(200).json({ response: 'Success' })
+  return new Response('Success', { status: 200 })
 }

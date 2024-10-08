@@ -1,4 +1,4 @@
-export { default } from 'app/trpc/nextjs/[trpc]'
+export { default } from 'app/trpc/route/[trpc]'
 
 export const config = {
   api: {

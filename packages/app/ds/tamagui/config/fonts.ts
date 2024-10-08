@@ -1,6 +1,7 @@
 import { createInterFont } from '@tamagui/font-inter'
 import { createFont } from '@tamagui/core'
-import fonts from 'app/ds/tamagui/font/fonts'
+import { keys } from 'app/helpers/object'
+import { fontVars } from 'app/ds/tamagui/font/font-vars'
 
 const fontSizesBase = {
   // copied from: https://github.com/tamagui/tamagui/blob/968fb22afd1f9e4e313e7bf646f56aa89770203b/packages/font-inter/src/index.ts#L42
@@ -22,36 +23,33 @@ const fontSizesBase = {
   16: 134,
 } satisfies Record<number, number>
 
-const fontSizes = Object.keys(fontSizesBase).reduce((acc, next) => {
+const fontSizes = keys(fontSizesBase).reduce((acc, next) => {
   return {
     ...acc,
-    [Number(next)]: fontSizesBase[next as any],
+    [next]: fontSizesBase[next],
     true: 14,
   }
 }, {} as Record<0 | keyof typeof fontSizesBase, number>)
 
-const lineHeights = Object.keys(fontSizesBase).reduce((acc, next) => {
+const lineHeights = keys(fontSizesBase).reduce((acc, next) => {
   return {
     ...acc,
-    [Number(next)]: fontSizesBase[next as any] * 1.2,
+    [next]: fontSizesBase[next] * 1.2,
   }
-}, {}) as Record<`${keyof typeof fontSizesBase}`, number>
+}, {} as Record<`${keyof typeof fontSizesBase}`, number>)
 
 export const monoFont = createFont({
-  // family: 'var(--font-geist-mono)',
-  family: fonts.mono,
+  family: `var(${fontVars.mono})`,
   letterSpacing: {},
   lineHeight: lineHeights || {},
   size: fontSizes,
-  // size: {},
+
   weight: {},
-  face: {
-    // TODO native
-  },
+  face: {},
 })
 
 export const roundFont = createFont({
-  family: fonts.heading,
+  family: `var(${fontVars.heading})`,
   letterSpacing: {},
   lineHeight: lineHeights || {},
   size: fontSizes,

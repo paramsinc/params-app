@@ -51,8 +51,13 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const repos = profile.repos
   return (
     <View gap="$4" maw="$marketingPageWidth" als="center" w="100%">
-      <View gap="$3" $gtMd={{ row: true }}>
-        <View $gtMd={{ grow: true }}>
+      <View gap="$3" ai="flex-start" $gtMd={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+        <View
+          $gtMd={{
+            fg: 1,
+            fb: 0,
+          }}
+        >
           <View aspectRatio={16 / 9} bg="$borderColor">
             {!!profile.image_vendor && !!profile.image_vendor_id && (
               <Image
@@ -72,7 +77,16 @@ function Content({ profileSlug }: { profileSlug: string }) {
             </View>
           </View>
         </View>
-        <View $gtMd={{ width: '40%' }} gap="$4">
+        <View
+          $gtMd={{
+            width: '40%',
+            // position: 'sticky',
+            // top: 0,
+            als: 'flex-start',
+            alignItems: 'flex-start',
+          }}
+          gap="$4"
+        >
           <View>
             <Text bold fontSize={24} fontFamily="$body">
               {profile.name}

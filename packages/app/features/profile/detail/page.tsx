@@ -167,20 +167,21 @@ function Content({ profileSlug }: { profileSlug: string }) {
                 <View grow>
                   <Card.Title>{repo.slug}</Card.Title>
                 </View>
-
-                {!!repo.github_url && (
-                  <LinkButton href={repo.github_url} target="_blank">
-                    <ButtonText>GitHub</ButtonText>
-                  </LinkButton>
-                )}
-                <UpdateRepositoryModal>
-                  <UpdateRepositoryModalTrigger>
-                    <Button>
-                      <ButtonText>Edit</ButtonText>
-                    </Button>
-                  </UpdateRepositoryModalTrigger>
-                  <UpdateRepositoryModalContent repoId={repo.id} />
-                </UpdateRepositoryModal>
+                <View row gap="$1">
+                  {!!repo.github_url && (
+                    <LinkButton href={repo.github_url} target="_blank">
+                      <ButtonText>GitHub</ButtonText>
+                    </LinkButton>
+                  )}
+                  <UpdateRepositoryModal>
+                    <UpdateRepositoryModalTrigger>
+                      <Button>
+                        <ButtonText>Edit</ButtonText>
+                      </Button>
+                    </UpdateRepositoryModalTrigger>
+                    <UpdateRepositoryModalContent repoId={repo.id} />
+                  </UpdateRepositoryModal>
+                </View>
               </Card>
             ))}
           </View>
@@ -279,9 +280,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
         </View>
         <ProfileAvailsForm />
       </ProfileAvailsForm.Provider>
-      <View h={2} bg="$borderColor" />
+      {/* <View h={2} bg="$borderColor" />
       <Text>Slots</Text>
-      <AllPlanSlots profileSlug={profileSlug} />
+      <AllPlanSlots profileSlug={profileSlug} /> */}
     </View>
   )
 }

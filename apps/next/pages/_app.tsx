@@ -18,7 +18,10 @@ import { TamaguiProvider } from 'app/ds/tamagui/provider'
 import { GlobalWebLayout } from 'app/features/web-layout/global'
 import { DashboardLayout } from 'app/features/web-layout/dashboard'
 import { env } from 'app/env'
-
+import { entries } from 'app/helpers/object'
+import fonts from 'app/ds/tamagui/font/fonts'
+import { fontVars } from 'app/ds/tamagui/font/font-vars'
+import { getConfig } from 'tamagui'
 if (process.env.NODE_ENV === 'production') {
   // require('../public/tamagui.css')
 }
@@ -33,24 +36,33 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   const getLayout = Component.getLayout || ((page) => page)
 
   const Layout = router.pathname.startsWith('/dashboard') ? DashboardLayout : Fragment
+  const config = getConfig().defaultFontToken
+
+  console.log('[app.tsx][config]', config)
+
+  const css = `
+  :root {
+    ${entries(fonts)
+      .map(([varName, family]) => `${fontVars[varName]}: ${family};`)
+      .join('\n')}
+  }
+  html {
+    background-color: var(--backgroundStrong);
+    font-family: var(${fontVars.body});
+  }
+`
+
+  console.log('[app.tsx][css]', css)
 
   return (
-    <div
-      className={`${GeistSans.variable} ${GeistMono.variable}  font_body`}
-      style={{ display: 'contents', fontFamily: 'var(--f-family)' }}
-    >
+    <div className={`font_body`} style={{ display: 'contents', fontFamily: 'var(--f-family)' }}>
       <Head>
         <title>{APP_NAME}</title>
         <meta name="description" content={APP_NAME} />
         <link rel="icon" href="/favicon.svg" />
       </Head>
       <style jsx global>
-        {`
-          body {
-            background-color: var(--backgroundStrong);
-            font-family: var(--f-family);
-          }
-        `}
+        {css}
       </style>
       <ThemeProvider>
         <TamaguiProvider>

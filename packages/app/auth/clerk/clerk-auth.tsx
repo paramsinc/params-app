@@ -9,6 +9,7 @@ import { Button, ButtonText } from 'app/ds/Button'
 import { useEffect, useState } from 'app/react'
 import { platform } from 'app/ds/platform'
 import { useCurrentPath } from 'app/navigation/use-pathname'
+import { Lucide } from 'app/ds/Lucide'
 
 const clerk = new Clerk(env.CLERK_PUBLISHABLE_KEY!)
 
@@ -32,7 +33,11 @@ function UserTrigger({ children }: { children?: React.ReactElement }) {
       <UserButton>
         {children}
         <UserButton.MenuItems>
-          <UserButton.Action label="Dashboard" labelIcon={null} open="/dashboard" />
+          <UserButton.Action
+            label="Dashboard"
+            labelIcon={<Lucide.Home size={16} color="$color11" />}
+            open="/dashboard"
+          />
         </UserButton.MenuItems>
       </UserButton>
     </Font>

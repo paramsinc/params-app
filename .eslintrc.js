@@ -12,6 +12,10 @@ const eslint = {
     '@typescript-eslint/no-floating-promises': 'error',
   },
   root: true,
+  plugins: ['drizzle'],
+  parserOptions: {
+    project: './tsconfig.json',
+  },
 }
 
 module.exports = eslint

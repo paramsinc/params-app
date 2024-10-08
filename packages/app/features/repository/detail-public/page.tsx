@@ -44,8 +44,17 @@ function RepositoryDetailPublicPageContent({
   return (
     <Page.Root>
       <Page.Scroll>
-        <Page.Content maw="100%" gap="$3" $gtMd={{ row: true, gap: '$4' }}>
-          <View $gtLg={{ width: 400 }} gap="$3">
+        <Page.Content maw="100%" gap="$3" $gtLg={{ row: true, gap: '$4' }}>
+          <View
+            gap="$3"
+            $gtLg={{
+              width: 400,
+              position: 'sticky',
+              top: 48 + 32,
+              left: 0,
+              alignSelf: 'flex-start',
+            }}
+          >
             <Card>
               {!!repo.profile.image_vendor_id && (
                 <View ai="center">
@@ -53,6 +62,8 @@ function RepositoryDetailPublicPageContent({
                     <Image
                       src={repo.profile.image_vendor_id}
                       loader={repo.profile.image_vendor || 'raw'}
+                      src="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
+                      loader="raw"
                       width={100}
                       height={100}
                       alt={repo.profile.name}
@@ -89,7 +100,7 @@ function RepositoryDetailPublicPageContent({
               )}
             </Card>
           </View>
-          <View w="100%" maw={900} gap="$3">
+          <View $gtLg={{ grow: true, maxWidth: 900 }} gap="$3">
             <Card>
               <View row ai="center">
                 <Text flexGrow={1} flexBasis={2} bold fontSize={24}>

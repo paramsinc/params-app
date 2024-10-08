@@ -1,10 +1,12 @@
 import { makeBackendAuth } from 'app/auth/make-auth'
-import { getAuth, User, createClerkClient } from '@clerk/nextjs/server'
+import { getAuth, createClerkClient } from '@clerk/nextjs/server'
 import { serverEnv } from 'app/env/env.server'
 
 export default makeBackendAuth({
   async authenticateNextApiRequest(req) {
-    const { userId } = getAuth(req)
+    const { userId } = getAuth(req, {
+      secretKey: serverEnv.CLERK_SECRET_KEY,
+    })
     const clerk = createClerkClient({
       secretKey: serverEnv.CLERK_SECRET_KEY,
     })

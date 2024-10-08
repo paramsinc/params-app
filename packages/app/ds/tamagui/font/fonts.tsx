@@ -2,9 +2,9 @@ import localFont from 'next/font/local'
 
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
+import { fontVars } from 'app/ds/tamagui/font/font-vars'
 
 const headingFont = localFont({
-  variable: '--font-round',
   src: [
     {
       path: './fonts/CircularStd-Book.ttf',
@@ -55,6 +55,6 @@ const headingFont = localFont({
 
 export default {
   heading: headingFont.style.fontFamily,
+  body: GeistMono.style.fontFamily,
   mono: GeistMono.style.fontFamily,
-  sans: GeistSans.style.fontFamily,
-}
+} satisfies Record<keyof typeof fontVars, string>

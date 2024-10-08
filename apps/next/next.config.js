@@ -13,6 +13,7 @@ const plugins = [
     openAnalyzer: process.env.ANALYZE === 'true',
   }),
   withTamagui({
+    enableLegacyFontSupport: true,
     appDir: true,
     themeBuilder: {
       input: '../../packages/app/ds/tamagui/themes/themes-old.tsx',
@@ -144,6 +145,13 @@ let config = {
     {
       source: '/@:profileSlug/:path*',
       destination: '/profiles/:profileSlug/:path*',
+    },
+  ],
+  redirects: () => [
+    {
+      source: '/',
+      destination: '/@francois',
+      permanent: false,
     },
   ],
 }

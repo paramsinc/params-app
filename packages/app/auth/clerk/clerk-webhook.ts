@@ -2,7 +2,7 @@ import { Webhook } from 'svix'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { serverEnv } from 'app/env/env.server'
 import { db, schema } from 'app/db/db'
-import { slugify } from 'app/trpc/slugify'
+import { createUser } from 'app/trpc/routes/user'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = serverEnv.CLERK_WEBHOOK_SECRET
@@ -59,22 +59,11 @@ export async function POST(req: Request) {
       return
     }
 
-    let slugSearchCount = 0
-    const baseSlug = slugify(
-      [first_name, last_name].filter(Boolean).join(' ') ?? Math.round(Math.random() * 1000000)
-    )
-    let slug = baseSlug
-    while (await db.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
-      slugSearchCount++
-      slug = `${baseSlug}-${slugSearchCount}`
-    }
-
-    await db.insert(schema.users).values({
-      first_name: first_name ?? 'New User',
-      last_name: last_name ?? '',
+    await createUser({
       id,
       email,
-      slug,
+      first_name: first_name ?? 'New User',
+      last_name: last_name ?? '',
     })
   } else if (eventType === 'user.updated') {
     const user = evt.data

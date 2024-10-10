@@ -147,15 +147,6 @@ let config = {
       destination: '/profiles/:profileSlug/:path*',
     },
   ],
-  redirects: () => [
-    {
-      source: '/',
-      destination: process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}/@francois`
-        : '/@francois',
-      permanent: false,
-    },
-  ],
 }
 
 for (const plugin of plugins) {

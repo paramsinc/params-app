@@ -1,21 +1,10 @@
-import { DateTime } from 'app/dates/date-time'
 import { d, db, schema } from 'app/db/db'
-import { env } from 'app/env'
 import { serverEnv } from 'app/env/env.server'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
 import { createBookingFromOffer } from 'app/features/stripe-connect/webhook/createBookingFromOffer'
-import { createGoogleCalendarEventForOffer } from 'app/vendor/google/google-calendar'
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
-
-export default async function handler(req: Request) {
+export default async function POST(req: Request) {
   const stripeSignature = req.headers.get('stripe-signature')
-
-  console.log('[webhook][stripeSignature]', stripeSignature, serverEnv.STRIPE_WEBHOOK_SECRET)
 
   if (!stripeSignature) {
     return new Response('Missing stripe signature', { status: 400 })

@@ -51,14 +51,14 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const repos = profile.repos
   return (
     <View gap="$4" maw="$marketingPageWidth" als="center" w="100%">
-      <View gap="$3" ai="flex-start" $gtMd={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+      <View gap="$3" $gtMd={{ flexDirection: 'row', alignItems: 'flex-start' }}>
         <View
           $gtMd={{
             fg: 1,
             fb: 0,
           }}
         >
-          <View aspectRatio={16 / 9} bg="$borderColor">
+          <View bg="$borderColor" aspectRatio={16 / 9}>
             {!!profile.image_vendor && !!profile.image_vendor_id && (
               <Image
                 fill

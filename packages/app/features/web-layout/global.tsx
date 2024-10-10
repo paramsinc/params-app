@@ -18,7 +18,7 @@ export function GlobalWebLayout({ children }: { children: React.ReactNode }) {
       >
         <View w={100}></View>
         <View grow center>
-          <Logo size={120} />
+          <Logo height={20} />
         </View>
         <View w={100} ai="flex-end" jc="center">
           <Auth.UserButton />

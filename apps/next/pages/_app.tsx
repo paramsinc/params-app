@@ -55,7 +55,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   console.log('[app.tsx][css]', css)
 
   return (
-    <div className={`font_body`} style={{ display: 'contents', fontFamily: 'var(--f-family)' }}>
+    <div style={{ display: 'contents' }}>
       <Head>
         <title>{APP_NAME}</title>
         <meta name="description" content={APP_NAME} />

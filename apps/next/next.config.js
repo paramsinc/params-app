@@ -150,7 +150,9 @@ let config = {
   redirects: () => [
     {
       source: '/',
-      destination: '/@francois',
+      destination: process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}/@francois`
+        : '/@francois',
       permanent: false,
     },
   ],

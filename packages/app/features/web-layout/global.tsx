@@ -5,25 +5,33 @@ import { Logo } from 'app/ds/Logo'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 
-export function GlobalWebLayout({ children }: { children: React.ReactNode }) {
+export function GlobalWebLayout({
+  children,
+  hideHeader,
+}: {
+  children: React.ReactNode
+  hideHeader?: boolean
+}) {
   return (
     <>
-      <Header
-        ai="center"
-        height={48}
-        px="$3"
-        bg="$color1"
-        fd="row"
-        style={{ position: 'sticky', top: 0, zIndex: 3 }}
-      >
-        <View w={100}></View>
-        <View grow center>
-          <Logo size={120} />
-        </View>
-        <View w={100} ai="flex-end" jc="center">
-          <Auth.UserButton />
-        </View>
-      </Header>
+      {!hideHeader && (
+        <Header
+          ai="center"
+          height={48}
+          px="$3"
+          bg="$color1"
+          fd="row"
+          style={{ position: 'sticky', top: 0, zIndex: 3 }}
+        >
+          <View w={100}></View>
+          <View grow center>
+            <Logo height={20} />
+          </View>
+          <View w={100} ai="flex-end" jc="center">
+            <Auth.UserButton />
+          </View>
+        </Header>
+      )}
       {children}
     </>
   )

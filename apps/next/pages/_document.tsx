@@ -10,7 +10,7 @@ import NextDocument, {
 import { Children } from 'react'
 import { AppRegistry } from 'react-native'
 
-const css = `
+const cssReset = `
 html, body, #__next {
   width: 100%;
   /* To smooth any scrolling behavior */
@@ -70,7 +70,7 @@ export default class Document extends NextDocument {
      * So Tamagui styles can override the react-native-web styles.
      */
     const styles = [
-      <style key="css" dangerouslySetInnerHTML={{ __html: css }} />,
+      <style key="css" dangerouslySetInnerHTML={{ __html: cssReset }} />,
       getStyleElement(),
       <style
         key="tamagui-css"
@@ -93,7 +93,7 @@ export default class Document extends NextDocument {
         <Head>
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         </Head>
-        <body className="font_body">
+        <body className="font_body" style={{ fontFamily: 'var(--f-family)' }}>
           <Main />
           <NextScript />
         </body>

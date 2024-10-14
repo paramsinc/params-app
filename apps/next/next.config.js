@@ -147,13 +147,6 @@ let config = {
       destination: '/profiles/:profileSlug/:path*',
     },
   ],
-  redirects: () => [
-    {
-      source: '/',
-      destination: '/@francois',
-      permanent: false,
-    },
-  ],
 }
 
 for (const plugin of plugins) {

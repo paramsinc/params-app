@@ -55,11 +55,13 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   console.log('[app.tsx][css]', css)
 
   return (
-    <div className={`font_body`} style={{ display: 'contents', fontFamily: 'var(--f-family)' }}>
+    <div style={{ display: 'contents' }}>
       <Head>
         <title>{APP_NAME}</title>
-        <meta name="description" content={APP_NAME} />
-        <link rel="icon" href="/favicon.svg" />
+        <meta name="description" content={`The best machine learning starter templates.`} />
+        <link rel="icon" href="/paramsx1.png" />
+        {/* og image */}
+        <meta property="og:image" content={`https://${env.APP_URL}/og.png`} />
       </Head>
       <style jsx global>
         {css}
@@ -67,7 +69,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
       <ThemeProvider>
         <TamaguiProvider>
           <Provider>
-            <GlobalWebLayout>
+            <GlobalWebLayout hideHeader={'hideHeader' in Component}>
               <Layout>{getLayout(<Component {...pageProps} />)}</Layout>
             </GlobalWebLayout>
           </Provider>

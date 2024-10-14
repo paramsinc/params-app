@@ -44654,28 +44654,6 @@ var roundFont = (0, import_core59.createFont)({
     // TODO native
   }
 });
-var headingFontOld = createInterFont(
-  {
-    size: {
-      6: 15
-    },
-    transform: {
-      6: "uppercase",
-      7: "none"
-    },
-    weight: {
-      3: "500",
-      4: "700"
-    },
-    face: {
-      700: { normal: "InterBold" }
-    }
-  },
-  {
-    sizeSize: /* @__PURE__ */ __name((size6) => size6, "sizeSize"),
-    sizeLineHeight: /* @__PURE__ */ __name((fontSize) => fontSize + 4, "sizeLineHeight")
-  }
-);
 var bodyFont = createInterFont(
   {
     face: {

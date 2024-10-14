@@ -1,4 +1,4 @@
-import { neon, neonConfig } from '@neondatabase/serverless'
+import { neonConfig } from '@neondatabase/serverless'
 import * as schema from './schema'
 import { serverEnv } from 'app/env/env.server'
 

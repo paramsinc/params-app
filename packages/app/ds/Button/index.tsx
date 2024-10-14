@@ -84,9 +84,6 @@ export const ButtonText = styled(Text, {
       },
     },
   } as const,
-  defaultVariants: {
-    loading: false,
-  },
 })
 
 export const Button = withStaticProperties(ButtonFrame, {

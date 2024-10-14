@@ -58,8 +58,8 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
     <div style={{ display: 'contents' }}>
       <Head>
         <title>{APP_NAME}</title>
-        <meta name="description" content={APP_NAME} />
-        <link rel="icon" href="/favicon.svg" />
+        <meta name="description" content={`The best machine learning starter templates.`} />
+        <link rel="icon" href="/paramsx1.png" />
       </Head>
       <style jsx global>
         {css}

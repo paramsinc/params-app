@@ -1967,6 +1967,14 @@ export const appRouter = router({
         }
       )
 
+      await db
+        .update(schema.offers)
+        .set({
+          stripe_payment_intent_id: paymentIntent.id,
+        })
+        .where(d.eq(schema.offers.id, offer.id))
+        .execute()
+
       console.log('[createOfferAndPaymentIntent][paymentIntent]', paymentIntent.id)
 
       return {

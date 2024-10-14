@@ -8,9 +8,7 @@ import { View } from 'app/ds/View'
 import { Text } from 'app/ds/Text'
 import { Fragment } from 'react'
 import { Lucide } from 'app/ds/Lucide'
-import { Modal, ModalBackdrop, ModalContent, ModalDialog, ModalTrigger } from 'app/ds/Modal'
 import { Button, ButtonText } from 'app/ds/Button'
-import { Scroll } from 'app/ds/Scroll'
 import { OfferCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
 import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/provider'
 import { useState } from 'app/react'
@@ -22,6 +20,7 @@ import { entries } from 'app/helpers/object'
 import { Card } from 'app/ds/Form/layout'
 import { LinkButton } from 'app/ds/Button/link'
 import { Link } from 'app/ds/Link'
+import { AnimatePresence, MotiView } from 'moti'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -97,7 +96,7 @@ function Booker({ profileSlug }: { profileSlug: string }) {
                     }}
                   >
                     <View grow>
-                      <Text bold>{duration_mins} Minute Call</Text>
+                      <Text bold>{duration_mins}-Minute Call</Text>
                       <Text color="$color11">
                         {formatCurrencyInteger[currency]?.format(price / 100)}
                       </Text>
@@ -149,118 +148,124 @@ function Booker({ profileSlug }: { profileSlug: string }) {
           </Text>
         </View>
       </Link>
+      <AnimatePresence exitBeforeEnter>
+        <MotiView
+          key={[plan?.id, slot?.duration_mins].join(',')}
+          from={{ opacity: 0, translateX: 10 }}
+          animate={{ opacity: 1, translateX: 0 }}
+          exit={{ opacity: 0, translateX: -10 }}
+          transition={{ type: 'timing' }}
+        >
+          {!plan ? (
+            <View maw={760} w="100%" als="center" gap="$3">
+              <View row ai="center" gap="$3">
+                <LinkButton href={`/@${profile.slug}`}>
+                  <ButtonText>Back</ButtonText>
+                </LinkButton>
+              </View>
+              {renderPlanPicker()}
+            </View>
+          ) : slot ? (
+            (() => {
+              const dateTime = DateTime.fromObject(
+                {
+                  hour: slot.time.hour,
+                  minute: slot.time.minute,
+                  day: slot.date.day,
+                  month: slot.date.month,
+                  year: slot.date.year,
+                },
+                {
+                  zone: profile.timezone,
+                }
+              )
+              return (
+                <StripeProvider_ConfirmOnBackend amountCents={plan.price} currency="usd">
+                  <Card
+                    maw={760}
+                    w="100%"
+                    als="center"
+                    x={0}
+                    o={1}
+                    enterStyle={{
+                      x: 10,
+                      o: 0,
+                    }}
+                    animation="quick"
+                  >
+                    <View p="$3" bg="$color1" gap="$3">
+                      <Button onPress={() => setSlot(null)} als="flex-start">
+                        <ButtonText>Back</ButtonText>
+                      </Button>
+                      <View>
+                        <Text>
+                          {dateTime.toLocaleString({
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </Text>
+                        <Text bold>
+                          {[
+                            dateTime.toLocaleString({
+                              hour: 'numeric',
+                              minute: 'numeric',
+                            }),
 
-      {!plan ? (
-        <View maw={760} w="100%" als="center" gap="$3">
-          <View row ai="center" gap="$3">
-            <LinkButton href={`/@${profile.slug}`}>
-              <ButtonText>Back</ButtonText>
-            </LinkButton>
-          </View>
-          {renderPlanPicker()}
-        </View>
-      ) : slot ? (
-        (() => {
-          const dateTime = DateTime.fromObject(
-            {
-              hour: slot.time.hour,
-              minute: slot.time.minute,
-              day: slot.date.day,
-              month: slot.date.month,
-              year: slot.date.year,
-            },
-            {
-              zone: profile.timezone,
-            }
-          )
-          return (
-            <StripeProvider_ConfirmOnBackend amountCents={plan.price} currency="usd">
-              <View
-                p="$3"
-                gap="$3"
-                bg="$color3"
-                maw={760}
-                w="100%"
-                als="center"
-                x={0}
-                o={1}
-                enterStyle={{
-                  x: 10,
-                  o: 0,
-                }}
-                animation="quick"
-              >
-                <View p="$3" bg="$color1" gap="$3">
-                  <Button onPress={() => setSlot(null)} als="flex-start">
+                            dateTime.plus({ minutes: plan.duration_mins }).toLocaleString({
+                              hour: 'numeric',
+                              minute: 'numeric',
+                            }),
+                          ].join(' - ')}{' '}
+                          ({dateTime.toFormat('ZZZZ')})
+                        </Text>
+                      </View>
+                    </View>
+                    {profile ? (
+                      <OfferCheckoutForm_ConfirmOnBackend
+                        profile_id={profile.id}
+                        organization_id={null}
+                        amount={plan.price}
+                        plan_id={plan.id}
+                        insert={{
+                          start_datetime: {
+                            year: dateTime.year,
+                            month: dateTime.month,
+                            day: dateTime.day,
+                            hour: dateTime.hour,
+                            minute: dateTime.minute,
+                          },
+                          timezone: profile.timezone,
+                        }}
+                      />
+                    ) : null}
+                  </Card>
+                </StripeProvider_ConfirmOnBackend>
+              )
+            })()
+          ) : (
+            <View w="100%" maw={760} als="center" gap="$3">
+              <View row ai="center" gap="$3">
+                {(plansQuery.data?.length ?? 0) > 1 && (
+                  <Button
+                    onPress={() => {
+                      setParams({ planId: undefined })
+                    }}
+                  >
                     <ButtonText>Back</ButtonText>
                   </Button>
-                  <View>
-                    <Text>
-                      {dateTime.toLocaleString({
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </Text>
-                    <Text bold>
-                      {[
-                        dateTime.toLocaleString({
-                          hour: 'numeric',
-                          minute: 'numeric',
-                        }),
+                )}
 
-                        dateTime.plus({ minutes: plan.duration_mins }).toLocaleString({
-                          hour: 'numeric',
-                          minute: 'numeric',
-                        }),
-                      ].join(' - ')}{' '}
-                      ({dateTime.toFormat('ZZZZ')})
-                    </Text>
-                  </View>
+                <View grow>
+                  <Text>{formatMinutes(plan.duration_mins)} Call</Text>
                 </View>
-                {profile ? (
-                  <OfferCheckoutForm_ConfirmOnBackend
-                    profile_id={profile.id}
-                    organization_id={null}
-                    amount={plan.price}
-                    plan_id={plan.id}
-                    insert={{
-                      start_datetime: {
-                        year: dateTime.year,
-                        month: dateTime.month,
-                        day: dateTime.day,
-                        hour: dateTime.hour,
-                        minute: dateTime.minute,
-                      },
-                      timezone: profile.timezone,
-                    }}
-                  />
-                ) : null}
               </View>
-            </StripeProvider_ConfirmOnBackend>
-          )
-        })()
-      ) : (
-        <View w="100%" maw={760} als="center" gap="$3">
-          <View row ai="center" gap="$3">
-            {(plansQuery.data?.length ?? 0) > 1 && (
-              <Button
-                onPress={() => {
-                  setParams({ planId: undefined })
-                }}
-              >
-                <ButtonText>Back</ButtonText>
-              </Button>
-            )}
-
-            <View grow>
-              <Text>{formatMinutes(plan.duration_mins)} Call</Text>
+              <SlotPicker planId={planId} profileSlug={profileSlug} onSelectSlot={setSlot} />
             </View>
-          </View>
-          <SlotPicker planId={planId} profileSlug={profileSlug} onSelectSlot={setSlot} />
-        </View>
-      )}
+          )}
+        </MotiView>
+      </AnimatePresence>
     </View>
   )
 }

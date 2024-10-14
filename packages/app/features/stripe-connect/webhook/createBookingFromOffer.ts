@@ -1,6 +1,8 @@
 import { DateTime } from 'app/dates/date-time'
 import { d, db, schema } from 'app/db/db'
 import { env } from 'app/env'
+import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
+import { stripe } from 'app/features/stripe-connect/server/stripe'
 import { createGoogleCalendarEventForOffer } from 'app/vendor/google/google-calendar'
 
 export async function createBookingFromOffer({
@@ -46,13 +48,20 @@ export async function createBookingFromOffer({
 
   const attendeeEmails = [...profileMemberEmails, ...organizationMemberEmails]
 
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+
   const googleCalendarEvent = await createGoogleCalendarEventForOffer({
     offerId,
     attendeeEmails,
     start: DateTime.fromJSDate(offer.start_datetime, { zone: offer.timezone }),
     durationMinutes: offer.duration_minutes,
     summary: `${organization.name} <> ${profile.name} (${env.APP_NAME})`,
-    description: '',
+    description: `This meeting was scheduled by ${env.APP_NAME}.
+    
+${formatCurrencyInteger.usd.format(paymentIntent.amount / 100)}
+
+To reschedule or cancel, please visit https://${env.APP_URL}/bookings
+`,
     location: 'Virtual',
   })
 

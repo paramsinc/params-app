@@ -163,10 +163,7 @@ const CreateBooking_Link = ({ profileSlug }: { profileSlug: string }) => {
   const lastPlan = plans?.[plans.length - 1]
   return (
     <LinkButton themeInverse href={`/@${profileSlug}/book`}>
-      <ButtonText>
-        Book a Call
-        {lastPlan && ` (${formatCurrencyInteger[lastPlan.currency]?.format(lastPlan.price / 100)})`}
-      </ButtonText>
+      <ButtonText>Book a Call</ButtonText>
     </LinkButton>
   )
 }

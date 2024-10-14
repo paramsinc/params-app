@@ -48,6 +48,7 @@ import { ProfileAvailsForm } from 'app/features/profile/detail/avails'
 import { DateTime } from 'app/dates/date-time'
 import { group } from 'app/helpers/dash'
 import { entries } from 'app/helpers/object'
+import { SignInWithGoogle } from 'app/features/oauth/google/sign-in-with-google'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -74,6 +75,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const reposQuery = api.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
   const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
   const members = api.profileMembersBySlug.useQuery({ profile_slug: profileSlug })
+  const calendarIntegrations = api.googleIntegrationsByProfileSlug.useQuery({
+    profile_slug: profileSlug,
+  })
   const router = useRouter()
   const connectAccountQuery = api.profileConnectAccount.useQuery(
     { profile_slug: profileSlug },
@@ -279,6 +283,56 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <ProfileAvailsForm.Submit />
         </View>
         <ProfileAvailsForm />
+        <Card>
+          <Card.Title>Sync Google Calendar</Card.Title>
+          <Card.Description>
+            Block off your availability based on your Google Calendar events.
+          </Card.Description>
+          <Card>
+            {calendarIntegrations.data?.length === 0 && (
+              <Text>
+                You don't have any Google Calendar integrations. Click below to connect your Google
+                Calendar.
+              </Text>
+            )}
+
+            {calendarIntegrations.data?.map((integration) => {
+              return (
+                <View key={integration.google_user_id} row>
+                  <View grow gap="$2">
+                    <Text>{integration.email}</Text>
+
+                    <View row gap="$1" flexWrap="wrap">
+                      {integration.calendars?.map((calendar) => {
+                        if (!calendar.id) {
+                          return null
+                        }
+                        const isSelected = integration.calendars_for_avail_blocking.includes(
+                          calendar.id
+                        )
+                        return (
+                          <Button
+                            br="$rounded"
+                            key={calendar.id}
+                            theme={isSelected ? 'green' : 'red'}
+                          >
+                            <ButtonText>{calendar.summary}</ButtonText>
+                          </Button>
+                        )
+                      })}
+                    </View>
+                  </View>
+                </View>
+              )
+            })}
+          </Card>
+
+          <SignInWithGoogle profileSlug={profileSlug}>
+            <Button theme="blue" loading={calendarIntegrations.isPending} als="flex-start">
+              <ButtonText>Sign in with Google</ButtonText>
+            </Button>
+          </SignInWithGoogle>
+        </Card>
       </ProfileAvailsForm.Provider>
       {/* <View h={2} bg="$borderColor" />
       <Text>Slots</Text>
@@ -289,88 +343,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
 
 const now = DateTime.now()
 const end = now.plus({ days: 30 })
-
-function AllPlanSlots({ profileSlug }: { profileSlug: string }) {
-  const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
-
-  return (
-    <>
-      {plansQuery.data?.map((plan) => {
-        return (
-          <View key={plan.id} gap="$3">
-            <Text bold>{plan.duration_mins} Minute Call</Text>
-            <SlotsInternal profileSlug={profileSlug} planId={plan.id} />
-          </View>
-        )
-      })}
-    </>
-  )
-}
-
-function SlotsInternal({ profileSlug, planId }: { profileSlug: string; planId: string }) {
-  const slotsQuery = api.upcomingProfileSlots_public.useQuery({
-    profile_slug: profileSlug,
-    start_date: {
-      year: now.year,
-      month: now.month,
-      day: now.day,
-    },
-    end_date: {
-      year: end.year,
-      month: end.month,
-      day: end.day,
-    },
-    plan_id: planId,
-  })
-
-  if (!slotsQuery.data) {
-    return <ErrorCard error={slotsQuery.error} />
-  }
-  const { timezone } = slotsQuery.data
-  const slotsByDay = group(
-    slotsQuery.data.slots,
-    (slot) => DateTime.fromObject(slot.date, { zone: timezone }).toISODate()!
-  )
-  return (
-    <View gap="$4">
-      {entries(slotsByDay).map(([day, slots]) => {
-        const dt = DateTime.fromISO(day, { zone: timezone }).setZone('local')
-        return (
-          <Fragment key={day}>
-            <View gap="$2">
-              <Text>
-                {dt.toLocaleString({
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </Text>
-              <View row flexWrap="wrap" gap="$1">
-                {slots?.map((slot, index) => {
-                  const time = dt.set({ hour: slot.time.hour, minute: slot.time.minute })
-                  const format = (dt: DateTime) =>
-                    dt.toLocaleString({ hour: 'numeric', minute: 'numeric' })
-                  return (
-                    <Button key={index} minWidth={88}>
-                      <ButtonText
-                        fontVariant={['tabular-nums']}
-                        style={{ fontVariant: 'tabular-nums' }}
-                      >
-                        {format(time)}
-                        {/* - {format(time.plus({ minutes: slot.duration_mins }))} */}
-                      </ButtonText>
-                    </Button>
-                  )
-                })}
-              </View>
-            </View>
-          </Fragment>
-        )
-      })}
-    </View>
-  )
-}
 
 function PlansInternal({ profileSlug }: { profileSlug: string }) {
   const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
@@ -390,7 +362,7 @@ function PlansInternal({ profileSlug }: { profileSlug: string }) {
               <Fragment key={plan.id}>
                 <Card row>
                   <View grow>
-                    <Card.Label>{plan.duration_mins} Minute Call</Card.Label>
+                    <Card.Label>{plan.duration_mins}-Minute Call</Card.Label>
                     <Card.Description>
                       {formatCurrencyInteger[plan.currency]?.format(plan.price / 100)}
                     </Card.Description>

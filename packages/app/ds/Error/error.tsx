@@ -1,8 +1,9 @@
 import type { useQuery } from '@tanstack/react-query'
+import { TRPCClientError } from '@trpc/client'
+
 type Props = {
   error?: null | NetworkError | Error | { message?: string }
   render: (error: string[], singleMessage: string) => React.ReactNode
-  hideFieldAccessErrors?: boolean
 }
 
 export type NetworkError = NonNullable<ReturnType<typeof useQuery>['error']>
@@ -11,19 +12,22 @@ type ErrorType = NetworkError | null | Error | { message?: string } | undefined
 
 export function getErrorMessages(error?: ErrorType): string[]
 export function getErrorMessages(error: ErrorType, join: string): string
-export function getErrorMessages(
-  error: ErrorType,
-  join: undefined,
-  hideFieldAccessErrors: boolean
-): string[]
-export function getErrorMessages(
-  error?: ErrorType,
-  join?: string,
-  hideFieldAccessErrors = false
-): string | string[] {
+export function getErrorMessages(error: ErrorType, join: undefined): string[]
+export function getErrorMessages(error?: ErrorType, join?: string): string | string[] {
   const messages: Array<string> = []
 
-  if (error instanceof Error) {
+  if (error instanceof TRPCClientError) {
+    const zodError = error.data?.zodError as Zod.typeToFlattenedError<any, any> | null
+    if (zodError) {
+      Object.values(zodError.fieldErrors).forEach((fieldErrors) => {
+        fieldErrors?.forEach((error) => {
+          messages.push(error)
+        })
+      })
+    } else {
+      messages.push(error.message)
+    }
+  } else if (error instanceof Error) {
     messages.push(error.message)
   } else if (error && typeof error === 'object') {
     if (
@@ -51,8 +55,8 @@ export function getErrorMessages(
   return messages
 }
 
-export function NetworkError({ error, render, hideFieldAccessErrors = false }: Props) {
-  const messages = getErrorMessages(error, undefined, hideFieldAccessErrors)
+export function NetworkError({ error, render }: Props) {
+  const messages = getErrorMessages(error, undefined)
 
   if (messages.length) {
     const array = Array.from(new Set(messages))

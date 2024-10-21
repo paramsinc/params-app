@@ -12,7 +12,7 @@ export const Text = styled(TamaguiText, {
   variants: {
     bold: {
       true: {
-        fontWeight: '700',
+        fontWeight: '600',
       },
       false: {
         fontWeight: '400',

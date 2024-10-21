@@ -37,6 +37,7 @@ export const serverEnv = z
         javascript_origins: z.array(z.string()),
       }),
     }),
+    RECAPTCHA_SECRET_KEY: z.string(),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
@@ -52,4 +53,5 @@ export const serverEnv = z
     GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR: process.env.GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     GOOGLE_API_CREDENTIALS_JSON: JSON.parse(process.env.GOOGLE_API_CREDENTIALS_JSON!),
+    RECAPTCHA_SECRET_KEY: process.env.CAPTCHA_SECRET_KEY,
   })

@@ -1,15 +1,11 @@
 import { Webhook } from 'svix'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { serverEnv } from 'app/env/env.server'
-import { db, schema } from 'app/db/db'
+import { d, db, schema } from 'app/db/db'
 import { createUser } from 'app/trpc/routes/user'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = serverEnv.CLERK_WEBHOOK_SECRET
-
-  if (!WEBHOOK_SECRET) {
-    throw new Error('Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local')
-  }
 
   // Get the Svix headers for verification
   const svix_id = req.headers.get('svix-id') as string
@@ -21,7 +17,6 @@ export async function POST(req: Request) {
     return new Response('Error occured -- no svix headers', { status: 400 })
   }
 
-  console.log('headers', req.headers, svix_id, svix_signature, svix_timestamp)
   // Get the body
   const body = await req.text()
 
@@ -44,14 +39,7 @@ export async function POST(req: Request) {
     return new Response('Error verifying webhook', { status: 400 })
   }
 
-  // Do something with the payload
-  // For this guide, you simply log the payload to the console
-  const { id } = evt.data
-  const eventType = evt.type
-  console.log(`Webhook with and ID of ${id} and type of ${eventType}`)
-  console.log('Webhook body:', body)
-
-  if (eventType === 'user.created') {
+  if (evt.type === 'user.created') {
     const { email_addresses, first_name, last_name, id } = evt.data
 
     const email = email_addresses[0]?.email_address
@@ -65,17 +53,23 @@ export async function POST(req: Request) {
       first_name: first_name ?? 'New User',
       last_name: last_name ?? '',
     })
-  } else if (eventType === 'user.updated') {
+  } else if (evt.type === 'user.updated') {
     const user = evt.data
     const { email_addresses, first_name, last_name, id } = user
     const email = email_addresses[0]?.email_address
 
-    await db.update(schema.users).set({
-      first_name: first_name ?? undefined,
-      last_name: last_name ?? undefined,
-      email: email ?? undefined,
-    })
-  } else if (eventType === 'user.deleted') {
+    await db
+      .update(schema.users)
+      .set({
+        first_name: first_name || undefined,
+        last_name: last_name || undefined,
+        email: email || undefined,
+      })
+      .where(d.eq(schema.users.id, id))
+  } else if (evt.type === 'user.deleted') {
+    const { id } = evt.data
+
+    if (id) await db.delete(schema.users).where(d.eq(schema.users.id, id))
   }
 
   return new Response('Success', { status: 200 })

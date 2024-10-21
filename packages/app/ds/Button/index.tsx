@@ -3,7 +3,7 @@ import { styled } from 'app/ds/styled'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import { withStaticProperties } from 'app/ds/withStaticProperties'
-import { createStyledContext } from 'tamagui'
+import { createStyledContext, AnimatePresence } from 'tamagui'
 
 const height = 32
 
@@ -60,7 +60,7 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
     >
       {children}
       {props.loading && (
-        <View stretch center>
+        <View stretch center key="loading">
           <LoadingSpinner color="$color12" />
         </View>
       )}
@@ -72,6 +72,7 @@ export const ButtonText = styled(Text, {
   context,
   userSelect: 'none',
 
+  fontFamily: '$mono',
   lineHeight: height - borderWidth * 2,
   bold: true,
   variants: {

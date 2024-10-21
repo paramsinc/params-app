@@ -4,6 +4,7 @@ import { Header } from 'app/ds/Header'
 import { Logo } from 'app/ds/Logo'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
+import { useCurrentPath } from 'app/navigation/use-pathname'
 
 export function GlobalWebLayout({
   children,
@@ -12,6 +13,7 @@ export function GlobalWebLayout({
   children: React.ReactNode
   hideHeader?: boolean
 }) {
+  const pathname = useCurrentPath()
   return (
     <>
       {!hideHeader && (
@@ -19,7 +21,7 @@ export function GlobalWebLayout({
           ai="center"
           height={48}
           px="$3"
-          bg="$color1"
+          // bg="$color1"
           fd="row"
           style={{ position: 'sticky', top: 0, zIndex: 3 }}
         >
@@ -27,9 +29,11 @@ export function GlobalWebLayout({
           <View grow center>
             <Logo height={20} />
           </View>
-          <View w={100} ai="flex-end" jc="center">
-            <Auth.UserButton />
-          </View>
+          {pathname !== '/' && (
+            <View w={100} ai="flex-end" jc="center">
+              <Auth.UserButton />
+            </View>
+          )}
         </Header>
       )}
       {children}

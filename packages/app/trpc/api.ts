@@ -15,6 +15,7 @@ import { availabilityRangesShape } from 'app/db/types'
 import { DateTime } from 'app/dates/date-time'
 import { googleOauth } from 'app/vendor/google/google-oauth'
 import { createUser } from 'app/trpc/routes/user'
+import { serverEnv } from 'app/env/env.server'
 
 const [firstCdn, ...restCdns] = keys(cdn)
 
@@ -2051,6 +2052,27 @@ export const appRouter = router({
         offer,
         profileMemberEmails: results.map((result) => result.profileMember?.email).filter(Boolean),
       }
+    }),
+
+  joinWaitlist: publicProcedure
+    .input(
+      z.object({ email: z.string().email('Please enter a valid email.'), captcha: z.string() })
+    )
+    .mutation(async ({ input }) => {
+      const data = await fetch(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${serverEnv.RECAPTCHA_SECRET_KEY}&response=${input.captcha}`
+      ).then((r) => r.json())
+
+      if (!data.success) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Invalid captcha.`,
+        })
+      }
+
+      // TODO add to waitlist
+
+      return { email: input.email }
     }),
 })
 

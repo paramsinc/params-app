@@ -33,10 +33,10 @@ function UserTrigger({ children }: { children?: React.ReactElement }) {
       <UserButton>
         {children}
         <UserButton.MenuItems>
-          <UserButton.Action
+          <UserButton.Link
             label="Dashboard"
             labelIcon={<Lucide.Home size={16} color="$color11" />}
-            open="/dashboard"
+            href="/dashboard"
           />
         </UserButton.MenuItems>
       </UserButton>

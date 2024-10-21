@@ -12,18 +12,6 @@ const cloudinaryServer = (() => {
   return v2
 })()
 
-const stream = (image: File) =>
-  new Promise<UploadApiResponse>((resolve, reject) => {
-    cloudinaryServer.uploader
-      .upload_stream((error, uploadResult) => {
-        if (uploadResult) {
-          return resolve(uploadResult)
-        }
-        return reject(error)
-      })
-      .end(image.arrayBuffer())
-  })
-
 export default makeCDN('cloudinary', {
   async uploadImage(base64, options) {
     const upload = await cloudinaryServer.uploader.upload(base64, {

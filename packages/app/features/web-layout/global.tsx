@@ -30,7 +30,13 @@ export function GlobalWebLayout({
             <Logo height={20} />
           </View>
           {pathname !== '/' && (
-            <View w={100} ai="flex-end" jc="center">
+            <View
+              w={100}
+              ai="flex-end"
+              jc="center"
+              pointerEvents={pathname !== '/' ? 'none' : 'auto'}
+              o={pathname !== '/' ? 0 : 1}
+            >
               <Auth.UserButton />
             </View>
           )}

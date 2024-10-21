@@ -108,6 +108,7 @@ function WaitlistForm() {
             sitekey={env.RECAPTCHA_SITE_KEY}
             theme={theme?.includes('dark') ? 'dark' : 'light'}
             asyncScriptOnLoad={() => setIsRecaptchaReady(true)}
+            style={{ display: 'none' }}
           />
         </Form>
       )}

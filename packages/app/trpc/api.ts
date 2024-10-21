@@ -2070,9 +2070,23 @@ export const appRouter = router({
         })
       }
 
-      // TODO add to waitlist
+      const [first] = await db
+        .insert(schema.waitlistSignups)
+        .values({ email: input.email })
+        .onConflictDoNothing({
+          target: schema.waitlistSignups.email,
+        })
+        .returning()
+        .execute()
 
-      return { email: input.email }
+      if (!first) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Failed to join waitlist.`,
+        })
+      }
+
+      return { email: first.email }
     }),
 })
 

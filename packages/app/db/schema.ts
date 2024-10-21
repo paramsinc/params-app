@@ -242,3 +242,11 @@ export const googleCalendarIntegrations = pgTable(
     uniqueProfileId: unique().on(table.profile_id, table.google_user_id),
   })
 )
+
+export const waitlistSignups = pgTable('waitlist_signups', {
+  id: text('id')
+    .primaryKey()
+    .$default(() => `waitlist_signup_${ulid()}`),
+  email: text('email').notNull().unique(),
+  ...timestampMixin(),
+})

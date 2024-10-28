@@ -54,6 +54,15 @@ function WaitlistForm() {
     )
   }
 
+  const submit = async () => {
+    const captchaValue = await captcha.current?.executeAsync()
+    if (captchaValue) {
+      mutation.mutate({ email, captcha: captchaValue })
+    } else {
+      alert('Invalid captcha.')
+    }
+  }
+
   return (
     <AnimatePresence exitBeforeEnter>
       {mutation.data ? (
@@ -77,12 +86,7 @@ function WaitlistForm() {
         <Form
           key="form"
           onSubmit={async () => {
-            const captchaValue = await captcha.current?.executeAsync()
-            if (captchaValue) {
-              mutation.mutate({ email, captcha: captchaValue })
-            } else {
-              alert('Invalid captcha.')
-            }
+            await submit()
           }}
         >
           <Card
@@ -93,7 +97,15 @@ function WaitlistForm() {
             animation="quick"
             exitStyle={{ opacity: 0, y: 10 }}
           >
-            <Input placeholder="fernando@params.com" value={email} onChangeText={setEmail} />
+            <Input
+              placeholder="fernando@params.com"
+              value={email}
+              onChangeText={setEmail}
+              onSubmitEditing={() => {
+                submit()
+              }}
+              autoComplete="email"
+            />
             <Form.Trigger asChild>
               <Button als="flex-start" loading={mutation.isPending} disabled={!isRecaptchaReady}>
                 <ButtonText>Join Waitlist</ButtonText>

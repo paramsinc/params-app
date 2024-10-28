@@ -14,7 +14,8 @@ export default View.styleable<
     typeof grad === 'function'
       ? grad((key) => {
           const variable = key in colors ? colors[key] : undefined
-          return variable?.val ?? key
+          console.log('variable', variable?.variable)
+          return variable?.variable ?? variable?.val ?? key
         })
       : grad
 

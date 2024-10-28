@@ -85,10 +85,10 @@ function Content({ profileSlug }: { profileSlug: string }) {
             als: 'flex-start',
             alignItems: 'flex-start',
           }}
-          gap="$4"
+          gap="$3"
         >
           <View>
-            <Text bold fontSize={24} fontFamily="$body">
+            <Text bold fontSize={24} fontFamily="$mono">
               {profile.name}
             </Text>
           </View>

@@ -21,9 +21,19 @@ export function GlobalWebLayout({
           ai="center"
           height={48}
           px="$3"
-          // bg="$color1"
+          // bg="$backgroundStrong"
+          bg="#00000020"
           fd="row"
-          style={{ position: 'sticky', top: 0, zIndex: 3 }}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 3,
+            backdropFilter: 'blur(10px)',
+            transform: 'translate3d(0, 0, 0)',
+          }}
+          $theme-light={{
+            bg: '#ffffff20',
+          }}
         >
           <View w={100}></View>
           <View grow center>

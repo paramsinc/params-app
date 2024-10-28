@@ -4,7 +4,6 @@ import { inserts, selects } from 'app/db/inserts-and-selects'
 import { d, db, pg, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
-import { deleteCalcomAccount, getCalcomUser, getCalcomUsers } from 'app/trpc/routes/cal-com'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
@@ -119,17 +118,6 @@ const user = {
     }),
 }
 
-const calcomUserInsert = z
-  .object({
-    timeFormat: z.number().int(),
-    weekStart: z
-      .enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
-      .optional(),
-    timeZone: z.string(),
-    disableCreateMember: z.boolean(),
-  })
-  .partial()
-
 const profile = {
   isProfileSlugAvailable: authedProcedure
     .input(z.object({ slug: z.string() }))
@@ -156,93 +144,86 @@ const profile = {
           image_vendor: true,
           image_vendor_id: true,
         })
-        .merge(calcomUserInsert)
+        .merge(z.object({ disableCreateMember: z.boolean().optional() }))
     )
-    .mutation(
-      async ({
-        input: { timeFormat, weekStart, timeZone, disableCreateMember, ...input },
-        ctx,
-      }) => {
-        const { profile, member } = await db.transaction(async (tx) => {
-          const existingProfileBySlug = await tx.query.profiles
-            .findFirst({
-              where: (profiles, { eq }) => eq(profiles.slug, input.slug),
-            })
-            .execute()
-
-          if (existingProfileBySlug) {
-            throw new TRPCError({
-              code: 'CONFLICT',
-              message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
-            })
-          }
-
-          const me = await tx.query.users.findFirst({
-            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+    .mutation(async ({ input: { disableCreateMember, ...input }, ctx }) => {
+      const { profile, member } = await db.transaction(async (tx) => {
+        const existingProfileBySlug = await tx.query.profiles
+          .findFirst({
+            where: (profiles, { eq }) => eq(profiles.slug, input.slug),
           })
+          .execute()
 
-          if (!me) {
-            throw new TRPCError({
-              code: 'UNAUTHORIZED',
-              message: `Please complete creating your account.`,
-            })
-          }
+        if (existingProfileBySlug) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
+          })
+        }
 
-          const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
-            first_name: me.first_name,
-            last_name: me.last_name,
-            email: me.email,
-            user_id: me.id,
-          }
-
-          const stripe_connect_account_id = await stripe.accounts
-            .create({
-              settings: {
-                payouts: {
-                  schedule: {
-                    interval: 'manual',
-                  },
-                },
-              },
-            })
-            .then((account) => account.id)
-
-          const [profile] = await tx
-            .insert(schema.profiles)
-            .values({
-              ...input,
-              stripe_connect_account_id,
-            })
-            .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
-            .execute()
-
-          if (!profile) {
-            throw new TRPCError({
-              code: 'INTERNAL_SERVER_ERROR',
-              message: `Couldn't create profile.`,
-            })
-          }
-
-          // add this user as a member
-          const [member] = disableCreateMember
-            ? []
-            : await tx
-                .insert(schema.profileMembers)
-                .values({
-                  ...memberInsert,
-                  profile_id: profile.id,
-                })
-                .returning(
-                  pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal)
-                )
-                .execute()
-
-          return { profile, member }
+        const me = await tx.query.users.findFirst({
+          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
         })
 
+        if (!me) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: `Please complete creating your account.`,
+          })
+        }
+
+        const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
+          first_name: me.first_name,
+          last_name: me.last_name,
+          email: me.email,
+          user_id: me.id,
+        }
+
+        const stripe_connect_account_id = await stripe.accounts
+          .create({
+            settings: {
+              payouts: {
+                schedule: {
+                  interval: 'manual',
+                },
+              },
+            },
+          })
+          .then((account) => account.id)
+
+        const [profile] = await tx
+          .insert(schema.profiles)
+          .values({
+            ...input,
+            stripe_connect_account_id,
+          })
+          .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
+          .execute()
+
+        if (!profile) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Couldn't create profile.`,
+          })
+        }
+
+        // add this user as a member
+        const [member] = disableCreateMember
+          ? []
+          : await tx
+              .insert(schema.profileMembers)
+              .values({
+                ...memberInsert,
+                profile_id: profile.id,
+              })
+              .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
+              .execute()
+
         return { profile, member }
-      }
-    ),
+      })
+
+      return { profile, member }
+    }),
   updateProfile: authedProcedure
     .input(
       z.object({
@@ -432,62 +413,6 @@ const profile = {
     return profiles
   }),
 
-  calUserByProfileSlug: authedProcedure
-    .input(z.object({ profileSlug: z.string() }))
-    .query(async ({ ctx, input: { profileSlug } }) => {
-      const profile = await db.query.profiles.findFirst({
-        where: (profiles, { eq }) => eq(profiles.slug, profileSlug),
-      })
-
-      if (!profile?.calcom_user_id) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Profile not found.`,
-        })
-      }
-
-      const calUser = await getCalcomUser(profile.calcom_user_id)
-
-      if (calUser.status !== 'success') {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Couldn't get cal user.`,
-        })
-      }
-
-      return calUser.data
-    }),
-  calcomAccessTokenByProfileSlug: authedProcedure
-    .input(z.object({ profileSlug: z.string() }))
-    .query(async ({ ctx, input: { profileSlug } }) => {
-      const [first] = await db
-        .select({
-          calcomUser: pick('calcomUsers', { access_token: true }),
-          profile: pick('profiles', { slug: true, id: true }),
-          myMembership: pick('profileMembers', { id: true }),
-        })
-        .from(schema.profiles)
-        .where(d.eq(schema.profiles.slug, profileSlug))
-        .innerJoin(
-          schema.profileMembers,
-          d.and(
-            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
-            d.eq(schema.profileMembers.user_id, ctx.auth.userId)
-          )
-        )
-        .innerJoin(schema.calcomUsers, d.eq(schema.calcomUsers.id, schema.profiles.calcom_user_id))
-        .limit(1)
-        .execute()
-
-      if (!first) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `You don't have access to this profile's cal account.`,
-        })
-      }
-
-      return first.calcomUser.access_token
-    }),
   allProfiles_admin: authedProcedure.query(async ({ ctx }) => {
     // TODO admin
     const profiles = await db.query.profiles.findMany({
@@ -495,32 +420,6 @@ const profile = {
     })
     return profiles
   }),
-
-  calUserByProfileSlug_public: publicProcedure
-    .input(z.object({ profileSlug: z.string() }))
-    .query(async ({ input: { profileSlug } }) => {
-      const profile = await db.query.profiles.findFirst({
-        where: (profiles, { eq }) => eq(profiles.slug, profileSlug),
-      })
-
-      if (!profile) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Profile not found.`,
-        })
-      }
-
-      const calUser = await getCalcomUser(profile.calcom_user_id)
-
-      if (calUser.status !== 'success') {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Couldn't get cal user.`,
-        })
-      }
-
-      return calUser.data.username
-    }),
 
   profileConnectAccountSession: authedProcedure
     .input(z.object({ profile_slug: z.string() }))
@@ -1027,19 +926,6 @@ const repository = {
       })
       return repo
     }),
-}
-
-const calCom = {
-  // TODO admin only procedure...
-  cca: authedProcedure.query(async ({ ctx }) => {
-    const calComUsers = await getCalcomUsers()
-    return calComUsers
-  }),
-  dcca: authedProcedure.input(z.object({ userId: z.number() })).mutation(async ({ ctx, input }) => {
-    const calComUser = await deleteCalcomAccount(input.userId)
-
-    return calComUser
-  }),
 }
 
 const profilePlan = {
@@ -1832,7 +1718,6 @@ export const appRouter = router({
   ...user,
   ...profile,
   ...profileMember,
-  ...calCom,
   ...repository,
   ...profilePlan,
   ...availability,

@@ -72,29 +72,53 @@ export async function GET(request: Request) {
             fontFamily: 'CircularStd',
             fontSize: 36,
             color: 'white',
+            borderRadius: 20,
+            overflow: 'hidden',
+            position: 'relative',
           }}
         >
-          {/* Gradient background */}
-          {gradientString.split('\n').map((r, i) => {
-            return (
-              <div
-                key={i + 'gradient' + r}
-                style={{
-                  position: 'absolute',
-                  width: '80%',
-                  left: '0%',
-                  height: '100%',
-                  right: '0%',
-                  top: '0%',
-                  opacity: 0.35,
-                  filter: 'blur(90px) saturate(200%)',
-                  backgroundImage: r.trim(),
-                  display: 'flex',
-                  overflow: 'visible',
-                }}
-              />
-            )
-          })}
+          <div
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              opacity: 0.35,
+              display: 'flex',
+              inset: 0,
+              bottom: 0,
+              top: 0,
+              // background: 'orange',
+              left: 0,
+              right: 0,
+            }}
+          >
+            {/* Gradient background */}
+            {gradientString
+              .split('\n')
+              .reverse()
+              .map((r, i) => {
+                return (
+                  <div
+                    key={i + 'gradient' + r}
+                    style={{
+                      position: 'absolute',
+                      width: '150%',
+                      left: '0%',
+                      height: '120%',
+                      // height: '120%',
+                      right: '0%',
+                      top: '0%',
+                      bottom: '0%',
+                      filter: 'blur(180px) saturate(200%)',
+                      backgroundImage: r.trim(),
+                      display: 'flex',
+                      overflow: 'visible',
+                      // transform: 'scaleX(1.5) scaleY(-1)',
+                    }}
+                  />
+                )
+              })}
+          </div>
 
           {/* Content */}
           <div
@@ -210,8 +234,16 @@ export async function GET(request: Request) {
                     borderRadius: 9999,
                     alignItems: 'center',
                     height: 36 + 25 * 2,
-                    padding: '0 20px',
+                    padding: '0 30px',
                     alignSelf: 'flex-start',
+                    // multiple shadows for depth and glow
+                    boxShadow: `
+                      0 0 20px 10px rgba(255, 255, 255, 0.25),
+                      0 0 40px 20px rgba(255, 255, 255, 0.15),
+                      0 0 60px 30px rgba(255, 255, 255, 0.1),
+                      inset 0 0 10px rgba(0, 0, 0, 0.5)
+                    `,
+                    // border: '2px solid #00000050',
                   }}
                 >
                   <img
@@ -224,7 +256,7 @@ export async function GET(request: Request) {
                       display: 'flex',
                       // fontSize: 24,
                       lineHeight: 32 + 10 * 2,
-                      fontWeight: 'bold',
+                      // fontWeight: 'bold',
                       color: '#000',
                     }}
                   >
@@ -234,13 +266,13 @@ export async function GET(request: Request) {
               </div>
               <div
                 style={{
-                  color: '#999',
+                  // color: '#999',
                   width: '100%',
                   display: 'flex',
                   justifyContent: 'flex-end',
                 }}
               >
-                params.com
+                {env.URL}
               </div>
             </div>
           </div>
@@ -296,10 +328,3 @@ export async function GET(request: Request) {
     )
   }
 }
-
-const phone = (
-  <img
-    src="data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-phone'><path d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z'/></svg>"
-    style={{ height: 24, width: 24 }}
-  />
-)

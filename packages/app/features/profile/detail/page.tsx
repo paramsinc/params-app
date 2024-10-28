@@ -10,7 +10,6 @@ import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
-import { Calcom } from 'app/features/cal-com/cal-com'
 import { Card } from 'app/ds/Form/layout'
 import {
   ConnectAccountModal,

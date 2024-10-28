@@ -1,6 +1,5 @@
 import { Page } from 'app/ds/Page'
 import { useEventTypes } from '@calcom/atoms'
-import { Calcom } from 'app/features/cal-com/cal-com'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
 import { ErrorCard } from 'app/ds/Error/card'
@@ -35,15 +34,13 @@ export function ProfileDetailBookPage() {
   } = useParams()
 
   return (
-    <Calcom.ProviderPublic>
-      <Page.Root>
-        <Page.Scroll>
-          <Page.Content>
-            <Booker profileSlug={profileSlug} />
-          </Page.Content>
-        </Page.Scroll>
-      </Page.Root>
-    </Calcom.ProviderPublic>
+    <Page.Root>
+      <Page.Scroll>
+        <Page.Content>
+          <Booker profileSlug={profileSlug} />
+        </Page.Content>
+      </Page.Scroll>
+    </Page.Root>
   )
 }
 

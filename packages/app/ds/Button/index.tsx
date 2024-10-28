@@ -4,7 +4,7 @@ import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import { withStaticProperties } from 'app/ds/withStaticProperties'
 import { useContext } from 'app/react'
-import { createStyledContext, AnimatePresence, getTokens } from 'tamagui'
+import { createStyledContext } from 'tamagui'
 
 const height = 32
 

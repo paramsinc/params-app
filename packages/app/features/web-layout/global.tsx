@@ -29,17 +29,15 @@ export function GlobalWebLayout({
           <View grow center>
             <Logo height={20} />
           </View>
-          {pathname !== '/' && (
-            <View
-              w={100}
-              ai="flex-end"
-              jc="center"
-              pointerEvents={pathname !== '/' ? 'none' : 'auto'}
-              o={pathname !== '/' ? 0 : 1}
-            >
-              <Auth.UserButton />
-            </View>
-          )}
+          <View
+            w={100}
+            ai="flex-end"
+            jc="center"
+            pointerEvents={pathname === '/' ? 'none' : 'auto'}
+            o={pathname === '/' ? 0 : 1}
+          >
+            <Auth.UserButton />
+          </View>
         </Header>
       )}
       {children}

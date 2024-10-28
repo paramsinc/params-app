@@ -1,8 +1,5 @@
 import 'raf/polyfill'
 import '@tamagui/core/reset.css'
-// import '@calcom/atoms/globals.min.css'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 
 import { ColorScheme, NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
 import { Fragment } from 'react'

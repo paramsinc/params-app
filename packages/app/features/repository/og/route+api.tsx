@@ -2,7 +2,6 @@ import { env } from 'app/env'
 import { imageLoader } from 'app/image/loader'
 import { repoBySlug } from 'app/trpc/api'
 import { ImageResponse } from 'next/og'
-import { encode } from 'js-base64'
 
 export async function generateMarkdownBadge(profileSlug: string, repoSlug: string) {
   const baseUrl =

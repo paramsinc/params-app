@@ -1,4 +1,4 @@
-import { StylesProvider } from './styles-provider'
+import { NextTamaguiProvider } from './styles-provider'
 import './globals.css'
 import { Provider } from 'app/provider'
 import { TamaguiProvider } from 'app/ds/tamagui/provider'
@@ -11,11 +11,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" dir="ltr">
       <body>
-        <StylesProvider>
+        <NextTamaguiProvider>
           <TamaguiProvider>
             <Provider>{children}</Provider>
           </TamaguiProvider>
-        </StylesProvider>
+        </NextTamaguiProvider>
       </body>
     </html>
   )

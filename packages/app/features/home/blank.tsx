@@ -59,7 +59,7 @@ function WaitlistForm() {
     if (captchaValue) {
       mutation.mutate({ email, captcha: captchaValue })
     } else {
-      alert('Invalid captcha.')
+      alert('Captcha expired, please try refreshing.')
     }
   }
 

@@ -18,10 +18,6 @@ import { env } from 'app/env'
 import { entries } from 'app/helpers/object'
 import fonts from 'app/ds/tamagui/font/fonts'
 import { fontVars } from 'app/ds/tamagui/font/font-vars'
-import { getConfig } from 'tamagui'
-if (process.env.NODE_ENV === 'production') {
-  // require('../public/tamagui.css')
-}
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -30,26 +26,7 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 const { APP_NAME } = env
 
 function MyApp({ Component, pageProps, router }: SolitoAppProps) {
-  const getLayout = Component.getLayout || ((page) => page)
-
   const Layout = router.pathname.startsWith('/dashboard') ? DashboardLayout : Fragment
-  const config = getConfig().defaultFontToken
-
-  console.log('[app.tsx][config]', config)
-
-  const css = `
-  :root {
-    ${entries(fonts)
-      .map(([varName, family]) => `${fontVars[varName]}: ${family};`)
-      .join('\n')}
-  }
-  html {
-    background-color: var(--backgroundStrong);
-    font-family: var(${fontVars.body});
-  }
-`
-
-  console.log('[app.tsx][css]', css)
 
   return (
     <div style={{ display: 'contents' }}>
@@ -61,13 +38,25 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
         <meta property="og:image" content={`https://${env.APP_URL}/og.png`} />
       </Head>
       <style jsx global>
-        {css}
+        {`
+          :root {
+            ${entries(fonts)
+              .map(([varName, family]) => `${fontVars[varName]}: ${family};`)
+              .join('\n')}
+          }
+          html {
+            background-color: var(--backgroundStrong);
+            font-family: var(${fontVars.body});
+          }
+        `}
       </style>
       <ThemeProvider>
         <TamaguiProvider>
           <Provider>
             <GlobalWebLayout hideHeader={'hideHeader' in Component}>
-              <Layout>{getLayout(<Component {...pageProps} />)}</Layout>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
             </GlobalWebLayout>
           </Provider>
         </TamaguiProvider>

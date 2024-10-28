@@ -800,29 +800,45 @@ const profileMember = {
     }),
 }
 
+export async function repoBySlug({
+  repo_slug,
+  profile_slug,
+}: {
+  repo_slug: string
+  profile_slug: string
+}) {
+  const [repository] = await db
+    .select({
+      ...pick('repositories', publicSchema.repositories.RepositoryPublic),
+      profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+    })
+    .from(schema.repositories)
+    .where(d.eq(schema.repositories.slug, repo_slug))
+    .innerJoin(
+      schema.profiles,
+      d.and(
+        d.eq(schema.repositories.profile_id, schema.profiles.id),
+        d.eq(schema.profiles.slug, profile_slug)
+      )
+    )
+    .limit(1)
+    .execute()
+
+  if (!repository) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: `Repository not found.`,
+    })
+  }
+
+  return repository
+}
+
 const repository = {
   repoBySlug: publicProcedure
     .input(z.object({ repo_slug: z.string(), profile_slug: z.string() }))
     .query(async ({ input: { repo_slug, profile_slug } }) => {
-      const [repository] = await db
-        .select({
-          ...pick('repositories', publicSchema.repositories.RepositoryPublic),
-          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
-        })
-        .from(schema.repositories)
-        .where(d.eq(schema.repositories.slug, repo_slug))
-        .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
-        .limit(1)
-        .execute()
-
-      if (!repository) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Repository not found.`,
-        })
-      }
-
-      return repository
+      return repoBySlug({ repo_slug, profile_slug })
     }),
 
   createRepo: authedProcedure

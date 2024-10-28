@@ -13,6 +13,7 @@ export const env = z
     CLOUDINARY_CLOUD_NAME: z.string(),
     GOOGLE_CLIENT_ID_WEB: z.string(),
     RECAPTCHA_SITE_KEY: z.string(),
+    URL: z.string(),
   })
   .parse({
     CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
@@ -25,4 +26,5 @@ export const env = z
     CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUDNAME,
     GOOGLE_CLIENT_ID_WEB: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
     RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY,
+    URL: process.env.NEXT_PUBLIC_URL ?? 'params.com',
   })

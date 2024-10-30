@@ -1,7 +1,16 @@
 'use client'
 import { makeAuth } from 'app/auth/make-auth'
 import { Clerk } from '@clerk/clerk-js'
-import { ClerkProvider, useAuth, UserButton, SignUpButton, SignedOut, useUser } from '@clerk/nextjs'
+import {
+  ClerkProvider,
+  useAuth,
+  UserButton,
+  SignUpButton,
+  SignedOut,
+  useUser,
+  SignUp as ClerkSignUp,
+  SignInButton,
+} from '@clerk/nextjs'
 import { useLatestCallback } from 'app/helpers/use-latest-callback'
 import { env } from 'app/env'
 import { getConfig, getVariableValue } from 'tamagui'
@@ -58,7 +67,13 @@ function Font({ children }: { children: React.ReactNode }) {
   )
 }
 
-function SignUp({ children }: { children?: React.ReactElement }) {
+function SignUp({
+  children,
+  action = 'sign up',
+}: {
+  children?: React.ReactElement
+  action?: 'sign in' | 'sign up'
+}) {
   const [redirectUrl, setRedirectUrl] = useState<string>()
   const path = useCurrentPath()
   useEffect(() => {
@@ -66,11 +81,12 @@ function SignUp({ children }: { children?: React.ReactElement }) {
       setRedirectUrl(window.location.href)
     }
   }, [path])
+  const Comp = action === 'sign in' ? SignInButton : SignUpButton
   return (
     <Font>
-      <SignUpButton mode="modal" signInForceRedirectUrl={redirectUrl}>
+      <Comp mode="modal" signInForceRedirectUrl={redirectUrl} signUpForceRedirectUrl={redirectUrl}>
         {children}
-      </SignUpButton>
+      </Comp>
     </Font>
   )
 }
@@ -137,12 +153,13 @@ export default makeAuth({
       </SignUp>
     )
   },
-  AuthFlowTrigger({ children }) {
+  AuthFlowTrigger({ children, action = 'sign up' }) {
     return (
       <SignedOut>
-        <SignUp children={children} />
+        <SignUp children={children} action={action} />
       </SignedOut>
     )
   },
   getToken,
+  SignUp: ClerkSignUp,
 })

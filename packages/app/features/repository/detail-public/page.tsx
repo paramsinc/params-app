@@ -100,55 +100,10 @@ function RepositoryDetailPublicPageContent({
         }}
       />
       <Page.Scroll>
-        <Page.Content maw="100%" gap="$3" $gtLg={{ row: 'reverse' }}>
-          {tab !== 'files' && (
-            <Sidebar>
-              <Card>
-                {!!repo.profile.image_vendor_id && (
-                  <View ai="center">
-                    <View br="$rounded" als="center" ov="hidden">
-                      <Image
-                        src={repo.profile.image_vendor_id}
-                        loader={repo.profile.image_vendor || 'raw'}
-                        src="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
-                        loader="raw"
-                        width={100}
-                        height={100}
-                        alt={repo.profile.name}
-                        contentFit="cover"
-                      />
-                    </View>
-                  </View>
-                )}
-
-                <Text center bold>
-                  {repo.profile.name}
-                </Text>
-
-                <View row gap="$1">
-                  <LinkButton grow href={`/@${repo.profile.slug}`}>
-                    <ButtonText>Profile</ButtonText>
-                  </LinkButton>
-
-                  <LinkButton grow href={`/@${repo.profile.slug}/book`} themeInverse>
-                    <ButtonText>Book a Call</ButtonText>
-                  </LinkButton>
-                </View>
-                {!!repo.profile.bio && (
-                  <>
-                    <View h={2} bg="$borderColor" />
-                    <View gap="$2">
-                      <Text color="$color11" bold>
-                        About {repo.profile.name}
-                      </Text>
-
-                      <Text>{repo.profile.bio}</Text>
-                    </View>
-                  </>
-                )}
-              </Card>
-            </Sidebar>
-          )}
+        <Page.Content maw="100%" gap="$3" $gtLg={{ row: true }}>
+          <Sidebar narrow>
+            <DocsSidebar />
+          </Sidebar>
           <View $gtLg={{ grow: true }} gap="$3">
             <Card>
               <View row ai="center">
@@ -235,9 +190,54 @@ function RepositoryDetailPublicPageContent({
 
             {tab === 'files' && <FilesPage profileSlug={profileSlug} repoSlug={repoSlug} />}
           </View>
-          <Sidebar narrow>
-            <DocsSidebar />
-          </Sidebar>
+          {tab !== 'files' && (
+            <Sidebar>
+              <Card>
+                {!!repo.profile.image_vendor_id && (
+                  <View ai="center">
+                    <View br="$rounded" als="center" ov="hidden">
+                      <Image
+                        src={repo.profile.image_vendor_id}
+                        loader={repo.profile.image_vendor || 'raw'}
+                        src="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
+                        loader="raw"
+                        width={100}
+                        height={100}
+                        alt={repo.profile.name}
+                        contentFit="cover"
+                      />
+                    </View>
+                  </View>
+                )}
+
+                <Text center bold>
+                  {repo.profile.name}
+                </Text>
+
+                <View row gap="$1">
+                  <LinkButton grow href={`/@${repo.profile.slug}`}>
+                    <ButtonText>Profile</ButtonText>
+                  </LinkButton>
+
+                  <LinkButton grow href={`/@${repo.profile.slug}/book`} themeInverse>
+                    <ButtonText>Book a Call</ButtonText>
+                  </LinkButton>
+                </View>
+                {!!repo.profile.bio && (
+                  <View gap="$3" dsp="none" $gtLg={{ display: 'flex' }}>
+                    <View h={2} bg="$borderColor" />
+                    <View gap="$2">
+                      <Text color="$color11" bold>
+                        About {repo.profile.name}
+                      </Text>
+
+                      <Text>{repo.profile.bio}</Text>
+                    </View>
+                  </View>
+                )}
+              </Card>
+            </Sidebar>
+          )}
         </Page.Content>
       </Page.Scroll>
     </Page.Root>

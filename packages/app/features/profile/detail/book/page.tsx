@@ -20,6 +20,7 @@ import { Card } from 'app/ds/Form/layout'
 import { LinkButton } from 'app/ds/Button/link'
 import { Link } from 'app/ds/Link'
 import { AnimatePresence, MotiView } from 'moti'
+import { UserGate } from 'app/features/user/gate'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -34,13 +35,15 @@ export function ProfileDetailBookPage() {
   } = useParams()
 
   return (
-    <Page.Root>
-      <Page.Scroll>
-        <Page.Content>
-          <Booker profileSlug={profileSlug} />
-        </Page.Content>
-      </Page.Scroll>
-    </Page.Root>
+    <UserGate>
+      <Page.Root>
+        <Page.Scroll>
+          <Page.Content>
+            <Booker profileSlug={profileSlug} />
+          </Page.Content>
+        </Page.Scroll>
+      </Page.Root>
+    </UserGate>
   )
 }
 

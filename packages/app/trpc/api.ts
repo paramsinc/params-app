@@ -34,10 +34,7 @@ const user = {
   }),
   createMe: authedProcedure
     .input(
-      inserts.users
-        .pick({ slug: true, first_name: true, last_name: true, email: true })
-        .partial()
-        .optional()
+      inserts.users.pick({ slug: true, first_name: true, last_name: true, email: true }).partial()
     )
     .output(selects.users.pick(publicSchema.users.UserPublic))
     .mutation(async ({ ctx, input = {} }) => {

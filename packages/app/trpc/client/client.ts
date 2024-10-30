@@ -3,24 +3,9 @@ import { httpLink } from '@trpc/client/links/httpLink'
 import { createTRPCNext } from '@trpc/next'
 import { Auth } from 'app/auth'
 import { AppRouter } from 'app/trpc/api'
-import { QueryClient } from '@tanstack/react-query'
 import { splitLink } from '@trpc/client/links/splitLink'
 import { getTrpcUrl } from 'app/trpc/client/getTrpcUrl'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    mutations: {
-      onSuccess(data, variables, context) {
-        queryClient.invalidateQueries({
-          refetchType: 'active',
-        }) // refetch all active queries when mutation succeeds...
-      },
-    },
-    queries: {
-      refetchOnMount: true,
-    },
-  },
-})
+import { queryClient } from 'app/trpc/client/query-client'
 
 const url = `${getTrpcUrl()}/api/trpc`
 async function getTrpcHeaders() {

@@ -32,7 +32,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
     <div style={{ display: 'contents' }}>
       <Head>
         <title>{APP_NAME}</title>
-        <meta name="description" content={`The best machine learning starter templates.`} />
+        <meta name="description" content={`Open source, code-reviewed AI starter templates.`} />
         <link rel="icon" href="/paramsx1.png" />
         {/* og image */}
         <meta property="og:image" content={`https://${env.APP_URL}/og.png`} />

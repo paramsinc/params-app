@@ -19,6 +19,9 @@ import { Scroll } from 'app/ds/Scroll'
 import { styled } from 'app/ds/styled'
 import { ColabIcon } from 'app/ds/icons/colab'
 import { Breadcrumbs } from 'app/ds/Breadcrumbs'
+import { useMedia } from 'app/ds/useMedia'
+import { Tooltip } from 'app/ds/Tooltip'
+import { Link } from 'app/ds/Link'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -73,6 +76,60 @@ function RepositoryDetailPublicPageContent({
   const repo = repoQuery.data
   const profile = repo.profile
 
+  const profileCard = (
+    <Card>
+      <View gap="$3" $lg={{ row: true, ai: 'center' }}>
+        {!!repo.profile.image_vendor_id && (
+          <View ai="center">
+            <View br="$rounded" als="center" ov="hidden">
+              <Image
+                src={repo.profile.image_vendor_id}
+                loader={repo.profile.image_vendor || 'raw'}
+                {...(profileSlug === 'francois' && {
+                  src: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg',
+                  loader: 'raw',
+                })}
+                width={100}
+                height={100}
+                alt={repo.profile.name}
+                contentFit="cover"
+              />
+            </View>
+          </View>
+        )}
+
+        <View gap="$3" $lg={{ grow: true }}>
+          <Text bold $gtLg={{ center: true }}>
+            {repo.profile.name}
+          </Text>
+
+          <View gap="$1" row>
+            <LinkButton $gtLg={{ grow: true }} href={`/@${repo.profile.slug}`}>
+              <ButtonText>Profile</ButtonText>
+            </LinkButton>
+
+            <LinkButton $gtLg={{ grow: true }} href={`/@${repo.profile.slug}/book`} themeInverse>
+              <ButtonText>Book a Call</ButtonText>
+            </LinkButton>
+          </View>
+        </View>
+      </View>
+
+      {!!repo.profile.bio && (
+        <View gap="$3">
+          <View h={2} bg="$borderColor" />
+          <View gap="$2">
+            <Text color="$color11" bold>
+              About {repo.profile.name}
+            </Text>
+
+            <Text>{repo.profile.bio}</Text>
+          </View>
+        </View>
+      )}
+    </Card>
+  )
+
   return (
     <Page.Root>
       <View
@@ -101,7 +158,7 @@ function RepositoryDetailPublicPageContent({
       />
       <Page.Scroll>
         <Page.Content maw="100%" gap="$3" $gtLg={{ row: true }}>
-          <Sidebar narrow>
+          <Sidebar narrow dsp="none" $gtLg={{ display: 'flex' }}>
             <DocsSidebar />
           </Sidebar>
           <View $gtLg={{ grow: true }} gap="$3">
@@ -115,13 +172,30 @@ function RepositoryDetailPublicPageContent({
             <View row flexWrap="wrap" gap="$2">
               {repo.github_url != null && (
                 <>
-                  <Button theme="yellow">
-                    <ButtonIcon icon={ColabIcon} />
-                    <ButtonText>Notebook</ButtonText>
-                  </Button>
+                  <ComingSoon>
+                    <Button theme="yellow">
+                      <ButtonIcon icon={ColabIcon} />
+                      <ButtonText>Notebook</ButtonText>
+                    </Button>
+                  </ComingSoon>
 
-                  <LinkButton theme="blue" href={repo.github_url}>
-                    <ButtonIcon icon={Lucide.Forklift} />
+                  <LinkButton
+                    theme="blue"
+                    href={(() => {
+                      let url = repo.github_url
+
+                      try {
+                        const urlClass = new URL(repo.github_url)
+
+                        // add /fork
+                        urlClass.pathname += '/fork'
+                        url = urlClass.toString()
+                      } catch {}
+
+                      return url
+                    })()}
+                  >
+                    <ButtonIcon icon={Lucide.GitFork} />
                     <ButtonText>Fork</ButtonText>
                   </LinkButton>
 
@@ -137,6 +211,7 @@ function RepositoryDetailPublicPageContent({
                 </>
               )}
             </View>
+            <View $gtLg={{ dsp: 'none' }}>{profileCard}</View>
 
             <View row bbw={1} bbc="$borderColor">
               <Tab active={tab === 'readme'} onPress={() => setParams({ tab: 'readme' })}>
@@ -190,52 +265,9 @@ function RepositoryDetailPublicPageContent({
 
             {tab === 'files' && <FilesPage profileSlug={profileSlug} repoSlug={repoSlug} />}
           </View>
-          {tab !== 'files' && (
-            <Sidebar>
-              <Card>
-                {!!repo.profile.image_vendor_id && (
-                  <View ai="center">
-                    <View br="$rounded" als="center" ov="hidden">
-                      <Image
-                        src={repo.profile.image_vendor_id}
-                        loader={repo.profile.image_vendor || 'raw'}
-                        src="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
-                        loader="raw"
-                        width={100}
-                        height={100}
-                        alt={repo.profile.name}
-                        contentFit="cover"
-                      />
-                    </View>
-                  </View>
-                )}
-
-                <Text center bold>
-                  {repo.profile.name}
-                </Text>
-
-                <View row gap="$1">
-                  <LinkButton grow href={`/@${repo.profile.slug}`}>
-                    <ButtonText>Profile</ButtonText>
-                  </LinkButton>
-
-                  <LinkButton grow href={`/@${repo.profile.slug}/book`} themeInverse>
-                    <ButtonText>Book a Call</ButtonText>
-                  </LinkButton>
-                </View>
-                {!!repo.profile.bio && (
-                  <View gap="$3" dsp="none" $gtLg={{ display: 'flex' }}>
-                    <View h={2} bg="$borderColor" />
-                    <View gap="$2">
-                      <Text color="$color11" bold>
-                        About {repo.profile.name}
-                      </Text>
-
-                      <Text>{repo.profile.bio}</Text>
-                    </View>
-                  </View>
-                )}
-              </Card>
+          {tab === 'readme' && (
+            <Sidebar d="none" $gtLg={{ display: 'flex' }}>
+              {profileCard}
             </Sidebar>
           )}
         </Page.Content>
@@ -269,32 +301,33 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
   const language =
     languageByExtension[selectedFileName?.split('.').at(-1) ?? 'plaintext'] ?? 'plaintext'
 
-  const sidebar = true
+  const sidebar = useMedia().gtSm
 
   const filesNode = (
-    <>
-      {Object.keys(files).map((fileName) => {
-        const FileIcon = getFileIcon(fileName)
-        return (
-          <View
-            key={fileName}
-            onPress={() => setSelectedFile(fileName)}
-            flexDirection="row"
-            alignItems="center"
-            padding="$2"
-            marginBottom="$1"
-            backgroundColor={selectedFileName === fileName ? '$backgroundFocus' : 'transparent'}
-            hoverStyle={{ backgroundColor: '$backgroundHover' }}
-            cursor="pointer"
-          >
-            <FileIcon size={18} color="$color" />
-            <Text marginLeft="$2" numberOfLines={1} ellipsizeMode="middle" fontFamily="$mono">
-              {fileName}
-            </Text>
-          </View>
-        )
-      })}
-    </>
+    <View>
+      {Object.keys(files)
+        .sort()
+        .map((fileName) => {
+          const FileIcon = getFileIcon(fileName)
+          return (
+            <View
+              key={fileName}
+              onPress={() => setSelectedFile(fileName)}
+              flexDirection="row"
+              alignItems="center"
+              padding="$2"
+              backgroundColor={selectedFileName === fileName ? '$backgroundFocus' : 'transparent'}
+              hoverStyle={{ backgroundColor: '$backgroundHover' }}
+              cursor="pointer"
+            >
+              <FileIcon size={18} color="$color" />
+              <Text marginLeft="$2" numberOfLines={1} ellipsizeMode="middle" fontFamily="$mono">
+                {fileName}
+              </Text>
+            </View>
+          )
+        })}
+    </View>
   )
 
   return (
@@ -369,7 +402,11 @@ function Codeblock({
           {tokens.map((line, i) => (
             <div key={i} {...getLineProps({ line })}>
               {lineNumbers && (
-                <span style={{ width: 50, display: 'inline-block', opacity: 0.8 }}>{i + 1}</span>
+                <span
+                  style={{ width: 50, display: 'inline-block', opacity: 0.8, userSelect: 'none' }}
+                >
+                  {i + 1}
+                </span>
               )}
               {line.map((token, key) => (
                 <span key={key} {...getTokenProps({ token })} />
@@ -412,11 +449,32 @@ function DocsSidebar() {
       {pages.map((page) => {
         const isSelected = page === selectedPage
         return (
-          <Text py={'$2'} px="$3" bold={isSelected} color={isSelected ? '$color12' : '$color11'}>
-            {page}
-          </Text>
+          <View ai="flex-start" key={page}>
+            <ComingSoon placement="right">
+              <Text
+                py={'$2'}
+                px="$3"
+                bold={isSelected}
+                color={isSelected ? '$color12' : '$color11'}
+                als="flex-start"
+              >
+                {page}
+              </Text>
+            </ComingSoon>
+          </View>
         )
       })}
     </Card>
+  )
+}
+
+function ComingSoon({ children, ...props }: React.ComponentProps<typeof Tooltip>) {
+  return (
+    <Tooltip {...props}>
+      <Tooltip.Trigger>{children}</Tooltip.Trigger>
+      <Tooltip.Content>
+        <Text>Coming soon</Text>
+      </Tooltip.Content>
+    </Tooltip>
   )
 }

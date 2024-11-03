@@ -240,9 +240,11 @@ function RepositoryDetailPublicPageContent({
                     />
                   )}
                   <View stretch center>
-                    <View br="$rounded" box={75} bg="white" center pl={2}>
-                      <Lucide.Play color="black" size={29} />
-                    </View>
+                    <ComingSoon>
+                      <View br="$rounded" box={75} bg="white" center pl={2}>
+                        <Lucide.Play color="black" size={29} />
+                      </View>
+                    </ComingSoon>
                   </View>
                 </View>
                 <View className="markdown-body">

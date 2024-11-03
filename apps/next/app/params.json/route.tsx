@@ -8,6 +8,7 @@ export const paramsJson = z
     docs: z.object({
       main: z.string(),
       sidebar: z.record(z.string(), z.union([z.string(), fileTree])),
+      youtube_url: z.string().optional(),
     }),
     notebook: z
       .object({

@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/trpc/ping",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

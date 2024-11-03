@@ -39,7 +39,7 @@ export function GlobalWebLayout({
           <View grow center>
             <Logo height={20} />
           </View>
-          <View
+          {/* <View
             w={100}
             ai="flex-end"
             jc="center"
@@ -47,7 +47,7 @@ export function GlobalWebLayout({
             o={pathname === '/' ? 0 : 1}
           >
             <Auth.UserButton />
-          </View>
+          </View> */}
         </Header>
       )}
       {children}

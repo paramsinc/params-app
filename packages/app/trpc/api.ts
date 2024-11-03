@@ -2014,9 +2014,6 @@ export const appRouter = router({
       }),
   }),
   ping: publicProcedure.query(async () => {
-    await db.query.waitlistSignups.findFirst({
-      columns: { id: true },
-    })
     return {
       pong: '🏓',
     }

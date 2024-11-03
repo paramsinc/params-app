@@ -21,7 +21,7 @@ export function UserGate({
   loading = null,
 }: {
   children: React.ReactNode
-  loading?: React.ReactNode
+  loading?: React.ReactElement | null
 }) {
   const auth = Auth.useUser()
   const me = api.me.useQuery(undefined, {
@@ -37,6 +37,9 @@ export function UserGate({
     return <>{children}</>
   }
   if (auth.isSignedIn) {
+    if (me.isPending) {
+      return loading
+    }
     return (
       <View grow>
         <Scroll centerContent>

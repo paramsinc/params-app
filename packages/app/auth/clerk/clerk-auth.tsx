@@ -15,7 +15,7 @@ import { useLatestCallback } from 'app/helpers/use-latest-callback'
 import { env } from 'app/env'
 import { getConfig, getVariableValue } from 'tamagui'
 import { Button, ButtonText } from 'app/ds/Button'
-import { useEffect, useState } from 'app/react'
+import { useEffect, useState, useServerEffect } from 'app/react'
 import { platform } from 'app/ds/platform'
 import { useCurrentPath } from 'app/navigation/use-pathname'
 import { Lucide } from 'app/ds/Lucide'
@@ -76,7 +76,7 @@ function SignUp({
 }) {
   const [redirectUrl, setRedirectUrl] = useState<string>()
   const path = useCurrentPath()
-  useEffect(() => {
+  useServerEffect(() => {
     if (platform.OS === 'web') {
       setRedirectUrl(window.location.href)
     }
@@ -84,7 +84,12 @@ function SignUp({
   const Comp = action === 'sign in' ? SignInButton : SignUpButton
   return (
     <Font>
-      <Comp mode="modal" signInForceRedirectUrl={redirectUrl} signUpForceRedirectUrl={redirectUrl}>
+      <Comp
+        mode="modal"
+        key={redirectUrl}
+        signInForceRedirectUrl={redirectUrl}
+        signUpForceRedirectUrl={redirectUrl}
+      >
         {children}
       </Comp>
     </Font>

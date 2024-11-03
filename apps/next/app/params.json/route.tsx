@@ -15,7 +15,7 @@ export const paramsJson = z
       })
       .partial(),
   })
-  .describe('Describe your Params repository.')
+  .describe('Describe your Params repository and auto-generate docs.')
 
 const jsonSchema = zodToJsonSchema(paramsJson, 'paramsJson')
 

@@ -7,7 +7,12 @@ export const paramsJsonShape = z
     docs: z.object({
       main: z.string(),
       sidebar: z.record(z.string(), z.union([z.string(), fileTree])),
-      youtube_url: z.string().optional(),
+      youtube_url: z
+        .object({
+          video_id: z.string(),
+          start_time: z.number().optional(),
+        })
+        .optional(),
     }),
     notebook: z
       .object({

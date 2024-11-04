@@ -4,13 +4,16 @@ const paramsJson: Zod.infer<typeof paramsJsonShape> = {
   docs: {
     main: 'readme.md',
     sidebar: {
-      README: 'readme.md',
+      Readme: 'readme.md',
       Introduction: 'introduction.md',
       Installation: 'installation.md',
       Usage: 'usage.md',
       FAQ: 'faq.md',
     },
-    youtube_url: '',
+    youtube_url: {
+      video_id: 'UakqL6Pj9xo',
+      start_time: 252,
+    },
   },
 }
 

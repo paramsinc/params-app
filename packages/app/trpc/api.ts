@@ -1348,10 +1348,15 @@ async function hydrateTokensForGoogleIntegration(current: {
 
 const googleOauthRoutes = {
   googleOauthUrl: authedProcedure
-    .input(z.object({ redirect_url: z.string() }))
+    .input(
+      z.object({
+        redirect_url: z.string(),
+        state: z.object({ redirect: z.string() }),
+      })
+    )
     .output(z.string())
     .query(async ({ ctx, input }) => {
-      return googleOauth.getOauthUrl(input.redirect_url)
+      return googleOauth.getOauthUrl(input.redirect_url, JSON.stringify(input.state))
     }),
   googleOauthExchangeCode: authedProcedure
     .input(z.object({ code: z.string(), redirect_url: z.string(), profile_slug: z.string() }))

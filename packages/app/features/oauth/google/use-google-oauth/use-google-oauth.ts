@@ -10,26 +10,43 @@ maybeCompleteAuthSession()
 
 export default ({ profileSlug }: { profileSlug: string }) => {
   const path = useCurrentPath()
-  const redirectUri = makeRedirectUri({
-    path: path.split('?')[0] ?? '',
+
+  const redirect = makeRedirectUri({
+    path,
   })
 
-  const authUrlQuery = api.googleOauthUrl.useQuery({ redirect_url: redirectUri })
+  const authRedirectUrl = makeRedirectUri({
+    path: 'api/auth/google/callback',
+  })
+
+  const stateParam = useMemo(
+    () => ({
+      redirect,
+    }),
+    [redirect]
+  )
+
+  const authUrlQuery = api.googleOauthUrl.useQuery({
+    redirect_url: authRedirectUrl,
+    state: stateParam,
+  })
 
   const extraParams = useMemo(() => {
     const authUrl = authUrlQuery.data
     if (!authUrl) {
       return undefined
     }
-    return qs.parse(authUrl.split('?')[1] ?? '') as Record<string, string>
-  }, [authUrlQuery.data])
+    return {
+      ...(qs.parse(authUrl.split('?')[1] ?? '') as Record<string, string>),
+      state: JSON.stringify(stateParam),
+    }
+  }, [authUrlQuery.data, stateParam])
 
   const [request, response, promptAsync] = useAuthRequest(
     {
       clientId: env.GOOGLE_CLIENT_ID_WEB,
-      redirectUri,
+      redirectUri: authRedirectUrl,
       extraParams,
-      // important so that the backend can generate the token
       usePKCE: false,
     },
     useMemo(
@@ -45,7 +62,11 @@ export default ({ profileSlug }: { profileSlug: string }) => {
   useEffect(
     function exchangeCodeForTokens() {
       if (code) {
-        exchangeCodeMutation.mutate({ code, redirect_url: redirectUri, profile_slug: profileSlug })
+        exchangeCodeMutation.mutate({
+          code,
+          redirect_url: authRedirectUrl,
+          profile_slug: profileSlug,
+        })
       }
     },
     [code, profileSlug]

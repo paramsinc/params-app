@@ -9,13 +9,14 @@ const createOauth2Client = (redirectUrl?: string) => {
   return new google.auth.OAuth2(json.client_id, json.client_secret, redirectUrl)
 }
 
-function getGoogleOauthUrl(redirectUrl: string) {
+function getGoogleOauthUrl(redirectUrl: string, state?: string) {
   const oauth2Client = createOauth2Client(redirectUrl)
 
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
     scope: signInWithGoogleScopes,
+    state,
   })
 }
 

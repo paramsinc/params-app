@@ -74,3 +74,18 @@ export async function createGoogleCalendarEventForOffer({
 
   return response
 }
+
+export async function cancelCalendarEvent({ eventId }: { eventId: string }) {
+  const calendarClient = google.calendar({
+    version: 'v3',
+    auth,
+  })
+  const res = await calendarClient.events.patch({
+    eventId,
+    requestBody: {
+      status: 'cancelled',
+    },
+  })
+
+  return res.data
+}

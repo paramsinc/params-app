@@ -17,6 +17,7 @@ import { createUser } from 'app/trpc/routes/user'
 import { serverEnv } from 'app/env/env.server'
 import { exampleRepoFiles } from 'app/trpc/routes/repo-files'
 import { paramsJsonShape } from 'app/features/spec/params-json-shape'
+import * as googleCalendar from 'app/vendor/google/google-calendar'
 
 const [firstCdn, ...restCdns] = keys(cdn)
 
@@ -2135,6 +2136,7 @@ export const appRouter = router({
             ...pick('bookings', {
               id: true,
               canceled_at: true,
+              google_calendar_event_id: true,
             }),
             profile_id: profileMembershipSubquery.profile_id,
             organization_id: organizationMembershipSubquery.organization_id,
@@ -2162,6 +2164,12 @@ export const appRouter = router({
           .set({ canceled_at: new Date(), canceled_by_user_id: ctx.auth.userId })
           .where(d.eq(schema.bookings.id, input.id))
           .returning()
+
+        if (booking.google_calendar_event_id) {
+          await googleCalendar.cancelCalendarEvent({
+            eventId: booking.google_calendar_event_id,
+          })
+        }
 
         return updatedBooking?.canceled_at != null
       }),

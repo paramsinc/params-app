@@ -1250,3 +1250,30 @@
 .markdown-body > *:first-child > .heading-element:first-child {
   margin-top: 0 !important;
 }
+
+/* Custom Fixes */
+.markdown-body pre {
+  display: block;
+}
+
+.markdown-body ol {
+  display: block;
+  list-style-type: decimal;
+}
+
+.markdown-body ul {
+  display: block;
+}
+
+.markdown-body li {
+  display: list-item;
+}
+
+.markdown-body li::marker {
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+  text-indent: 0px !important;
+  text-align: start !important;
+  text-align-last: start !important;
+}

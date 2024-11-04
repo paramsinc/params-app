@@ -14,7 +14,7 @@ import './page.css'
 import { Highlight, themes } from 'prism-react-renderer'
 import { Image } from 'app/ds/Image'
 import { Lucide } from 'app/ds/Lucide'
-import { Tabs } from 'app/ds/Tabs'
+
 import { Scroll } from 'app/ds/Scroll'
 import { styled } from 'app/ds/styled'
 import { ColabIcon } from 'app/ds/icons/colab'
@@ -26,11 +26,11 @@ import { Link } from 'app/ds/Link'
 const { useParams } = createParam<{
   profileSlug: string
   repoSlug: string
-  tab: 'readme' | 'files'
+  tab: 'docs' | 'files'
   path?: string[]
 }>()
 
-export function RepositoryDetailPublicPage({ tab }: { tab?: 'readme' | 'files' }) {
+export function RepositoryDetailPublicPage({ tab }: { tab?: 'docs' | 'files' }) {
   const {
     params: { profileSlug, repoSlug },
   } = useParams()
@@ -61,14 +61,16 @@ const Sidebar = styled(View, {
 function RepositoryDetailPublicPageContent({
   profileSlug,
   repoSlug,
-  tab = 'readme',
+  tab = 'docs',
 }: {
   profileSlug: string
   repoSlug: string
-  tab?: 'readme' | 'files'
+  tab?: 'docs' | 'files'
 }) {
   const repoQuery = api.repoBySlug.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
-  // Mock files dictionary
+
+  const paramsJsonQuery = api.repo.paramsJson.useQuery({ profileSlug, repoSlug })
+  const readmeQuery = api.repo.readme.useQuery({ profileSlug, repoSlug })
 
   if (!repoQuery.data) {
     return null
@@ -157,18 +159,20 @@ function RepositoryDetailPublicPageContent({
         }}
       />
       <Page.Scroll>
-        <Page.Content maw="100%" gap="$3" $gtLg={{ row: true }}>
-          <Sidebar narrow dsp="none" $gtLg={{ display: 'flex' }}>
-            <DocsSidebar />
-          </Sidebar>
-          <View $gtLg={{ grow: true }} gap="$3">
-            <Card>
-              <View row ai="center">
-                <Text flexGrow={1} flexBasis={2} bold fontSize={24} fontFamily="$mono">
-                  @{profileSlug}/{repo.slug}
-                </Text>
-              </View>
-            </Card>
+        <Page.Content maw="100%" gap="$3">
+          <Card row gap="$3" flexWrap="wrap" jbtwn>
+            <View flex={1}>
+              <Text
+                flexGrow={1}
+                flexBasis={2}
+                bold
+                fontSize={18}
+                $gtSm={{ fontSize: 24 }}
+                fontFamily="$mono"
+              >
+                @{profileSlug}/{repo.slug}
+              </Text>
+            </View>
             <View row flexWrap="wrap" gap="$2">
               {repo.github_url != null && (
                 <>
@@ -211,75 +215,104 @@ function RepositoryDetailPublicPageContent({
                 </>
               )}
             </View>
-            <View $gtLg={{ dsp: 'none' }}>{profileCard}</View>
+          </Card>
+          <View $gtLg={{ dsp: 'none' }}>{profileCard}</View>
 
-            <View row bbw={1} bbc="$borderColor">
-              <Link href={`/@${profileSlug}/${repoSlug}`}>
-                <Tab active={tab === 'readme'}>
-                  <Text>README</Text>
-                </Tab>
-              </Link>
+          <View row bbw={1} bbc="$borderColor">
+            <Link href={`/@${profileSlug}/${repoSlug}`}>
+              <Tab active={tab === 'docs'}>
+                <Text>Docs</Text>
+              </Tab>
+            </Link>
 
-              <Link href={`/@${profileSlug}/${repoSlug}/files`}>
-                <Tab active={tab === 'files'}>
-                  <Text>Files</Text>
-                </Tab>
-              </Link>
-            </View>
-
-            {tab === 'readme' && (
-              <View gap="$3">
-                <View aspectRatio={16 / 9} bg="$borderColor" br="$3" ov="hidden">
-                  {!!profile.image_vendor && !!profile.image_vendor_id && (
-                    <Image
-                      fill
-                      loader={profile.image_vendor}
-                      src={profile.image_vendor_id}
-                      alt={profile.name}
-                      contentFit="cover"
-                      sizes="(max-width: 1200px) 100vw, 60vw"
-                      priority
-                      style={{
-                        transform: 'rotateY(180deg)',
-                      }}
-                    />
-                  )}
-                  <View stretch center>
-                    <ComingSoon>
-                      <View br="$rounded" box={75} bg="white" center pl={2}>
-                        <Lucide.Play color="black" size={29} />
-                      </View>
-                    </ComingSoon>
-                  </View>
-                </View>
-                <View className="markdown-body">
-                  {testFile.map((block, i) => {
-                    return (
-                      <Fragment key={i}>
-                        {block.language === 'markdown' ? (
-                          i === 0 ? null : (
-                            <Markdown>{block.content}</Markdown>
-                          )
-                        ) : (
-                          <Codeblock content={block.content} language={block.language} />
-                        )}
-                      </Fragment>
-                    )
-                  })}
-                </View>
+            <Link href={`/@${profileSlug}/${repoSlug}/files`}>
+              <Tab active={tab === 'files'}>
+                <Text>Files</Text>
+              </Tab>
+            </Link>
+          </View>
+          <>
+            {tab === 'docs' && (
+              <DocsPage profileSlug={profileSlug} repoSlug={repoSlug}>
+                {profileCard}
+              </DocsPage>
+            )}
+            {tab === 'files' && (
+              <View $gtLg={{ grow: true }} gap="$3">
+                <FilesPage profileSlug={profileSlug} repoSlug={repoSlug} />
               </View>
             )}
-
-            {tab === 'files' && <FilesPage profileSlug={profileSlug} repoSlug={repoSlug} />}
-          </View>
-          {tab === 'readme' && (
-            <Sidebar d="none" $gtLg={{ display: 'flex' }}>
-              {profileCard}
-            </Sidebar>
-          )}
+          </>
         </Page.Content>
       </Page.Scroll>
     </Page.Root>
+  )
+}
+
+function DocsPage({
+  profileSlug,
+  repoSlug,
+  children,
+}: {
+  profileSlug: string
+  repoSlug: string
+  children: React.ReactNode
+}) {
+  const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
+  const readmeQuery = api.repo.readme.useQuery({ profileSlug, repoSlug })
+  const filesQuery = api.repo.files.useQuery({ profileSlug, repoSlug })
+  const paramsJsonQuery = api.repo.paramsJson.useQuery({ profileSlug, repoSlug })
+
+  const mainDocsFile = paramsJsonQuery.data?.docs.main.split('/')
+
+  const {
+    params: { path = mainDocsFile },
+  } = useParams()
+
+  const file = filesQuery.data?.[path?.join('/') ?? ''] ?? readmeQuery.data
+
+  if (!profileQuery.data) {
+    return null
+  }
+  const profile = profileQuery.data
+  const videoCard = path?.join('/') === mainDocsFile?.join('/') && (
+    <View aspectRatio={16 / 9} bg="$borderColor" br="$3" ov="hidden">
+      {!!profile.image_vendor && !!profile.image_vendor_id && (
+        <Image
+          fill
+          loader={profile.image_vendor}
+          src={profile.image_vendor_id}
+          alt={profile.name}
+          contentFit="cover"
+          sizes="(max-width: 1200px) 100vw, 60vw"
+          priority
+          style={{
+            transform: 'rotateY(180deg)',
+          }}
+        />
+      )}
+      <View stretch center>
+        <ComingSoon>
+          <View br="$rounded" box={75} bg="white" center pl={2}>
+            <Lucide.Play color="black" size={29} />
+          </View>
+        </ComingSoon>
+      </View>
+    </View>
+  )
+  return (
+    <View w="100%" gap="$3" $gtLg={{ row: true, gap: '$4', pt: '$3' }}>
+      <Sidebar narrow dsp="none" $gtLg={{ display: 'flex' }}>
+        <DocsSidebar profileSlug={profileSlug} repoSlug={repoSlug} />
+      </Sidebar>
+      <View gap="$3" $gtLg={{ grow: true }}>
+        {videoCard}
+        <View>{file ? <MarkdownRenderer>{file}</MarkdownRenderer> : null}</View>
+      </View>
+      <Sidebar d="none" $gtLg={{ display: 'flex' }}>
+        {children}
+      </Sidebar>
+    </View>
   )
 }
 
@@ -295,8 +328,6 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
   const readmeFileName = Object.keys(files).find(
     (fileName) => fileName.toLowerCase() === 'readme.md'
   )
-
-  const [, setSelectedFile] = useState<string | null>()
 
   const selectedFileName = path?.join('/')
 
@@ -366,7 +397,7 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
             </Breadcrumbs>
             <View>
               {language === 'markdown' ? (
-                <Markdown>{selectedFile}</Markdown>
+                <MarkdownRenderer>{selectedFile}</MarkdownRenderer>
               ) : (
                 <Codeblock lineNumbers content={selectedFile} language={language} />
               )}
@@ -453,30 +484,45 @@ const Tab = styled(View, {
   cur: 'pointer',
 })
 
-function DocsSidebar() {
-  const pages = ['Introduction', 'Installation', 'Usage', 'FAQ']
-  const selectedPage = pages[0]
+function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
+  const paramsJsonQuery = api.repo.paramsJson.useQuery({ profileSlug, repoSlug })
+  const {
+    params: { path },
+  } = useParams()
+
+  if (!paramsJsonQuery.data) {
+    return null
+  }
+  const paramsJson = paramsJsonQuery.data
+  const selectedPage = path?.join('/') ?? paramsJson.docs.main
+
+  const pages = Object.keys(paramsJson.docs.sidebar) // TODO support nested pages
   return (
     <Card p={0} gap={0} py="$2">
       <Text px="$3" bold py="$3" pt="$2" bbw={1} bbc="$borderColor">
         Documentation
       </Text>
       {pages.map((page) => {
-        const isSelected = page === selectedPage
+        const pagePath = paramsJson.docs.sidebar[page]! // TODO support nested pages
+        const isSelected = pagePath === selectedPage
         return (
-          <View ai="flex-start" key={page}>
-            <ComingSoon placement="right">
-              <Text
-                py={'$2'}
-                px="$3"
-                bold={isSelected}
-                color={isSelected ? '$color12' : '$color11'}
-                als="flex-start"
-              >
-                {page}
-              </Text>
-            </ComingSoon>
-          </View>
+          <Link href={`/@${profileSlug}/${repoSlug}/docs/${pagePath}`} key={page}>
+            <Text
+              py={'$2'}
+              px="$3"
+              bold={isSelected}
+              color={isSelected ? '$color12' : '$color11'}
+              als="flex-start"
+              hoverStyle={{
+                color: '$color12',
+              }}
+              lineHeight={18}
+              animation="200ms"
+              animateOnly={['color']}
+            >
+              {page}
+            </Text>
+          </Link>
         )
       })}
     </Card>
@@ -492,4 +538,8 @@ function ComingSoon({ children, ...props }: React.ComponentProps<typeof Tooltip>
       </Tooltip.Content>
     </Tooltip>
   )
+}
+
+function MarkdownRenderer({ children }: { children: string }) {
+  return <Markdown className="markdown-body">{children}</Markdown>
 }

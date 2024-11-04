@@ -27,13 +27,16 @@ const { useParams } = createParam<{
   profileSlug: string
   repoSlug: string
   tab: 'readme' | 'files'
+  path?: string[]
 }>()
 
-export function RepositoryDetailPublicPage() {
+export function RepositoryDetailPublicPage({ tab }: { tab?: 'readme' | 'files' }) {
   const {
     params: { profileSlug, repoSlug },
   } = useParams()
-  return <RepositoryDetailPublicPageContent profileSlug={profileSlug} repoSlug={repoSlug} />
+  return (
+    <RepositoryDetailPublicPageContent profileSlug={profileSlug} repoSlug={repoSlug} tab={tab} />
+  )
 }
 
 const Sidebar = styled(View, {
@@ -58,15 +61,12 @@ const Sidebar = styled(View, {
 function RepositoryDetailPublicPageContent({
   profileSlug,
   repoSlug,
+  tab = 'readme',
 }: {
   profileSlug: string
   repoSlug: string
+  tab?: 'readme' | 'files'
 }) {
-  const {
-    params: { tab = 'readme' },
-    setParams,
-  } = useParams()
-
   const repoQuery = api.repoBySlug.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
   // Mock files dictionary
 
@@ -214,12 +214,17 @@ function RepositoryDetailPublicPageContent({
             <View $gtLg={{ dsp: 'none' }}>{profileCard}</View>
 
             <View row bbw={1} bbc="$borderColor">
-              <Tab active={tab === 'readme'} onPress={() => setParams({ tab: 'readme' })}>
-                <Text>README</Text>
-              </Tab>
-              <Tab active={tab === 'files'} onPress={() => setParams({ tab: 'files' })}>
-                <Text>Files</Text>
-              </Tab>
+              <Link href={`/@${profileSlug}/${repoSlug}`}>
+                <Tab active={tab === 'readme'}>
+                  <Text>README</Text>
+                </Tab>
+              </Link>
+
+              <Link href={`/@${profileSlug}/${repoSlug}/files`}>
+                <Tab active={tab === 'files'}>
+                  <Text>Files</Text>
+                </Tab>
+              </Link>
             </View>
 
             {tab === 'readme' && (
@@ -281,13 +286,19 @@ function RepositoryDetailPublicPageContent({
 function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
   const filesQuery = api.repo.files.useQuery({ profileSlug, repoSlug })
 
+  const {
+    params: { path },
+  } = useParams()
+
   const files = filesQuery.data ?? {}
 
   const readmeFileName = Object.keys(files).find(
     (fileName) => fileName.toLowerCase() === 'readme.md'
   )
 
-  const [selectedFileName, setSelectedFile] = useState<string | null>()
+  const [, setSelectedFile] = useState<string | null>()
+
+  const selectedFileName = path?.join('/')
 
   console.log('[files]', { selectedFileName, readmeFileName })
 
@@ -312,21 +323,21 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
         .map((fileName) => {
           const FileIcon = getFileIcon(fileName)
           return (
-            <View
-              key={fileName}
-              onPress={() => setSelectedFile(fileName)}
-              flexDirection="row"
-              alignItems="center"
-              padding="$2"
-              backgroundColor={selectedFileName === fileName ? '$backgroundFocus' : 'transparent'}
-              hoverStyle={{ backgroundColor: '$backgroundHover' }}
-              cursor="pointer"
-            >
-              <FileIcon size={18} color="$color" />
-              <Text marginLeft="$2" numberOfLines={1} ellipsizeMode="middle" fontFamily="$mono">
-                {fileName}
-              </Text>
-            </View>
+            <Link href={`/@${profileSlug}/${repoSlug}/files/${fileName}`} key={fileName}>
+              <View
+                flexDirection="row"
+                alignItems="center"
+                padding="$2"
+                backgroundColor={selectedFileName === fileName ? '$backgroundFocus' : 'transparent'}
+                hoverStyle={{ backgroundColor: '$backgroundHover' }}
+                cursor="pointer"
+              >
+                <FileIcon size={18} color="$color" />
+                <Text marginLeft="$2" numberOfLines={1} ellipsizeMode="middle" fontFamily="$mono">
+                  {fileName}
+                </Text>
+              </View>
+            </Link>
           )
         })}
     </View>
@@ -343,9 +354,11 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
         {selectedFile != null ? (
           <View gap="$3">
             <Breadcrumbs>
-              <Breadcrumbs.Item onPress={() => setSelectedFile(null)}>
-                <Breadcrumbs.Title>Files</Breadcrumbs.Title>
-              </Breadcrumbs.Item>
+              <Link href={`/@${profileSlug}/${repoSlug}/files`}>
+                <Breadcrumbs.Item>
+                  <Breadcrumbs.Title>Files</Breadcrumbs.Title>
+                </Breadcrumbs.Item>
+              </Link>
               <Breadcrumbs.Separator />
               <Breadcrumbs.Item>
                 <Breadcrumbs.Title>{selectedFileName}</Breadcrumbs.Title>

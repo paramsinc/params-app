@@ -6,7 +6,7 @@ import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import testFile from 'app/features/repository/detail-public/python-parser/test-file'
 import { createParam } from 'app/navigation/use-params'
-import { Fragment, useState } from 'app/react'
+import { Fragment, useEffect, useState } from 'app/react'
 import { api } from 'app/trpc/client'
 import Markdown from 'react-markdown'
 import './github-markdown.css'
@@ -22,6 +22,7 @@ import { Breadcrumbs } from 'app/ds/Breadcrumbs'
 import { useMedia } from 'app/ds/useMedia'
 import { Tooltip } from 'app/ds/Tooltip'
 import { Link } from 'app/ds/Link'
+import { useCurrentPath } from 'app/navigation/use-pathname'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -307,7 +308,13 @@ function DocsPage({
       </Sidebar>
       <View gap="$3" $gtLg={{ grow: true }}>
         {videoCard}
-        <View>{file ? <MarkdownRenderer>{file}</MarkdownRenderer> : null}</View>
+        <View>
+          {file ? (
+            <MarkdownRenderer linkPrefix={`/@${profileSlug}/${repoSlug}/docs`}>
+              {file}
+            </MarkdownRenderer>
+          ) : null}
+        </View>
       </View>
       <Sidebar d="none" $gtLg={{ display: 'flex' }}>
         {children}
@@ -397,7 +404,9 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
             </Breadcrumbs>
             <View>
               {language === 'markdown' ? (
-                <MarkdownRenderer>{selectedFile}</MarkdownRenderer>
+                <MarkdownRenderer linkPrefix={`/@${profileSlug}/${repoSlug}/files`}>
+                  {selectedFile}
+                </MarkdownRenderer>
               ) : (
                 <Codeblock lineNumbers content={selectedFile} language={language} />
               )}
@@ -540,6 +549,33 @@ function ComingSoon({ children, ...props }: React.ComponentProps<typeof Tooltip>
   )
 }
 
-function MarkdownRenderer({ children }: { children: string }) {
-  return <Markdown className="markdown-body">{children}</Markdown>
+function MarkdownRenderer({ children, linkPrefix }: { children: string; linkPrefix: string }) {
+  const path = useCurrentPath()
+  return (
+    <Markdown
+      className="markdown-body"
+      components={{
+        a(props) {
+          const isAbsolute = props.href?.startsWith('http')
+          let url = props.href
+          if (!isAbsolute) {
+            let href = props.href
+            if (href?.startsWith('/')) {
+              href = href.slice(1)
+            }
+            url = linkPrefix + '/' + href
+          }
+          return (
+            <Link
+              {...(props as any)}
+              href={url ?? '#'}
+              target={isAbsolute ? '_blank' : undefined}
+            />
+          )
+        },
+      }}
+    >
+      {children}
+    </Markdown>
+  )
 }

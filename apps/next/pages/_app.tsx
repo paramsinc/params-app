@@ -26,7 +26,10 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 const { APP_NAME } = env
 
 function MyApp({ Component, pageProps, router }: SolitoAppProps) {
-  const Layout = router.pathname.startsWith('/dashboard') ? DashboardLayout : Fragment
+  const Layout =
+    router.pathname.startsWith('/dashboard') || router.pathname.startsWith('/bookings')
+      ? DashboardLayout
+      : Fragment
 
   return (
     <div style={{ display: 'contents' }}>

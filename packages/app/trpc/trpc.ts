@@ -1,7 +1,9 @@
 import { initTRPC, TRPCError } from '@trpc/server'
 import { TrpcContext } from './context'
-import { db } from 'app/db/db'
+import { db, schema, d } from 'app/db/db'
 import { ZodError } from 'zod'
+import { pick } from 'app/trpc/pick'
+import { publicSchema } from 'app/trpc/publicSchema'
 
 /**
  * Initialization of tRPC backend

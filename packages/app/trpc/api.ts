@@ -2018,6 +2018,61 @@ export const appRouter = router({
       pong: '🏓',
     }
   }),
+  bookings: router({
+    list: authedProcedure.query(async ({ ctx }) => {
+      const bookings = await db
+        .select({
+          booking: pick('bookings', {
+            id: true,
+            start_datetime: true,
+            duration_minutes: true,
+            timezone: true,
+            created_at: true,
+            stripe_payment_intent_id: true,
+          }),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+          organization: pick('organizations', {
+            id: true,
+            name: true,
+          }),
+        })
+        .from(schema.bookings)
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.bookings.profile_id))
+        .innerJoin(
+          schema.organizations,
+          d.eq(schema.organizations.id, schema.bookings.organization_id)
+        )
+        .where(
+          d.or(
+            d.exists(
+              db
+                .select()
+                .from(schema.profileMembers)
+                .where(
+                  d.and(
+                    d.eq(schema.profileMembers.user_id, ctx.auth.userId),
+                    d.eq(schema.profileMembers.profile_id, schema.profiles.id)
+                  )
+                )
+            ),
+            d.exists(
+              db
+                .select()
+                .from(schema.organizationMembers)
+                .where(
+                  d.and(
+                    d.eq(schema.organizationMembers.user_id, ctx.auth.userId),
+                    d.eq(schema.organizationMembers.organization_id, schema.organizations.id)
+                  )
+                )
+            )
+          )
+        )
+        .orderBy(d.desc(schema.bookings.created_at))
+
+      return bookings
+    }),
+  }),
 })
 
 export type AppRouter = typeof appRouter

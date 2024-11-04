@@ -79,7 +79,9 @@ export const ModalDialog = styled(View, {
   },
   variants: {
     autoHeight: {
-      true: {},
+      true: {
+        height: 'auto',
+      },
       false: {
         $gtMd: {
           maxHeight: 800,

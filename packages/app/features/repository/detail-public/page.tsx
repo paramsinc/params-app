@@ -23,6 +23,7 @@ import { useMedia } from 'app/ds/useMedia'
 import { Tooltip } from 'app/ds/Tooltip'
 import { Link } from 'app/ds/Link'
 import { useCurrentPath } from 'app/navigation/use-pathname'
+import { Modal } from 'app/ds/Modal'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -77,7 +78,7 @@ function RepositoryDetailPublicPageContent({
     return null
   }
   const repo = repoQuery.data
-  const profile = repo.profile
+  const paramsJson = paramsJsonQuery.data
 
   const profileCard = (
     <Card>
@@ -119,7 +120,7 @@ function RepositoryDetailPublicPageContent({
       </View>
 
       {!!repo.profile.bio && (
-        <View gap="$3">
+        <View gap="$3" $lg={{ dsp: 'none' }}>
           <View h={2} bg="$borderColor" />
           <View gap="$2">
             <Text color="$color11" bold>
@@ -275,31 +276,64 @@ function DocsPage({
   if (!profileQuery.data) {
     return null
   }
+  const paramsJson = paramsJsonQuery.data
   const profile = profileQuery.data
-  const videoCard = path?.join('/') === mainDocsFile?.join('/') && (
-    <View aspectRatio={16 / 9} bg="$borderColor" br="$3" ov="hidden">
-      {!!profile.image_vendor && !!profile.image_vendor_id && (
-        <Image
-          fill
-          loader={profile.image_vendor}
-          src={profile.image_vendor_id}
-          alt={profile.name}
-          contentFit="cover"
-          sizes="(max-width: 1200px) 100vw, 60vw"
-          priority
-          style={{
-            transform: 'rotateY(180deg)',
-          }}
-        />
-      )}
-      <View stretch center>
-        <ComingSoon>
-          <View br="$rounded" box={75} bg="white" center pl={2}>
-            <Lucide.Play color="black" size={29} />
+  const videoCard = path?.join('/') === mainDocsFile?.join('/') && paramsJson?.docs.youtube && (
+    <Modal>
+      <Modal.Trigger>
+        <View aspectRatio={16 / 9} bg="$borderColor" br="$3" ov="hidden" group cursor="pointer">
+          {!!paramsJson.docs.youtube.thumbnail_url && (
+            <Image
+              fill
+              src={paramsJson.docs.youtube.thumbnail_url}
+              unoptimized
+              alt={profile.name}
+              contentFit="cover"
+              sizes="(max-width: 1200px) 100vw, 60vw"
+              priority
+            />
+          )}
+          <View
+            stretch
+            center
+            pointerEvents="none"
+            animation="100ms"
+            scale={1}
+            $group-hover={{
+              scale: 1.1,
+            }}
+            $group-press={{
+              scale: 1,
+            }}
+          >
+            <View br="$rounded" box={75} bg="white" center pl={2}>
+              <Lucide.Play color="black" size={29} />
+            </View>
           </View>
-        </ComingSoon>
-      </View>
-    </View>
+        </View>
+      </Modal.Trigger>
+      <Modal.Content>
+        <Modal.Backdrop />
+        <Modal.Dialog autoHeight>
+          <View aspectRatio={16 / 9}>
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${paramsJson.docs.youtube.video_id}?start=${
+                paramsJson.docs.youtube.start_time ?? 0
+              }&autoplay=1&vq=hd1080p;hd=1&modestbranding=1&autohide=1&showinfo=0&rel=0`}
+              allowFullScreen
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              frameBorder="0"
+              style={{
+                outline: 'none',
+              }}
+            />
+          </View>
+        </Modal.Dialog>
+      </Modal.Content>
+    </Modal>
   )
   return (
     <View w="100%" gap="$3" $gtLg={{ row: true, gap: '$4', pt: '$3' }}>

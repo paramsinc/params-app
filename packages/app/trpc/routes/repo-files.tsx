@@ -10,9 +10,11 @@ const paramsJson: Zod.infer<typeof paramsJsonShape> = {
       Usage: 'usage.md',
       FAQ: 'faq.md',
     },
-    youtube_url: {
+    youtube: {
       video_id: 'UakqL6Pj9xo',
       start_time: 252,
+      thumbnail_url:
+        'https://res.cloudinary.com/dof5uvynu/image/upload/t_2500px/trpc-uploads/djcb4hsicbqgc1kwee5l',
     },
   },
 }

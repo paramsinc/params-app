@@ -4,6 +4,7 @@ const fileTree = z.record(z.string(), z.union([z.string(), z.record(z.string(), 
 
 export const paramsJsonShape = z
   .object({
+    $schema: z.string().optional(),
     docs: z.object({
       main: z.string(),
       sidebar: z.record(z.string(), z.union([z.string(), fileTree])),

@@ -1,6 +1,7 @@
 import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 
 const paramsJson: Zod.infer<typeof paramsJsonShape> = {
+  $schema: 'https://beta.params.com/params.json',
   docs: {
     main: 'readme.md',
     sidebar: {

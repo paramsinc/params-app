@@ -7,40 +7,37 @@ import { Card } from 'app/ds/Form/layout'
 import { api } from 'app/trpc/client'
 import { styled } from 'app/ds/styled'
 import { Image } from 'app/ds/Image'
+import { UserGate } from 'app/features/user/gate'
+import { Auth } from 'app/auth'
 
 export function BookingsPage() {
-  const bookingsQuery = api.bookings.list.useQuery()
-
-  if (!bookingsQuery.data) {
-    return null
-  }
+  const me = Auth.useUser()
+  const bookingsQuery = api.bookings.list.useQuery(undefined, {
+    enabled: me.isSignedIn === true,
+  })
 
   return (
-    <Page.Root>
-      <Page.Scroll>
-        <Page.Content gap="$3">
-          <Card>
-            <Text bold fontSize={24}>
-              Your Bookings
-            </Text>
-          </Card>
+    <UserGate>
+      <Page.Root>
+        <Page.Scroll>
+          <Page.Content gap="$3">
+            <Card>
+              <Text bold fontSize={24}>
+                Your Bookings
+              </Text>
+            </Card>
 
-          <View gap="$3">
-            {bookingsQuery.data.map((booking) => (
-              <BookingRow key={booking.booking.id} booking={booking} />
-            ))}
-          </View>
-        </Page.Content>
-      </Page.Scroll>
-    </Page.Root>
+            <View gap="$3">
+              {bookingsQuery.data?.map((booking) => (
+                <BookingRow key={booking.booking.id} booking={booking} />
+              ))}
+            </View>
+          </Page.Content>
+        </Page.Scroll>
+      </Page.Root>
+    </UserGate>
   )
 }
-
-const ProfileImage = styled(Image, {
-  width: 50,
-  height: 50,
-  borderRadius: '$rounded',
-})
 
 type BookingRowProps = {
   booking: NonNullable<ReturnType<typeof api.bookings.list.useQuery>['data']>[number]
@@ -51,20 +48,34 @@ function BookingRow({ booking }: BookingRowProps) {
   const endTime = startTime.plus({ minutes: booking.booking.duration_minutes })
 
   return (
-    <Card flexDirection="row" alignItems="center" gap="$3" padding="$3">
+    <Card flexDirection="row" gap="$3" padding="$3">
       {booking.profile.image_vendor_id && booking.profile.image_vendor && (
-        <ProfileImage
+        <Image
           src={booking.profile.image_vendor_id}
           alt={booking.profile.name}
+          loader={booking.profile.image_vendor}
+          width={50}
+          height={50}
           contentFit="cover"
         />
       )}
 
       <View gap="$2" grow>
         <Text bold>{booking.profile.name}</Text>
-        <Text color="$color11">
-          {startTime.toLocaleString(DateTime.DATETIME_FULL)} -{' '}
-          {endTime.toLocaleString(DateTime.TIME_SIMPLE)}
+        <Text>
+          {startTime.toLocaleString({
+            dateStyle: 'medium',
+          })}
+        </Text>
+        <Text>
+          {startTime.toLocaleString({
+            timeStyle: 'short',
+          })}
+          {' - '}
+          {endTime.toLocaleString({
+            timeStyle: 'short',
+          })}{' '}
+          ({startTime.toFormat('ZZZZ')})
         </Text>
         <Text color="$color10">Booked by {booking.organization.name}</Text>
       </View>

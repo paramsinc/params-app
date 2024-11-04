@@ -73,16 +73,19 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
       <View gap="$2" grow>
         {booking.canceled_at != null && (
           <Text color="$color11" theme="red">
-            Canceled {DateTime.fromISO(booking.canceled_at).toRelative()}
+            Canceled ({DateTime.fromISO(booking.canceled_at).toLocaleString()}
+            {booking.canceled_by &&
+              ` by ${booking.canceled_by.first_name} ${booking.canceled_by.last_name}`}
+            )
           </Text>
         )}
         <Text bold>{booking.profile.name}</Text>
-        <Text>
+        <Text textDecorationLine={booking.canceled_at != null ? 'line-through' : 'none'}>
           {startTime.toLocaleString({
             dateStyle: 'medium',
           })}
         </Text>
-        <Text>
+        <Text textDecorationLine={booking.canceled_at != null ? 'line-through' : 'none'}>
           {startTime.toLocaleString({
             timeStyle: 'short',
           })}

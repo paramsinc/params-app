@@ -271,7 +271,19 @@ function DocsPage({
     params: { path = mainDocsFile },
   } = useParams()
 
-  const file = filesQuery.data?.[path?.join('/') ?? ''] ?? readmeQuery.data
+  const filePath = path?.join('/')
+
+  const file = filesQuery.data?.[filePath ?? ''] ?? readmeQuery.data
+
+  const fileKeys = Object.keys(paramsJsonQuery.data?.docs.sidebar ?? {})
+
+  const fileIndex = Object.values(paramsJsonQuery.data?.docs.sidebar ?? {}).indexOf(filePath ?? '')
+
+  const nextFileName = fileKeys[fileIndex + 1]
+  const prevFileName = fileKeys[fileIndex - 1]
+
+  const nextFilePath = nextFileName ? paramsJsonQuery.data?.docs.sidebar[nextFileName] : null
+  const prevFilePath = prevFileName ? paramsJsonQuery.data?.docs.sidebar[prevFileName] : null
 
   if (!profileQuery.data) {
     return null
@@ -281,7 +293,15 @@ function DocsPage({
   const videoCard = path?.join('/') === mainDocsFile?.join('/') && paramsJson?.docs.youtube && (
     <Modal>
       <Modal.Trigger>
-        <View aspectRatio={16 / 9} bg="$borderColor" br="$3" ov="hidden" group cursor="pointer">
+        <View
+          zi={1}
+          aspectRatio={16 / 9}
+          bg="$borderColor"
+          br="$3"
+          ov="hidden"
+          group
+          cursor="pointer"
+        >
           {!!paramsJson.docs.youtube.thumbnail_url && (
             <Image
               fill
@@ -335,6 +355,7 @@ function DocsPage({
       </Modal.Content>
     </Modal>
   )
+
   return (
     <View w="100%" gap="$3" $gtLg={{ row: true, gap: '$4', pt: '$3' }}>
       <Sidebar narrow dsp="none" $gtLg={{ display: 'flex' }}>
@@ -348,6 +369,26 @@ function DocsPage({
               {file}
             </MarkdownRenderer>
           ) : null}
+        </View>
+        <View row gap="$3" jc="space-between">
+          <View>
+            {prevFilePath && (
+              <Link href={`/@${profileSlug}/${repoSlug}/docs/${prevFilePath}`}>
+                <Button>
+                  <ButtonIcon icon={Lucide.ArrowLeft} />
+                  <ButtonText>{prevFileName ?? 'Previous'}</ButtonText>
+                </Button>
+              </Link>
+            )}
+          </View>
+          {nextFilePath && (
+            <Link href={`/@${profileSlug}/${repoSlug}/docs/${nextFilePath}`}>
+              <Button>
+                <ButtonIcon icon={Lucide.ArrowRight} />
+                <ButtonText>{nextFileName ?? 'Next'}</ButtonText>
+              </Button>
+            </Link>
+          )}
         </View>
       </View>
       <Sidebar d="none" $gtLg={{ display: 'flex' }}>

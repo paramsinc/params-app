@@ -75,7 +75,7 @@ function CustomLogo({
 
   const text = (content: React.ReactNode) => {
     return (
-      <Text lineHeight={height} fontSize={height} bold>
+      <Text lineHeight={height} fontSize={height} bold fontFamily="$mono">
         {content}
       </Text>
     )

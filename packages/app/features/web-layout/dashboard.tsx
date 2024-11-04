@@ -12,9 +12,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouter().pathname
   const links = [
     {
-      label: 'Profiles',
+      label: 'My Profiles',
       href: '/dashboard/profiles',
       isActive: pathname.startsWith('/dashboard/profiles'),
+    },
+    {
+      label: 'My Bookings',
+      href: '/dashboard/bookings',
+      isActive: pathname.startsWith('/dashboard/bookings') || pathname.startsWith('/bookings'),
     },
   ]
   const { hasLoaded, isSignedIn } = Auth.useUser()
@@ -24,10 +29,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <>
           {isSignedIn ? (
             <>
-              <View bbw={1} boc="$borderColor">
+              <View bbw={1} boc="$borderColor" row px="$2">
                 {links.map((link) => (
                   <Link href={link.href} key={link.href}>
-                    <View py="$2" px="$3">
+                    <View py="$2" px="$2">
                       <Text
                         bold
                         textDecorationLine="underline"
@@ -79,7 +84,7 @@ const MeGate = ({ children }: { children: React.ReactNode }) => {
 
         <ErrorCard error={createMe.error} />
 
-        <Button themeInverse onPress={() => createMe.mutate()} loading={createMe.isPending}>
+        <Button themeInverse onPress={() => createMe.mutate({})} loading={createMe.isPending}>
           <ButtonText>Continue</ButtonText>
         </Button>
       </EmptyCard>

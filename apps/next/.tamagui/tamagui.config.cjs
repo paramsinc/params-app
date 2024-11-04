@@ -826,21 +826,21 @@ var require_constants = __commonJS({
       isIos: /* @__PURE__ */ __name(() => isIos2, "isIos"),
       isServer: /* @__PURE__ */ __name(() => isServer3, "isServer"),
       isTouchable: /* @__PURE__ */ __name(() => isTouchable3, "isTouchable"),
-      isWeb: /* @__PURE__ */ __name(() => isWeb8, "isWeb"),
+      isWeb: /* @__PURE__ */ __name(() => isWeb7, "isWeb"),
       isWebTouchable: /* @__PURE__ */ __name(() => isWebTouchable3, "isWebTouchable"),
       isWindowDefined: /* @__PURE__ */ __name(() => isWindowDefined2, "isWindowDefined"),
       useIsomorphicLayoutEffect: /* @__PURE__ */ __name(() => useIsomorphicLayoutEffect3, "useIsomorphicLayoutEffect")
     });
     module2.exports = __toCommonJS2(constants_exports);
     var import_react49 = __toESM2(require("react"));
-    var isWeb8 = true;
+    var isWeb7 = true;
     var isWindowDefined2 = typeof window < "u";
-    var isServer3 = isWeb8 && !isWindowDefined2;
-    var isClient4 = isWeb8 && isWindowDefined2;
+    var isServer3 = isWeb7 && !isWindowDefined2;
+    var isClient4 = isWeb7 && isWindowDefined2;
     var useIsomorphicLayoutEffect3 = isServer3 ? import_react49.default.useEffect : import_react49.default.useLayoutEffect;
     var isChrome3 = typeof navigator < "u" && /Chrome/.test(navigator.userAgent || "");
     var isWebTouchable3 = isClient4 && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-    var isTouchable3 = !isWeb8 || isWebTouchable3;
+    var isTouchable3 = !isWeb7 || isWebTouchable3;
     var isAndroid4 = false;
     var isIos2 = false;
     var currentPlatform2 = "web";
@@ -1834,11 +1834,11 @@ var require_Collection = __commonJS({
     module2.exports = __toCommonJS2(Collection_exports);
     var import_compose_refs25 = require_cjs12();
     var import_constants43 = require_cjs6();
-    var import_core60 = require("@tamagui/core");
+    var import_core59 = require("@tamagui/core");
     var import_react49 = __toESM2(require("react"));
     var import_jsx_runtime63 = require("react/jsx-runtime");
     function createCollection2(name) {
-      const { Provider: CollectionProviderImpl, useStyledContext: useCollectionContext } = (0, import_core60.createStyledContext)({
+      const { Provider: CollectionProviderImpl, useStyledContext: useCollectionContext } = (0, import_core59.createStyledContext)({
         collectionRef: { current: null },
         itemMap: /* @__PURE__ */ new Map()
       }), CollectionProvider = /* @__PURE__ */ __name((props) => {
@@ -1856,12 +1856,12 @@ var require_Collection = __commonJS({
       CollectionProvider.displayName = "CollectionProvider";
       const COLLECTION_SLOT_NAME = name + "CollectionSlot", CollectionSlot = import_react49.default.forwardRef((props, forwardedRef) => {
         const { __scopeCollection, children } = props, context = useCollectionContext(__scopeCollection), composedRefs = (0, import_compose_refs25.useComposedRefs)(forwardedRef, context.collectionRef);
-        return /* @__PURE__ */ (0, import_jsx_runtime63.jsx)(import_core60.Slot, { ref: composedRefs, children });
+        return /* @__PURE__ */ (0, import_jsx_runtime63.jsx)(import_core59.Slot, { ref: composedRefs, children });
       });
       CollectionSlot.displayName = COLLECTION_SLOT_NAME;
       const ITEM_SLOT_NAME = name + "CollectionItemSlot", ITEM_DATA_ATTR = "data-collection-item", CollectionItemSlot = import_react49.default.forwardRef((props, forwardedRef) => {
         const { __scopeCollection, children, ...itemData } = props, ref = import_react49.default.useRef(null), composedRefs = (0, import_compose_refs25.useComposedRefs)(forwardedRef, ref), context = useCollectionContext(__scopeCollection);
-        return import_react49.default.useEffect(() => (context.itemMap.set(ref, { ref, ...itemData }), () => void context.itemMap.delete(ref))), /* @__PURE__ */ (0, import_jsx_runtime63.jsx)(import_core60.Slot, { [ITEM_DATA_ATTR]: "", ref: composedRefs, children });
+        return import_react49.default.useEffect(() => (context.itemMap.set(ref, { ref, ...itemData }), () => void context.itemMap.delete(ref))), /* @__PURE__ */ (0, import_jsx_runtime63.jsx)(import_core59.Slot, { [ITEM_DATA_ATTR]: "", ref: composedRefs, children });
       });
       CollectionItemSlot.displayName = ITEM_SLOT_NAME;
       function useCollection2(__scopeCollection) {
@@ -1934,16 +1934,16 @@ var require_getElevation = __commonJS({
       getSizedElevation: /* @__PURE__ */ __name(() => getSizedElevation2, "getSizedElevation")
     });
     module2.exports = __toCommonJS2(getElevation_exports);
-    var import_core60 = require("@tamagui/core");
+    var import_core59 = require("@tamagui/core");
     var getElevation2 = /* @__PURE__ */ __name((size6, extras) => {
       if (!size6) return;
-      const { tokens: tokens2 } = extras, token = tokens2.size[size6], sizeNum = (0, import_core60.isVariable)(token) ? +token.val : size6;
+      const { tokens: tokens2 } = extras, token = tokens2.size[size6], sizeNum = (0, import_core59.isVariable)(token) ? +token.val : size6;
       return getSizedElevation2(sizeNum, extras);
     }, "getElevation");
     var getSizedElevation2 = /* @__PURE__ */ __name((val, { theme, tokens: tokens2 }) => {
       let num = 0;
       if (val === true) {
-        const val2 = (0, import_core60.getVariableValue)(tokens2.size.true);
+        const val2 = (0, import_core59.getVariableValue)(tokens2.size.true);
         typeof val2 == "number" ? num = val2 : num = 10;
       } else
         num = +val;
@@ -1954,7 +1954,7 @@ var require_getElevation = __commonJS({
         shadowColor: theme.shadowColor,
         shadowRadius,
         shadowOffset: { height, width: 0 },
-        ...import_core60.isAndroid ? {
+        ...import_core59.isAndroid ? {
           elevationAndroid: 2 * height
         } : {}
       };
@@ -1988,7 +1988,7 @@ var require_Stacks = __commonJS({
       fullscreenStyle: /* @__PURE__ */ __name(() => fullscreenStyle2, "fullscreenStyle")
     });
     module2.exports = __toCommonJS2(Stacks_exports);
-    var import_core60 = require("@tamagui/core");
+    var import_core59 = require("@tamagui/core");
     var import_getElevation3 = require_getElevation();
     var fullscreenStyle2 = {
       position: "absolute",
@@ -2013,17 +2013,17 @@ var require_Stacks = __commonJS({
       },
       inset: getInset2
     };
-    var YStack2 = (0, import_core60.styled)(import_core60.View, {
+    var YStack2 = (0, import_core59.styled)(import_core59.View, {
       flexDirection: "column",
       variants: variants2
     });
     YStack2.displayName = "YStack";
-    var XStack2 = (0, import_core60.styled)(import_core60.View, {
+    var XStack2 = (0, import_core59.styled)(import_core59.View, {
       flexDirection: "row",
       variants: variants2
     });
     XStack2.displayName = "XStack";
-    var ZStack2 = (0, import_core60.styled)(
+    var ZStack2 = (0, import_core59.styled)(
       YStack2,
       {
         position: "relative"
@@ -2285,11 +2285,11 @@ var require_SizableStack = __commonJS({
       SizableStack: /* @__PURE__ */ __name(() => SizableStack2, "SizableStack")
     });
     module2.exports = __toCommonJS2(SizableStack_exports);
-    var import_core60 = require("@tamagui/core");
+    var import_core59 = require("@tamagui/core");
     var import_get_button_sized6 = require_cjs15();
     var import_Stacks3 = require_Stacks();
     var import_variants3 = require_variants();
-    var SizableStack2 = (0, import_core60.styled)(import_Stacks3.XStack, {
+    var SizableStack2 = (0, import_core59.styled)(import_Stacks3.XStack, {
       name: "SizableStack",
       variants: {
         unstyled: {
@@ -2339,7 +2339,7 @@ var require_ThemeableStack = __commonJS({
       themeableVariants: /* @__PURE__ */ __name(() => themeableVariants2, "themeableVariants")
     });
     module2.exports = __toCommonJS2(ThemeableStack_exports);
-    var import_core60 = require("@tamagui/core");
+    var import_core59 = require("@tamagui/core");
     var import_Stacks3 = require_Stacks();
     var import_variants3 = require_variants();
     var chromelessStyle2 = {
@@ -2379,7 +2379,7 @@ var require_ThemeableStack = __commonJS({
         }
       }
     };
-    var ThemeableStack2 = (0, import_core60.styled)(import_Stacks3.YStack, {
+    var ThemeableStack2 = (0, import_core59.styled)(import_Stacks3.YStack, {
       variants: themeableVariants2
     });
   }
@@ -2470,7 +2470,7 @@ var require_cjs17 = __commonJS({
       getFontSized: /* @__PURE__ */ __name(() => getFontSized2, "getFontSized")
     });
     module2.exports = __toCommonJS2(src_exports);
-    var import_core60 = require("@tamagui/core");
+    var import_core59 = require("@tamagui/core");
     var getFontSized2 = /* @__PURE__ */ __name((sizeTokenIn = "$true", { font, fontFamily, props }) => {
       var _a, _b, _c, _d, _e, _f;
       if (!font)
@@ -2484,7 +2484,7 @@ var require_cjs17 = __commonJS({
     function getDefaultSizeToken2(font) {
       if (typeof font == "object" && cache3.has(font))
         return cache3.get(font);
-      const sizeTokens = "$true" in font.size ? font.size : (0, import_core60.getTokens)().size, sizeDefault = sizeTokens.$true, sizeDefaultSpecific = sizeDefault ? Object.keys(sizeTokens).find(
+      const sizeTokens = "$true" in font.size ? font.size : (0, import_core59.getTokens)().size, sizeDefault = sizeTokens.$true, sizeDefaultSpecific = sizeDefault ? Object.keys(sizeTokens).find(
         (x) => x !== "$true" && sizeTokens[x].val === sizeDefault.val
       ) : null;
       return !sizeDefault || !sizeDefaultSpecific ? (process.env.NODE_ENV === "development" && console.warn(`No default size is set in your tokens for the "true" key, fonts will be inconsistent.
@@ -44547,51 +44547,8 @@ var animations = createAnimations({
   tooltip: "ease-out 200ms"
 });
 
-// ../../node_modules/@tamagui/font-inter/dist/esm/index.mjs
-var import_core58 = require("@tamagui/core");
-var createInterFont = /* @__PURE__ */ __name((font = {}, {
-  sizeLineHeight = /* @__PURE__ */ __name((size6) => size6 + 10, "sizeLineHeight"),
-  sizeSize = /* @__PURE__ */ __name((size6) => size6 * 1, "sizeSize")
-} = {}) => {
-  const size6 = Object.fromEntries(Object.entries({
-    ...defaultSizes,
-    ...font.size
-  }).map(([k, v]) => [k, sizeSize(+v)]));
-  return (0, import_core58.createFont)({
-    family: import_core58.isWeb ? 'Inter, -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' : "Inter",
-    lineHeight: Object.fromEntries(Object.entries(size6).map(([k, v]) => [k, sizeLineHeight((0, import_core58.getVariableValue)(v))])),
-    weight: {
-      4: "300"
-    },
-    letterSpacing: {
-      4: 0
-    },
-    ...font,
-    size: size6
-  });
-}, "createInterFont");
-var defaultSizes = {
-  1: 11,
-  2: 12,
-  3: 13,
-  4: 14,
-  true: 14,
-  5: 16,
-  6: 18,
-  7: 20,
-  8: 23,
-  9: 30,
-  10: 46,
-  11: 55,
-  12: 62,
-  13: 72,
-  14: 92,
-  15: 114,
-  16: 134
-};
-
 // ../../packages/app/ds/tamagui/config/fonts.ts
-var import_core59 = require("@tamagui/core");
+var import_core58 = require("@tamagui/core");
 
 // ../../packages/app/helpers/object.ts
 var keys = Object.keys;
@@ -44636,7 +44593,7 @@ var lineHeights = keys(fontSizesBase).reduce((acc, next) => {
     [next]: fontSizesBase[next] * 1.2
   };
 }, {});
-var monoFont = (0, import_core59.createFont)({
+var monoFont = (0, import_core58.createFont)({
   family: `var(${fontVars.mono})`,
   letterSpacing: {},
   lineHeight: lineHeights || {},
@@ -44644,7 +44601,7 @@ var monoFont = (0, import_core59.createFont)({
   weight: {},
   face: {}
 });
-var roundFont = (0, import_core59.createFont)({
+var roundFont = (0, import_core58.createFont)({
   family: `var(${fontVars.heading})`,
   letterSpacing: {},
   lineHeight: lineHeights || {},
@@ -44654,17 +44611,16 @@ var roundFont = (0, import_core59.createFont)({
     // TODO native
   }
 });
-var bodyFont = createInterFont(
-  {
-    face: {
-      700: { normal: "InterBold" }
-    }
-  },
-  {
-    sizeSize: /* @__PURE__ */ __name((size6) => Math.round(size6 * 1.1), "sizeSize"),
-    sizeLineHeight: /* @__PURE__ */ __name((size6) => size6 + 5, "sizeLineHeight")
+var bodyFont = (0, import_core58.createFont)({
+  family: `var(${fontVars.body})`,
+  letterSpacing: {},
+  lineHeight: lineHeights || {},
+  size: fontSizes,
+  weight: {},
+  face: {
+    // TODO native
   }
-);
+});
 
 // ../../packages/app/ds/tamagui/config/media.ts
 var media = createMedia({
@@ -45633,7 +45589,7 @@ var tamaguiConfig = createTamagui({
   },
   fonts: {
     heading: roundFont,
-    body: monoFont,
+    body: bodyFont,
     mono: monoFont
   },
   defaultFont: "body",

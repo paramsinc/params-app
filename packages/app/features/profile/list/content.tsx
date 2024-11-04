@@ -43,7 +43,7 @@ export function ProfilesListContent() {
         <EmptyCard>
           <EmptyCardTitle>Let's create your developer profile.</EmptyCardTitle>
           <EmptyCardDescription>
-            Create your developer profile to start sharing repositories.
+            Create your developer profile to share your code and get booked.
           </EmptyCardDescription>
           {newProfileButton}
         </EmptyCard>

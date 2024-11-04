@@ -1,12 +1,21 @@
 'use client'
 import { makeAuth } from 'app/auth/make-auth'
 import { Clerk } from '@clerk/clerk-js'
-import { ClerkProvider, useAuth, UserButton, SignUpButton, SignedOut, useUser } from '@clerk/nextjs'
+import {
+  ClerkProvider,
+  useAuth,
+  UserButton,
+  SignUpButton,
+  SignedOut,
+  useUser,
+  SignUp as ClerkSignUp,
+  SignInButton,
+} from '@clerk/nextjs'
 import { useLatestCallback } from 'app/helpers/use-latest-callback'
 import { env } from 'app/env'
 import { getConfig, getVariableValue } from 'tamagui'
 import { Button, ButtonText } from 'app/ds/Button'
-import { useEffect, useState } from 'app/react'
+import { useEffect, useState, useServerEffect } from 'app/react'
 import { platform } from 'app/ds/platform'
 import { useCurrentPath } from 'app/navigation/use-pathname'
 import { Lucide } from 'app/ds/Lucide'
@@ -33,10 +42,10 @@ function UserTrigger({ children }: { children?: React.ReactElement }) {
       <UserButton>
         {children}
         <UserButton.MenuItems>
-          <UserButton.Action
+          <UserButton.Link
             label="Dashboard"
             labelIcon={<Lucide.Home size={16} color="$color11" />}
-            open="/dashboard"
+            href="/dashboard"
           />
         </UserButton.MenuItems>
       </UserButton>
@@ -58,19 +67,31 @@ function Font({ children }: { children: React.ReactNode }) {
   )
 }
 
-function SignUp({ children }: { children?: React.ReactElement }) {
+function SignUp({
+  children,
+  action = 'sign up',
+}: {
+  children?: React.ReactElement
+  action?: 'sign in' | 'sign up'
+}) {
   const [redirectUrl, setRedirectUrl] = useState<string>()
   const path = useCurrentPath()
-  useEffect(() => {
+  useServerEffect(() => {
     if (platform.OS === 'web') {
       setRedirectUrl(window.location.href)
     }
   }, [path])
+  const Comp = action === 'sign in' ? SignInButton : SignUpButton
   return (
     <Font>
-      <SignUpButton mode="modal" signInForceRedirectUrl={redirectUrl}>
+      <Comp
+        mode="modal"
+        key={redirectUrl}
+        signInForceRedirectUrl={redirectUrl}
+        signUpForceRedirectUrl={redirectUrl}
+      >
         {children}
-      </SignUpButton>
+      </Comp>
     </Font>
   )
 }
@@ -137,12 +158,13 @@ export default makeAuth({
       </SignUp>
     )
   },
-  AuthFlowTrigger({ children }) {
+  AuthFlowTrigger({ children, action = 'sign up' }) {
     return (
       <SignedOut>
-        <SignUp children={children} />
+        <SignUp children={children} action={action} />
       </SignedOut>
     )
   },
   getToken,
+  SignUp: ClerkSignUp,
 })

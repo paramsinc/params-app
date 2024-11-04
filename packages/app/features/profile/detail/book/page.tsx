@@ -1,6 +1,5 @@
 import { Page } from 'app/ds/Page'
 import { useEventTypes } from '@calcom/atoms'
-import { Calcom } from 'app/features/cal-com/cal-com'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
 import { ErrorCard } from 'app/ds/Error/card'
@@ -21,6 +20,7 @@ import { Card } from 'app/ds/Form/layout'
 import { LinkButton } from 'app/ds/Button/link'
 import { Link } from 'app/ds/Link'
 import { AnimatePresence, MotiView } from 'moti'
+import { UserGate } from 'app/features/user/gate'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -35,7 +35,7 @@ export function ProfileDetailBookPage() {
   } = useParams()
 
   return (
-    <Calcom.ProviderPublic>
+    <UserGate>
       <Page.Root>
         <Page.Scroll>
           <Page.Content>
@@ -43,7 +43,7 @@ export function ProfileDetailBookPage() {
           </Page.Content>
         </Page.Scroll>
       </Page.Root>
-    </Calcom.ProviderPublic>
+    </UserGate>
   )
 }
 

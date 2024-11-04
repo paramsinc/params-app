@@ -7,13 +7,11 @@ import { ComponentProps, useEffect, useId } from 'react'
 export const ErrorCard = function ErrorCard({
   error,
   disableScrollToOnError,
-  hideFieldAccessErrors,
   children,
   ...props
 }: Omit<ComponentProps<typeof View>, 'children'> & {
   error: null | Error | undefined | { message?: string }
   disableScrollToOnError?: boolean
-  hideFieldAccessErrors?: boolean
   children?: React.ReactNode | ((message: string) => React.ReactNode)
 }) {
   const name = useId()
@@ -33,7 +31,6 @@ export const ErrorCard = function ErrorCard({
   return (
     <NetworkError
       error={error}
-      hideFieldAccessErrors={hideFieldAccessErrors}
       render={(_, message) => {
         return (
           <View

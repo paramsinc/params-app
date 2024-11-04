@@ -22,11 +22,6 @@ export const LinkButton = forwardRef(function LinkButton(
     <Button
       ref={ref}
       {...props}
-      //   analytics={{
-      //     href: parseNextPath(link.href),
-      //     via: 'link button',
-      //     ...props.analytics,
-      //   }}
       {...link}
       onPress={(e) => {
         if (props.onPress) {

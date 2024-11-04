@@ -59,14 +59,25 @@ export const roundFont = createFont({
   },
 })
 
-export const bodyFont = createInterFont(
-  {
-    face: {
-      700: { normal: 'InterBold' },
-    },
+export const bodyFont = createFont({
+  family: `var(${fontVars.body})`,
+  letterSpacing: {},
+  lineHeight: lineHeights || {},
+  size: fontSizes,
+  weight: {},
+  face: {
+    // TODO native
   },
-  {
-    sizeSize: (size) => Math.round(size * 1.1),
-    sizeLineHeight: (size) => size + 5,
-  }
-)
+})
+
+// export const bodyFont = createInterFont(
+//   {
+//     face: {
+//       700: { normal: 'InterBold' },
+//     },
+//   },
+//   {
+//     sizeSize: (size) => Math.round(size * 1.1),
+//     sizeLineHeight: (size) => size + 5,
+//   }
+// )

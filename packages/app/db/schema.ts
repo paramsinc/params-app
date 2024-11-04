@@ -178,6 +178,10 @@ export const bookings = pgTable('bookings', {
   created_by_user_id: text('created_by_user_id').references(() => users.id, {
     onDelete: 'set null',
   }),
+  canceled_at: timestamp('canceled_at'),
+  canceled_by_user_id: text('canceled_by_user_id').references(() => users.id, {
+    onDelete: 'set null',
+  }),
 
   start_datetime: timestamp('start_datetime', { mode: 'date', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),
@@ -242,3 +246,11 @@ export const googleCalendarIntegrations = pgTable(
     uniqueProfileId: unique().on(table.profile_id, table.google_user_id),
   })
 )
+
+export const waitlistSignups = pgTable('waitlist_signups', {
+  id: text('id')
+    .primaryKey()
+    .$default(() => `waitlist_signup_${ulid()}`),
+  email: text('email').notNull().unique(),
+  ...timestampMixin(),
+})

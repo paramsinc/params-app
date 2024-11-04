@@ -28,7 +28,7 @@ const Content = Menu.create(
     return (
       <Menu.Content avoidCollisions collisionPadding={8} sideOffset={4} {...props}>
         <ContentFrame
-          menu='dropdown'
+          menu="dropdown"
           width={props.width}
           maxHeight={props.maxHeight}
           overflow={props.overflow}
@@ -117,8 +117,8 @@ const ItemTitle = Menu.create(
       <View flex={1}>
         <Menu.ItemTitle style={style}>
           <Text
-            userSelect='none'
-            cursor='pointer'
+            userSelect="none"
+            cursor="pointer"
             bold={bold}
             color={brand ? '$brand' : !focused ? '$color11' : '$color12'}
             mr={8}
@@ -168,7 +168,7 @@ const ItemSubtitle = Menu.create(
     return (
       // @ts-expect-error
       <Menu.ItemSubtitle {...props}>
-        <Text color='$color11'>{children}</Text>
+        <Text color="$color11">{children}</Text>
       </Menu.ItemSubtitle>
     )
   },
@@ -225,7 +225,7 @@ const SubTrigger = Menu.create(
         >
           {props.children}
           <View mr={-12}>
-            <ItemIcon icon={Lucide.ChevronRight} side='right' />
+            <ItemIcon icon={Lucide.ChevronRight} side="right" />
           </View>
         </ItemFrame>
       </Menu.SubTrigger>
@@ -242,7 +242,7 @@ const SubContent = Menu.create(
   ) => {
     return (
       <Menu.SubContent sideOffset={4} alignOffset={-4} {...props}>
-        <ContentFrame subMenu menu='dropdown' overflow={props.overflow} {...props.frame}>
+        <ContentFrame subMenu menu="dropdown" overflow={props.overflow} {...props.frame}>
           {props.children}
         </ContentFrame>
       </Menu.SubContent>
@@ -267,10 +267,9 @@ const ItemIndicator = Menu.create((props: React.ComponentProps<typeof Menu.ItemI
 
 const Label = Menu.create((props: React.ComponentProps<typeof Menu.Label>) => {
   return (
-    // @ts-expect-error it's ok
     <Menu.Label {...props}>
       <Text
-        px='$3'
+        px="$3"
         fontSize={14}
 
         // lineHeight={height}

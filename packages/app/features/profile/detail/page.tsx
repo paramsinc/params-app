@@ -10,7 +10,6 @@ import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
-import { Calcom } from 'app/features/cal-com/cal-com'
 import { Card } from 'app/ds/Form/layout'
 import {
   ConnectAccountModal,
@@ -49,6 +48,7 @@ import { DateTime } from 'app/dates/date-time'
 import { group } from 'app/helpers/dash'
 import { entries } from 'app/helpers/object'
 import { SignInWithGoogle } from 'app/features/oauth/google/sign-in-with-google'
+import { Link } from 'app/ds/Link'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -169,7 +169,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
             {reposQuery.data?.map((repo) => (
               <Card key={repo.id} row ai="center">
                 <View grow>
-                  <Card.Title>{repo.slug}</Card.Title>
+                  <Link href={`/@${profile.slug}/${repo.slug}`}>
+                    <Card.Title>{repo.slug}</Card.Title>
+                  </Link>
                 </View>
                 <View row gap="$1">
                   {!!repo.github_url && (

@@ -17,7 +17,6 @@ export const serverEnv = z
     NEON_DATABASE_URL: z.string(),
     DATABASE_URL: z.string(),
     STRIPE_SECRET_KEY: z.string(),
-    CAL_COM_CLIENT_SECRET: z.string(),
     CLERK_WEBHOOK_SECRET: z.string(),
     CLOUDINARY_CLOUD_NAME: z.string(),
     CLOUDINARY_API_KEY: z.string(),
@@ -37,13 +36,13 @@ export const serverEnv = z
         javascript_origins: z.array(z.string()),
       }),
     }),
+    RECAPTCHA_SECRET_KEY: z.string(),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     NEON_DATABASE_URL,
     DATABASE_URL,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-    CAL_COM_CLIENT_SECRET: process.env.CAL_COM_CLIENT_SECRET,
     CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
     CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUDNAME,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
@@ -52,4 +51,5 @@ export const serverEnv = z
     GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR: process.env.GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     GOOGLE_API_CREDENTIALS_JSON: JSON.parse(process.env.GOOGLE_API_CREDENTIALS_JSON!),
+    RECAPTCHA_SECRET_KEY: process.env.CAPTCHA_SECRET_KEY,
   })

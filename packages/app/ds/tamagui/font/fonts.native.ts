@@ -8,5 +8,5 @@ if (platform.OS === 'android') {
 export default {
   heading: 'SF Pro Display',
   mono: 'SF Mono',
-  sans: 'SF Pro Display',
+  body: 'SF Pro Display',
 } satisfies typeof fonts

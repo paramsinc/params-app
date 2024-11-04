@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest } from 'next'
 
 type AuthBase = {
   Provider: React.ComponentType<{ children: React.ReactNode }>
@@ -23,7 +23,10 @@ type AuthBase = {
     | { hasLoaded: false }
   useGetToken: () => () => Promise<string | null>
   UserButton: React.ComponentType<{ children?: React.ReactElement }>
-  AuthFlowTrigger: React.ComponentType<{ children: React.ReactElement }>
+  AuthFlowTrigger: React.ComponentType<{
+    children: React.ReactElement
+    action?: 'sign up' | 'sign in'
+  }>
   getToken: () => Promise<string | null>
 }
 

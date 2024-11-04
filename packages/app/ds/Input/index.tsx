@@ -11,6 +11,7 @@ export const inputStyle = {
   fontFamily: '$body',
   bg: '$color3',
   color: '$color12',
+  br: '$3',
 } as const
 
 export const Input = styled(TInput, {

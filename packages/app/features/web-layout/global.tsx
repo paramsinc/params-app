@@ -4,6 +4,7 @@ import { Header } from 'app/ds/Header'
 import { Logo } from 'app/ds/Logo'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
+import { useCurrentPath } from 'app/navigation/use-pathname'
 
 export function GlobalWebLayout({
   children,
@@ -12,6 +13,7 @@ export function GlobalWebLayout({
   children: React.ReactNode
   hideHeader?: boolean
 }) {
+  const pathname = useCurrentPath()
   return (
     <>
       {!hideHeader && (
@@ -19,15 +21,31 @@ export function GlobalWebLayout({
           ai="center"
           height={48}
           px="$3"
-          bg="$color1"
+          // bg="$backgroundStrong"
+          bg="#00000020"
           fd="row"
-          style={{ position: 'sticky', top: 0, zIndex: 3 }}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 3,
+            backdropFilter: 'blur(10px)',
+            transform: 'translate3d(0, 0, 0)',
+          }}
+          $theme-light={{
+            bg: '#ffffff20',
+          }}
         >
           <View w={100}></View>
           <View grow center>
             <Logo height={20} />
           </View>
-          <View w={100} ai="flex-end" jc="center">
+          <View
+            w={100}
+            ai="flex-end"
+            jc="center"
+            pointerEvents={pathname === '/' ? 'none' : 'auto'}
+            o={pathname === '/' ? 0 : 1}
+          >
             <Auth.UserButton />
           </View>
         </Header>

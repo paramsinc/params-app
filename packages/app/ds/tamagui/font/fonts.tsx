@@ -55,6 +55,8 @@ const headingFont = localFont({
 
 export default {
   heading: headingFont.style.fontFamily,
-  body: GeistMono.style.fontFamily,
+  // body: GeistMono.style.fontFamily,
   mono: GeistMono.style.fontFamily,
+  // heading: GeistMono.style.fontFamily,
+  body: headingFont.style.fontFamily,
 } satisfies Record<keyof typeof fontVars, string>

@@ -169,6 +169,20 @@
       "when": 1728063293669,
       "tag": "0023_stormy_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1729528315804,
+      "tag": "0024_goofy_electro",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1730728891801,
+      "tag": "0025_public_martin_li",
+      "breakpoints": true
     }
   ]
 }

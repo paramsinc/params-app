@@ -4,7 +4,6 @@ import { inserts, selects } from 'app/db/inserts-and-selects'
 import { d, db, pg, schema } from 'app/db/db'
 import { TRPCError } from '@trpc/server'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
-import { deleteCalcomAccount, getCalcomUser, getCalcomUsers } from 'app/trpc/routes/cal-com'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
@@ -15,6 +14,9 @@ import { availabilityRangesShape } from 'app/db/types'
 import { DateTime } from 'app/dates/date-time'
 import { googleOauth } from 'app/vendor/google/google-oauth'
 import { createUser } from 'app/trpc/routes/user'
+import { serverEnv } from 'app/env/env.server'
+import { exampleRepoFiles } from 'app/trpc/routes/repo-files'
+import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 
 const [firstCdn, ...restCdns] = keys(cdn)
 
@@ -34,10 +36,7 @@ const user = {
   }),
   createMe: authedProcedure
     .input(
-      inserts.users
-        .pick({ slug: true, first_name: true, last_name: true, email: true })
-        .partial()
-        .optional()
+      inserts.users.pick({ slug: true, first_name: true, last_name: true, email: true }).partial()
     )
     .output(selects.users.pick(publicSchema.users.UserPublic))
     .mutation(async ({ ctx, input = {} }) => {
@@ -118,17 +117,6 @@ const user = {
     }),
 }
 
-const calcomUserInsert = z
-  .object({
-    timeFormat: z.number().int(),
-    weekStart: z
-      .enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
-      .optional(),
-    timeZone: z.string(),
-    disableCreateMember: z.boolean(),
-  })
-  .partial()
-
 const profile = {
   isProfileSlugAvailable: authedProcedure
     .input(z.object({ slug: z.string() }))
@@ -155,93 +143,86 @@ const profile = {
           image_vendor: true,
           image_vendor_id: true,
         })
-        .merge(calcomUserInsert)
+        .merge(z.object({ disableCreateMember: z.boolean().optional() }))
     )
-    .mutation(
-      async ({
-        input: { timeFormat, weekStart, timeZone, disableCreateMember, ...input },
-        ctx,
-      }) => {
-        const { profile, member } = await db.transaction(async (tx) => {
-          const existingProfileBySlug = await tx.query.profiles
-            .findFirst({
-              where: (profiles, { eq }) => eq(profiles.slug, input.slug),
-            })
-            .execute()
-
-          if (existingProfileBySlug) {
-            throw new TRPCError({
-              code: 'CONFLICT',
-              message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
-            })
-          }
-
-          const me = await tx.query.users.findFirst({
-            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+    .mutation(async ({ input: { disableCreateMember, ...input }, ctx }) => {
+      const { profile, member } = await db.transaction(async (tx) => {
+        const existingProfileBySlug = await tx.query.profiles
+          .findFirst({
+            where: (profiles, { eq }) => eq(profiles.slug, input.slug),
           })
+          .execute()
 
-          if (!me) {
-            throw new TRPCError({
-              code: 'UNAUTHORIZED',
-              message: `Please complete creating your account.`,
-            })
-          }
+        if (existingProfileBySlug) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
+          })
+        }
 
-          const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
-            first_name: me.first_name,
-            last_name: me.last_name,
-            email: me.email,
-            user_id: me.id,
-          }
-
-          const stripe_connect_account_id = await stripe.accounts
-            .create({
-              settings: {
-                payouts: {
-                  schedule: {
-                    interval: 'manual',
-                  },
-                },
-              },
-            })
-            .then((account) => account.id)
-
-          const [profile] = await tx
-            .insert(schema.profiles)
-            .values({
-              ...input,
-              stripe_connect_account_id,
-            })
-            .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
-            .execute()
-
-          if (!profile) {
-            throw new TRPCError({
-              code: 'INTERNAL_SERVER_ERROR',
-              message: `Couldn't create profile.`,
-            })
-          }
-
-          // add this user as a member
-          const [member] = disableCreateMember
-            ? []
-            : await tx
-                .insert(schema.profileMembers)
-                .values({
-                  ...memberInsert,
-                  profile_id: profile.id,
-                })
-                .returning(
-                  pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal)
-                )
-                .execute()
-
-          return { profile, member }
+        const me = await tx.query.users.findFirst({
+          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
         })
 
+        if (!me) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: `Please complete creating your account.`,
+          })
+        }
+
+        const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
+          first_name: me.first_name,
+          last_name: me.last_name,
+          email: me.email,
+          user_id: me.id,
+        }
+
+        const stripe_connect_account_id = await stripe.accounts
+          .create({
+            settings: {
+              payouts: {
+                schedule: {
+                  interval: 'manual',
+                },
+              },
+            },
+          })
+          .then((account) => account.id)
+
+        const [profile] = await tx
+          .insert(schema.profiles)
+          .values({
+            ...input,
+            stripe_connect_account_id,
+          })
+          .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
+          .execute()
+
+        if (!profile) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Couldn't create profile.`,
+          })
+        }
+
+        // add this user as a member
+        const [member] = disableCreateMember
+          ? []
+          : await tx
+              .insert(schema.profileMembers)
+              .values({
+                ...memberInsert,
+                profile_id: profile.id,
+              })
+              .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
+              .execute()
+
         return { profile, member }
-      }
-    ),
+      })
+
+      return { profile, member }
+    }),
   updateProfile: authedProcedure
     .input(
       z.object({
@@ -431,62 +412,6 @@ const profile = {
     return profiles
   }),
 
-  calUserByProfileSlug: authedProcedure
-    .input(z.object({ profileSlug: z.string() }))
-    .query(async ({ ctx, input: { profileSlug } }) => {
-      const profile = await db.query.profiles.findFirst({
-        where: (profiles, { eq }) => eq(profiles.slug, profileSlug),
-      })
-
-      if (!profile?.calcom_user_id) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Profile not found.`,
-        })
-      }
-
-      const calUser = await getCalcomUser(profile.calcom_user_id)
-
-      if (calUser.status !== 'success') {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Couldn't get cal user.`,
-        })
-      }
-
-      return calUser.data
-    }),
-  calcomAccessTokenByProfileSlug: authedProcedure
-    .input(z.object({ profileSlug: z.string() }))
-    .query(async ({ ctx, input: { profileSlug } }) => {
-      const [first] = await db
-        .select({
-          calcomUser: pick('calcomUsers', { access_token: true }),
-          profile: pick('profiles', { slug: true, id: true }),
-          myMembership: pick('profileMembers', { id: true }),
-        })
-        .from(schema.profiles)
-        .where(d.eq(schema.profiles.slug, profileSlug))
-        .innerJoin(
-          schema.profileMembers,
-          d.and(
-            d.eq(schema.profileMembers.profile_id, schema.profiles.id),
-            d.eq(schema.profileMembers.user_id, ctx.auth.userId)
-          )
-        )
-        .innerJoin(schema.calcomUsers, d.eq(schema.calcomUsers.id, schema.profiles.calcom_user_id))
-        .limit(1)
-        .execute()
-
-      if (!first) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `You don't have access to this profile's cal account.`,
-        })
-      }
-
-      return first.calcomUser.access_token
-    }),
   allProfiles_admin: authedProcedure.query(async ({ ctx }) => {
     // TODO admin
     const profiles = await db.query.profiles.findMany({
@@ -494,32 +419,6 @@ const profile = {
     })
     return profiles
   }),
-
-  calUserByProfileSlug_public: publicProcedure
-    .input(z.object({ profileSlug: z.string() }))
-    .query(async ({ input: { profileSlug } }) => {
-      const profile = await db.query.profiles.findFirst({
-        where: (profiles, { eq }) => eq(profiles.slug, profileSlug),
-      })
-
-      if (!profile) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Profile not found.`,
-        })
-      }
-
-      const calUser = await getCalcomUser(profile.calcom_user_id)
-
-      if (calUser.status !== 'success') {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Couldn't get cal user.`,
-        })
-      }
-
-      return calUser.data.username
-    }),
 
   profileConnectAccountSession: authedProcedure
     .input(z.object({ profile_slug: z.string() }))
@@ -799,29 +698,45 @@ const profileMember = {
     }),
 }
 
+export async function repoBySlug({
+  repo_slug,
+  profile_slug,
+}: {
+  repo_slug: string
+  profile_slug: string
+}) {
+  const [repository] = await db
+    .select({
+      ...pick('repositories', publicSchema.repositories.RepositoryPublic),
+      profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+    })
+    .from(schema.repositories)
+    .where(d.eq(schema.repositories.slug, repo_slug))
+    .innerJoin(
+      schema.profiles,
+      d.and(
+        d.eq(schema.repositories.profile_id, schema.profiles.id),
+        d.eq(schema.profiles.slug, profile_slug)
+      )
+    )
+    .limit(1)
+    .execute()
+
+  if (!repository) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: `Repository not found.`,
+    })
+  }
+
+  return repository
+}
+
 const repository = {
   repoBySlug: publicProcedure
     .input(z.object({ repo_slug: z.string(), profile_slug: z.string() }))
     .query(async ({ input: { repo_slug, profile_slug } }) => {
-      const [repository] = await db
-        .select({
-          ...pick('repositories', publicSchema.repositories.RepositoryPublic),
-          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
-        })
-        .from(schema.repositories)
-        .where(d.eq(schema.repositories.slug, repo_slug))
-        .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
-        .limit(1)
-        .execute()
-
-      if (!repository) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Repository not found.`,
-        })
-      }
-
-      return repository
+      return repoBySlug({ repo_slug, profile_slug })
     }),
 
   createRepo: authedProcedure
@@ -1010,19 +925,6 @@ const repository = {
       })
       return repo
     }),
-}
-
-const calCom = {
-  // TODO admin only procedure...
-  cca: authedProcedure.query(async ({ ctx }) => {
-    const calComUsers = await getCalcomUsers()
-    return calComUsers
-  }),
-  dcca: authedProcedure.input(z.object({ userId: z.number() })).mutation(async ({ ctx, input }) => {
-    const calComUser = await deleteCalcomAccount(input.userId)
-
-    return calComUser
-  }),
 }
 
 const profilePlan = {
@@ -1448,10 +1350,15 @@ async function hydrateTokensForGoogleIntegration(current: {
 
 const googleOauthRoutes = {
   googleOauthUrl: authedProcedure
-    .input(z.object({ redirect_url: z.string() }))
+    .input(
+      z.object({
+        redirect_url: z.string(),
+        state: z.object({ redirect: z.string() }),
+      })
+    )
     .output(z.string())
     .query(async ({ ctx, input }) => {
-      return googleOauth.getOauthUrl(input.redirect_url)
+      return googleOauth.getOauthUrl(input.redirect_url, JSON.stringify(input.state))
     }),
   googleOauthExchangeCode: authedProcedure
     .input(z.object({ code: z.string(), redirect_url: z.string(), profile_slug: z.string() }))
@@ -1815,7 +1722,6 @@ export const appRouter = router({
   ...user,
   ...profile,
   ...profileMember,
-  ...calCom,
   ...repository,
   ...profilePlan,
   ...availability,
@@ -2052,6 +1958,214 @@ export const appRouter = router({
         profileMemberEmails: results.map((result) => result.profileMember?.email).filter(Boolean),
       }
     }),
+
+  joinWaitlist: publicProcedure
+    .input(
+      z.object({ email: z.string().email('Please enter a valid email.'), captcha: z.string() })
+    )
+    .mutation(async ({ input }) => {
+      const data = await fetch(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${serverEnv.RECAPTCHA_SECRET_KEY}&response=${input.captcha}`
+      ).then((r) => r.json())
+
+      if (!data.success) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Invalid captcha.`,
+        })
+      }
+
+      const [first] = await db
+        .insert(schema.waitlistSignups)
+        .values({ email: input.email })
+        .onConflictDoUpdate({
+          target: schema.waitlistSignups.email,
+          set: {
+            last_updated_at: new Date(),
+          },
+        })
+        .returning()
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Failed to join waitlist.`,
+        })
+      }
+
+      return { email: first.email }
+    }),
+  repo: router({
+    files: publicProcedure
+      .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+      .output(z.record(z.string(), z.string()))
+      .query(async ({ input }) => {
+        return exampleRepoFiles
+      }),
+    paramsJson: publicProcedure
+      .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+      .output(paramsJsonShape.nullable())
+      .query(async ({ input }) => {
+        const getFiles = async () => {
+          return exampleRepoFiles
+        }
+        const files = await getFiles()
+        const paramsJson = files['params.json']
+        if (!paramsJson) {
+          return null
+        }
+        const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
+        if (parsed.success) {
+          return parsed.data
+        }
+        return null
+      }),
+    readme: publicProcedure
+      .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+      .output(z.string().nullable())
+      .query(async ({ input }) => {
+        const getFiles = async () => {
+          return exampleRepoFiles as Record<string, string>
+        }
+        const files = await getFiles()
+        const paramsJson = files['params.json']
+
+        if (!paramsJson) {
+          return null
+        }
+
+        const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
+        if (parsed.success) {
+          return files[parsed.data.docs.main] || null
+        }
+        return null
+      }),
+  }),
+  ping: publicProcedure.query(async () => {
+    return {
+      pong: '🏓',
+    }
+  }),
+  bookings: router({
+    list: authedProcedure.query(async ({ ctx }) => {
+      const bookings = await db
+        .select({
+          ...pick('bookings', {
+            id: true,
+            start_datetime: true,
+            duration_minutes: true,
+            timezone: true,
+            created_at: true,
+            stripe_payment_intent_id: true,
+            canceled_at: true,
+            canceled_by_user_id: true,
+          }),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+          organization: pick('organizations', {
+            id: true,
+            name: true,
+          }),
+          canceled_by: pick('users', {
+            id: true,
+            first_name: true,
+            last_name: true,
+          }),
+        })
+        .from(schema.bookings)
+        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.bookings.profile_id))
+        .innerJoin(
+          schema.organizations,
+          d.eq(schema.organizations.id, schema.bookings.organization_id)
+        )
+        .leftJoin(schema.users, d.eq(schema.users.id, schema.bookings.canceled_by_user_id))
+        .where(
+          d.or(
+            d.exists(
+              db
+                .select()
+                .from(schema.profileMembers)
+                .where(
+                  d.and(
+                    d.eq(schema.profileMembers.user_id, ctx.auth.userId),
+                    d.eq(schema.profileMembers.profile_id, schema.profiles.id)
+                  )
+                )
+            ),
+            d.exists(
+              db
+                .select()
+                .from(schema.organizationMembers)
+                .where(
+                  d.and(
+                    d.eq(schema.organizationMembers.user_id, ctx.auth.userId),
+                    d.eq(schema.organizationMembers.organization_id, schema.organizations.id)
+                  )
+                )
+            )
+          )
+        )
+        .orderBy(d.desc(schema.bookings.created_at))
+
+      return bookings
+    }),
+    cancel: authedProcedure
+      .input(z.object({ id: z.string() }))
+      .output(z.boolean())
+      .mutation(async ({ ctx, input }) => {
+        const profileMembershipSubquery = db
+          .select({
+            profile_id: schema.profileMembers.profile_id,
+            user_id: schema.profileMembers.user_id,
+          })
+          .from(schema.profileMembers)
+          .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
+          .as('my_profile_membership')
+        const organizationMembershipSubquery = db
+          .select({
+            organization_id: schema.organizationMembers.organization_id,
+            user_id: schema.organizationMembers.user_id,
+          })
+          .from(schema.organizationMembers)
+          .where(d.eq(schema.organizationMembers.user_id, ctx.auth.userId))
+          .as('my_organization_membership')
+
+        const [booking] = await db
+          .select({
+            ...pick('bookings', {
+              id: true,
+              canceled_at: true,
+            }),
+            profile_id: profileMembershipSubquery.profile_id,
+            organization_id: organizationMembershipSubquery.organization_id,
+          })
+          .from(schema.bookings)
+          .where(d.and(d.eq(schema.bookings.id, input.id)))
+          .leftJoin(
+            profileMembershipSubquery,
+            d.eq(schema.bookings.profile_id, profileMembershipSubquery.profile_id)
+          )
+          .leftJoin(
+            organizationMembershipSubquery,
+            d.eq(schema.bookings.organization_id, organizationMembershipSubquery.organization_id)
+          )
+          .limit(1)
+        if (!booking?.profile_id && !booking?.organization_id) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Booking not found' })
+        }
+        if (booking.canceled_at) {
+          return true
+        }
+
+        const [updatedBooking] = await db
+          .update(schema.bookings)
+          .set({ canceled_at: new Date(), canceled_by_user_id: ctx.auth.userId })
+          .where(d.eq(schema.bookings.id, input.id))
+          .returning()
+
+        return updatedBooking?.canceled_at != null
+      }),
+  }),
 })
 
 export type AppRouter = typeof appRouter

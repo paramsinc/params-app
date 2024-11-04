@@ -2,9 +2,7 @@ import { BlankHome } from 'app/features/home/blank'
 import { HomeScreen } from 'app/features/home/screen'
 import { GetStaticProps } from 'next'
 
-export default Object.assign(BlankHome, {
-  hideHeader: true,
-})
+export default Object.assign(BlankHome, {})
 // export default HomeScreen
 
 // export const getStaticProps = (async () => {

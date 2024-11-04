@@ -48,7 +48,7 @@ export const tamaguiConfig = createTamagui({
   } as const,
   fonts: {
     heading: roundFont,
-    body: monoFont,
+    body: bodyFont,
     mono: monoFont,
   },
   defaultFont: 'body',

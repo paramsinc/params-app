@@ -2022,19 +2022,24 @@ export const appRouter = router({
     list: authedProcedure.query(async ({ ctx }) => {
       const bookings = await db
         .select({
-          booking: pick('bookings', {
+          ...pick('bookings', {
             id: true,
             start_datetime: true,
             duration_minutes: true,
             timezone: true,
             created_at: true,
             stripe_payment_intent_id: true,
+            canceled_at: true,
           }),
           profile: pick('profiles', publicSchema.profiles.ProfilePublic),
           organization: pick('organizations', {
             id: true,
             name: true,
           }),
+          // canceled_by: pick('users', {
+          //   id: true,
+          //   name: true,
+          // }),
         })
         .from(schema.bookings)
         .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.bookings.profile_id))
@@ -2042,6 +2047,7 @@ export const appRouter = router({
           schema.organizations,
           d.eq(schema.organizations.id, schema.bookings.organization_id)
         )
+        // .leftJoin(schema.users, d.eq(schema.users.id, schema.bookings.canceled_by_user_id))
         .where(
           d.or(
             d.exists(
@@ -2072,6 +2078,48 @@ export const appRouter = router({
 
       return bookings
     }),
+    cancel: authedProcedure
+      .input(z.object({ id: z.string() }))
+      .output(z.boolean())
+      .mutation(async ({ ctx, input }) => {
+        const myMembershipSubquery = db
+          .select({
+            profile_id: schema.profileMembers.profile_id,
+            user_id: schema.profileMembers.user_id,
+          })
+          .from(schema.profileMembers)
+          .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
+          .as('my_membership')
+
+        const [booking] = await db
+          .select(
+            pick('bookings', {
+              id: true,
+              canceled_at: true,
+            })
+          )
+          .from(schema.bookings)
+          .where(d.and(d.eq(schema.bookings.id, input.id)))
+          .innerJoin(
+            myMembershipSubquery,
+            d.eq(schema.bookings.profile_id, myMembershipSubquery.profile_id)
+          )
+          .limit(1)
+        if (!booking) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Booking not found' })
+        }
+        if (booking.canceled_at) {
+          return true
+        }
+
+        const [updatedBooking] = await db
+          .update(schema.bookings)
+          .set({ canceled_at: new Date(), canceled_by_user_id: ctx.auth.userId })
+          .where(d.eq(schema.bookings.id, input.id))
+          .returning()
+
+        return updatedBooking?.canceled_at != null
+      }),
   }),
 })
 

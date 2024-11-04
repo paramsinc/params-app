@@ -1,6 +1,19 @@
 import type { selects } from 'app/db/inserts-and-selects'
 
 export const publicSchema = {
+  bookings: {
+    BookingPublic: {
+      id: true,
+      start_datetime: true,
+      duration_minutes: true,
+      timezone: true,
+      canceled_at: true,
+      google_calendar_event_id: true,
+      offer_id: true,
+      organization_id: true,
+      profile_id: true,
+    },
+  },
   users: {
     UserPublic: {
       id: true,

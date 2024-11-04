@@ -43,6 +43,11 @@ const Frame = styled(View, {
         cursor: 'pointer',
       },
     },
+    square: {
+      true: {
+        width: height,
+      },
+    },
   } as const,
   jc: 'center',
   tag: 'button',

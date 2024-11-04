@@ -9,12 +9,21 @@ import { styled } from 'app/ds/styled'
 import { Image } from 'app/ds/Image'
 import { UserGate } from 'app/features/user/gate'
 import { Auth } from 'app/auth'
-
-export function BookingsPage() {
+import { Button } from 'app/ds/Button'
+import { DropdownMenu } from 'app/ds/DropdownMenu'
+import { Lucide } from 'app/ds/Lucide'
+import { memo } from 'app/react'
+function useBookings() {
   const me = Auth.useUser()
   const bookingsQuery = api.bookings.list.useQuery(undefined, {
     enabled: me.isSignedIn === true,
   })
+
+  return bookingsQuery
+}
+
+export function BookingsPage() {
+  const bookingsQuery = useBookings()
 
   return (
     <UserGate>
@@ -22,14 +31,14 @@ export function BookingsPage() {
         <Page.Scroll>
           <Page.Content gap="$3">
             <Card>
-              <Text bold fontSize={24}>
+              <Text fontWeight="600" fontSize={24} letterSpacing={-0.5}>
                 Your Bookings
               </Text>
             </Card>
 
-            <View gap="$3">
+            <View gap="$1">
               {bookingsQuery.data?.map((booking) => (
-                <BookingRow key={booking.booking.id} booking={booking} />
+                <BookingRow key={booking.id} booking={booking} />
               ))}
             </View>
           </Page.Content>
@@ -40,12 +49,13 @@ export function BookingsPage() {
 }
 
 type BookingRowProps = {
-  booking: NonNullable<ReturnType<typeof api.bookings.list.useQuery>['data']>[number]
+  booking: NonNullable<ReturnType<typeof useBookings>['data']>[number]
 }
 
-function BookingRow({ booking }: BookingRowProps) {
-  const startTime = DateTime.fromISO(booking.booking.start_datetime as unknown as string)
-  const endTime = startTime.plus({ minutes: booking.booking.duration_minutes })
+const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
+  const startTime = DateTime.fromISO(booking.start_datetime)
+  const endTime = startTime.plus({ minutes: booking.duration_minutes })
+  const cancelMutation = api.bookings.cancel.useMutation()
 
   return (
     <Card flexDirection="row" gap="$3" padding="$3">
@@ -61,6 +71,11 @@ function BookingRow({ booking }: BookingRowProps) {
       )}
 
       <View gap="$2" grow>
+        {booking.canceled_at != null && (
+          <Text color="$color11" theme="red">
+            Canceled {DateTime.fromISO(booking.canceled_at).toRelative()}
+          </Text>
+        )}
         <Text bold>{booking.profile.name}</Text>
         <Text>
           {startTime.toLocaleString({
@@ -79,6 +94,35 @@ function BookingRow({ booking }: BookingRowProps) {
         </Text>
         <Text color="$color10">Booked by {booking.organization.name}</Text>
       </View>
+
+      <View jc="flex-start">
+        <DropdownMenu>
+          <DropdownMenu.Trigger>
+            <Button
+              square
+              alignSelf="center"
+              theme={cancelMutation.isPending ? 'red' : undefined}
+              loading={cancelMutation.isPending}
+            >
+              <Button.Icon icon={Lucide.MoreVertical} />
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item
+              key="cancel booking"
+              destructive
+              onSelect={() => cancelMutation.mutate({ id: booking.id })}
+            >
+              <DropdownMenu.ItemIcon icon={Lucide.Trash} />
+              <DropdownMenu.ItemTitle>Cancel</DropdownMenu.ItemTitle>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item key="reschedule booking">
+              <DropdownMenu.ItemIcon icon={Lucide.CalendarClock} />
+              <DropdownMenu.ItemTitle>Reschedule</DropdownMenu.ItemTitle>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu>
+      </View>
     </Card>
   )
-}
+})

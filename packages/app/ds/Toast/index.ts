@@ -9,3 +9,5 @@ export default function useToast() {
     toast,
   }
 }
+
+useToast.toast = toast

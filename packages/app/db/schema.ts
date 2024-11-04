@@ -178,6 +178,10 @@ export const bookings = pgTable('bookings', {
   created_by_user_id: text('created_by_user_id').references(() => users.id, {
     onDelete: 'set null',
   }),
+  canceled_at: timestamp('canceled_at'),
+  canceled_by_user_id: text('canceled_by_user_id').references(() => users.id, {
+    onDelete: 'set null',
+  }),
 
   start_datetime: timestamp('start_datetime', { mode: 'date', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),

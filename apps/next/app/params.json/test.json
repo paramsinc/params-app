@@ -2,12 +2,6 @@
   "$schema": "https://beta.params.com/params.json",
   "docs": {
     "main": "readme.md",
-    "sidebar": {
-      "Readme": "readme.md",
-      "Introduction": "introduction.md",
-      "Installation": "installation.md",
-      "Usage": "usage.md",
-      "FAQ": "faq.md"
-    }
+    "sidebar": {}
   }
 }

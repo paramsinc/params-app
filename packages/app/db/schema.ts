@@ -46,15 +46,16 @@ export const profiles = pgTable('profiles', {
   image_vendor_id: text('image_vendor_id'),
   stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
 
-  // calcom_user_id: integer('calcom_user_id')
-  //   .references(() => calcomUsers.id, {
-  //     onDelete: 'restrict',
-  //   })
-  //   .notNull(),
   availability_ranges: jsonb('availability_ranges')
     .$type<Zod.infer<typeof availabilityRangesShape>>()
     .default([]),
   timezone: text('timezone').notNull().default('America/New_York'),
+
+  personal_profile_user_id: text('personal_profile_user_id')
+    .unique()
+    .references(() => users.id, {
+      onDelete: 'set null',
+    }),
 
   ...timestampMixin(),
 })

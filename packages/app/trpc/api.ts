@@ -51,8 +51,7 @@ const user = {
           message: `Please provide your first name, last name, and email.`,
         })
       }
-      const baseSlug = input.slug ?? slugify([firstName, lastName].filter(Boolean).join(' '))
-      const user = await createUser({
+      const { user, profile } = await createUser({
         first_name: firstName,
         last_name: lastName,
         email,

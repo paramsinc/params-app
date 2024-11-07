@@ -4,6 +4,7 @@ import { d, db, schema } from 'app/db/db'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
+import { stripe } from 'app/features/stripe-connect/server/stripe'
 
 export async function createUser(
   insert: Omit<Zod.infer<typeof inserts.users>, 'slug'> &
@@ -22,8 +23,19 @@ export async function createUser(
     })
   }
   let slug = baseSlug
+  const stripe_connect_account_id = await stripe.accounts
+    .create({
+      settings: {
+        payouts: {
+          schedule: {
+            interval: 'manual',
+          },
+        },
+      },
+    })
+    .then((account) => account.id)
   // should this throw and just say that the slug is taken?
-  const user = await db.transaction(async (tx) => {
+  const { user, profile } = await db.transaction(async (tx) => {
     while (await tx.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
       const maxSlugsCheck = 10
       if (slugSearchCount >= maxSlugsCheck) {
@@ -58,6 +70,35 @@ export async function createUser(
       })
     }
 
+    const [personalProfile] = await tx
+      .insert(schema.profiles)
+      .values({
+        name: [user.first_name, user.last_name].filter(Boolean).join(' '),
+        personal_profile_user_id: user.id,
+        stripe_connect_account_id,
+        slug,
+      })
+      .onConflictDoNothing({
+        target: schema.profiles.personal_profile_user_id,
+      })
+      .returning()
+      .execute()
+
+    if (personalProfile) {
+      // create personal profile member
+      await tx
+        .insert(schema.profileMembers)
+        .values({
+          profile_id: personalProfile.id,
+          user_id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email,
+        })
+        .execute()
+    }
+
+    // invited profiles
     await tx
       .update(schema.profileMembers)
       .set({
@@ -65,12 +106,17 @@ export async function createUser(
         first_name: user.first_name,
         last_name: user.last_name,
       })
-      .where(d.eq(schema.profileMembers.email, email))
+      .where(
+        d.and(
+          d.eq(schema.profileMembers.email, email),
+          d.not(d.eq(schema.profileMembers.user_id, user.id))
+        )
+      )
       .returning()
       .execute()
 
-    return user
+    return { user, profile: personalProfile }
   })
 
-  return user
+  return { user, profile }
 }

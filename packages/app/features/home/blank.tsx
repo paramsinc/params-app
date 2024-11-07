@@ -26,7 +26,9 @@ export function BlankHome() {
   return (
     <View grow center>
       <View w="100%" p="$4" als="center" maw={800} gap="$4">
-        <H1>Open source, code-reviewed AI starter templates.</H1>
+        <Text bold tag="h1" fontSize={24}>
+          Open source, code-reviewed AI starter templates.
+        </Text>
         <WaitlistForm />
       </View>
     </View>

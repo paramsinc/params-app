@@ -48,8 +48,10 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
               .join('\n')}
           }
           html {
-            background-color: var(--backgroundStrong);
             font-family: var(${fontVars.body});
+          }
+          body {
+            background-color: var(--backgroundStrong);
           }
         `}
       </style>

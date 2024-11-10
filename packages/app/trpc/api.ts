@@ -2409,7 +2409,7 @@ export const appRouter = router({
           .getContent({
             owner: github_repo.github_repo_owner,
             repo: github_repo.github_repo_name,
-            path: `${github_repo.path_to_code}/${input.path}`,
+            path: [github_repo.path_to_code, input.path].filter(Boolean).join('/'),
           })
           .then((r) => r.data)
 

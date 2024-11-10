@@ -19,16 +19,13 @@ async function exchangeCodeForTokens(code: string) {
   }
 }
 
-async function getUserInfo({ accessToken }: { accessToken: string }) {
-  const octokit = new Octokit({
-    auth: accessToken,
-  })
-
-  const { data } = await octokit.users.getAuthenticated()
-  return data
-}
-
 export const githubOauth = {
   exchangeCodeForTokens,
-  getUserInfo,
+  fromUser: ({ accessToken }: { accessToken: string }) => {
+    const octokit = new Octokit({
+      auth: accessToken,
+    })
+
+    return octokit
+  },
 }

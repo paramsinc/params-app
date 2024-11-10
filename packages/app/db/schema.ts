@@ -6,10 +6,9 @@ import {
   unique,
   boolean,
   serial,
-  pgEnum,
   jsonb,
   bigint,
-  primaryKey,
+  index,
 } from 'drizzle-orm/pg-core'
 import { ulid } from 'ulid'
 import { availabilityRangesShape, googleCalendarsToBlockForAvailsShape } from 'app/db/types'
@@ -35,31 +34,37 @@ export const users = pgTable('users', {
   ...timestampMixin(),
 })
 
-export const profiles = pgTable('profiles', {
-  id: text('id')
-    .primaryKey()
-    .$default(() => `profile_${ulid()}`),
-  slug: text('slug').notNull().unique(),
-  name: text('name').notNull(),
-  bio: text('bio'),
-  github_username: text('github_username'),
-  image_vendor: text('image_vendor', { enum: ['cloudinary', 'raw'] }),
-  image_vendor_id: text('image_vendor_id'),
-  stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
+export const profiles = pgTable(
+  'profiles',
+  {
+    id: text('id')
+      .primaryKey()
+      .$default(() => `profile_${ulid()}`),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    bio: text('bio'),
+    github_username: text('github_username'),
+    image_vendor: text('image_vendor', { enum: ['cloudinary', 'raw'] }),
+    image_vendor_id: text('image_vendor_id'),
+    stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
 
-  availability_ranges: jsonb('availability_ranges')
-    .$type<Zod.infer<typeof availabilityRangesShape>>()
-    .default([]),
-  timezone: text('timezone').notNull().default('America/New_York'),
+    availability_ranges: jsonb('availability_ranges')
+      .$type<Zod.infer<typeof availabilityRangesShape>>()
+      .default([]),
+    timezone: text('timezone').notNull().default('America/New_York'),
 
-  personal_profile_user_id: text('personal_profile_user_id')
-    .unique()
-    .references(() => users.id, {
-      onDelete: 'set null',
-    }),
+    personal_profile_user_id: text('personal_profile_user_id')
+      .unique()
+      .references(() => users.id, {
+        onDelete: 'set null',
+      }),
 
-  ...timestampMixin(),
-})
+    ...timestampMixin(),
+  },
+  (table) => ({
+    index_slug: index('index_profile_slug').on(table.slug),
+  })
+)
 
 export const profileOnetimePlans = pgTable('profile_onetime_plans', {
   id: text('id')
@@ -94,6 +99,7 @@ export const repositories = pgTable(
   },
   (table) => ({
     uniqueSlugForProfile: unique().on(table.profile_id, table.slug),
+    index_repository_slug: index('index_repository_slug').on(table.slug),
   })
 )
 
@@ -264,7 +270,25 @@ export const githubIntegrations = pgTable('github_integrations', {
     .primaryKey(),
   github_user_id: bigint('github_user_id', { mode: 'number' }).notNull(),
   github_username: text('github_username').notNull(),
+  /**
+   * TODO encrypt & have decryption env var?
+   */
   access_token: text('access_token').notNull(),
   avatar_url: text('avatar_url'),
+  ...timestampMixin(),
+})
+
+export const githubRepoIntegrations = pgTable('github_repo_integrations', {
+  repo_id: text('repo_id')
+    .notNull()
+    .references(() => repositories.id, { onDelete: 'cascade' })
+    .primaryKey(),
+  github_integration_user_id: text('github_integration_user_id')
+    .notNull()
+    .references(() => githubIntegrations.user_id, { onDelete: 'cascade' }),
+  github_repo_id: bigint('github_repo_id', { mode: 'number' }).notNull(),
+  github_repo_name: text('github_repo_name').notNull(),
+  github_repo_owner: text('github_repo_owner').notNull(),
+  path_to_code: text('path_to_code').notNull().default(''),
   ...timestampMixin(),
 })

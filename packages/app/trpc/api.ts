@@ -880,7 +880,7 @@ const repository = {
         })
         .from(schema.repositories)
         .where(d.eq(schema.repositories.id, input.repo_id))
-        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.repositories.profile_id))
+        .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
         .leftJoin(
           schema.profileMembers,
           d.and(
@@ -1935,10 +1935,10 @@ export const appRouter = router({
         })
         .from(schema.offers)
         .where(d.eq(schema.offers.stripe_payment_intent_id, payment_intent_id))
-        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.offers.profile_id))
+        .innerJoin(schema.profiles, d.eq(schema.offers.profile_id, schema.profiles.id))
         .innerJoin(
           schema.organizations,
-          d.eq(schema.organizations.id, schema.offers.organization_id)
+          d.eq(schema.offers.organization_id, schema.organizations.id)
         )
         .leftJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
         .execute()
@@ -2090,12 +2090,12 @@ export const appRouter = router({
           }),
         })
         .from(schema.bookings)
-        .innerJoin(schema.profiles, d.eq(schema.profiles.id, schema.bookings.profile_id))
+        .innerJoin(schema.profiles, d.eq(schema.bookings.profile_id, schema.profiles.id))
         .innerJoin(
           schema.organizations,
-          d.eq(schema.organizations.id, schema.bookings.organization_id)
+          d.eq(schema.bookings.organization_id, schema.organizations.id)
         )
-        .leftJoin(schema.users, d.eq(schema.users.id, schema.bookings.canceled_by_user_id))
+        .leftJoin(schema.users, d.eq(schema.bookings.canceled_by_user_id, schema.users.id))
         .where(
           d.or(
             d.exists(
@@ -2203,7 +2203,10 @@ export const appRouter = router({
           })
         }
 
-        const githubUser = await githubOauth.getUserInfo({ accessToken: tokens.access_token })
+        const githubUser = await githubOauth
+          .fromUser({ accessToken: tokens.access_token })
+          .users.getAuthenticated()
+          .then((r) => r.data)
 
         if (!githubUser.id) {
           throw new TRPCError({
@@ -2234,6 +2237,197 @@ export const appRouter = router({
           .execute()
 
         return integration != null
+      }),
+
+    myRepos: authedProcedure
+      .input(
+        z.object({
+          limit: z.number().optional().default(20),
+          page: z.number().optional().default(1).describe('1-indexed'),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        const integration = await db.query.githubIntegrations.findFirst({
+          where: (gi, { eq }) => eq(gi.user_id, ctx.auth.userId),
+        })
+
+        if (!integration) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'GitHub account not connected',
+          })
+        }
+
+        const octokit = githubOauth.fromUser({ accessToken: integration.access_token })
+        const { data: repos } = await octokit.repos.listForAuthenticatedUser({
+          visibility: 'all',
+          sort: 'updated',
+          per_page: input.limit,
+          page: input.page,
+        })
+
+        return repos
+      }),
+
+    createRepoIntegration: authedProcedure
+      .input(
+        z.object({
+          repo_id: z.string(),
+          github_repo_id: z.number(),
+          github_repo_name: z.string(),
+          github_repo_owner: z.string(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        // Get repository, verify profile membership, and get GitHub integration in one query
+        const [first] = await db
+          .select({
+            repository: pick('repositories', { id: true, profile_id: true }),
+            myProfileMembership: pick('profileMembers', { id: true }),
+            githubIntegration: pick('githubIntegrations', {
+              user_id: true,
+              access_token: true,
+            }),
+          })
+          .from(schema.repositories)
+          .where(d.eq(schema.repositories.id, input.repo_id))
+          .innerJoin(
+            schema.profileMembers,
+            d.and(
+              d.eq(schema.profileMembers.profile_id, schema.repositories.profile_id),
+              d.eq(schema.profileMembers.user_id, ctx.auth.userId)
+            )
+          )
+          .leftJoin(
+            schema.githubIntegrations,
+            d.eq(schema.githubIntegrations.user_id, ctx.auth.userId)
+          )
+          .limit(1)
+          .execute()
+
+        if (!first?.myProfileMembership) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: "You are not a member of this repository's profile",
+          })
+        }
+
+        if (!first.githubIntegration) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'GitHub account not connected',
+          })
+        }
+
+        const [result] = await db
+          .insert(schema.githubRepoIntegrations)
+          .values({
+            repo_id: input.repo_id,
+            github_integration_user_id: first.githubIntegration.user_id,
+            github_repo_id: input.github_repo_id,
+            github_repo_name: input.github_repo_name,
+            github_repo_owner: input.github_repo_owner,
+          })
+          .returning()
+          .execute()
+
+        if (!result) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Failed to create GitHub repo integration.`,
+          })
+        }
+
+        return result
+      }),
+
+    repoFiles: authedProcedure
+      .input(
+        z.object({
+          profile_slug: z.string(),
+          repo_slug: z.string(),
+          path: z.string().optional().default(''),
+        })
+      )
+      .output(z.string().or(z.array(z.string())).nullable())
+      .query(async ({ input }) => {
+        const now = Date.now()
+        const [first] = await db
+          .select({
+            // repo: pick('repositories', {
+            //   id: true,
+            // }),
+            github_repo: pick('githubRepoIntegrations', {
+              github_repo_owner: true,
+              github_repo_name: true,
+            }),
+            github_integration: pick('githubIntegrations', {
+              access_token: true,
+            }),
+            // profile: pick('profiles', {
+            //   id: true,
+            // }),
+          })
+          .from(schema.repositories)
+          .where(
+            d.and(
+              d.eq(schema.repositories.slug, input.repo_slug),
+              d.eq(schema.repositories.profile_id, schema.profiles.id)
+            )
+          )
+          .innerJoin(schema.profiles, d.eq(schema.profiles.slug, input.profile_slug))
+          .innerJoin(
+            schema.githubRepoIntegrations,
+            d.eq(schema.githubRepoIntegrations.repo_id, schema.repositories.id)
+          )
+          .innerJoin(
+            schema.githubIntegrations,
+            d.eq(
+              schema.githubIntegrations.user_id,
+              schema.githubRepoIntegrations.github_integration_user_id
+            )
+          )
+          .limit(1)
+          .execute()
+
+        console.log('[repoFiles][time]', Date.now() - now + 'ms')
+
+        if (!first) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Repository not found.`,
+          })
+        }
+
+        const { github_repo, github_integration } = first
+
+        const octokit = githubOauth.fromUser({ accessToken: github_integration.access_token })
+
+        // TODO: Implement getting files from GitHub API
+        const files = await octokit.repos
+          .getContent({
+            owner: github_repo.github_repo_owner,
+            repo: github_repo.github_repo_name,
+            path: input.path,
+          })
+          .then((r) => r.data)
+
+        if (Array.isArray(files)) {
+          let result: string[] = []
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i]!
+            if (file.type === 'file') {
+              result.push(file.path)
+            }
+          }
+          return result
+        }
+
+        if (files.type === 'file') {
+          return Buffer.from(files.content, 'base64').toString()
+        }
+
+        return null
       }),
   }),
 })

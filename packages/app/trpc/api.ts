@@ -2360,6 +2360,7 @@ export const appRouter = router({
             github_repo: pick('githubRepoIntegrations', {
               github_repo_owner: true,
               github_repo_name: true,
+              path_to_code: true,
             }),
             github_integration: pick('githubIntegrations', {
               access_token: true,
@@ -2408,7 +2409,7 @@ export const appRouter = router({
           .getContent({
             owner: github_repo.github_repo_owner,
             repo: github_repo.github_repo_name,
-            path: input.path,
+            path: `${github_repo.path_to_code}/${input.path}`,
           })
           .then((r) => r.data)
 

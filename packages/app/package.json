@@ -11,6 +11,8 @@
     "@hookform/devtools": "^4.3.1",
     "@nandorojo/anchor": "^0.4.3",
     "@neondatabase/serverless": "^0.9.5",
+    "@octokit/auth-oauth-app": "^8.1.1",
+    "@octokit/rest": "^21.0.2",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "@shopify/flash-list": "^1.7.1",

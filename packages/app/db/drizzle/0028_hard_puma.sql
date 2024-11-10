@@ -1,0 +1,1 @@
+ALTER TABLE "github_integrations" ALTER COLUMN "github_user_id" SET DATA TYPE bigint USING "github_user_id"::bigint;

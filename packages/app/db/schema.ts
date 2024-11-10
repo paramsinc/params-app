@@ -9,6 +9,7 @@ import {
   pgEnum,
   jsonb,
   bigint,
+  primaryKey,
 } from 'drizzle-orm/pg-core'
 import { ulid } from 'ulid'
 import { availabilityRangesShape, googleCalendarsToBlockForAvailsShape } from 'app/db/types'
@@ -253,5 +254,17 @@ export const waitlistSignups = pgTable('waitlist_signups', {
     .primaryKey()
     .$default(() => `waitlist_signup_${ulid()}`),
   email: text('email').notNull().unique(),
+  ...timestampMixin(),
+})
+
+export const githubIntegrations = pgTable('github_integrations', {
+  user_id: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' })
+    .primaryKey(),
+  github_user_id: bigint('github_user_id', { mode: 'number' }).notNull(),
+  github_username: text('github_username').notNull(),
+  access_token: text('access_token').notNull(),
+  avatar_url: text('avatar_url'),
   ...timestampMixin(),
 })

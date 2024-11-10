@@ -3,6 +3,7 @@ import { ErrorCard } from 'app/ds/Error/card'
 import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
+import { SignInWithGithub } from 'app/features/oauth/github/sign-in-with-github'
 import { RepositoryGithubUrlField, RepositorySlugField } from 'app/features/repository/new/fields'
 import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
@@ -80,6 +81,12 @@ export function UpdateRepositoryForm({
                 />
               )}
             />
+
+            <SignInWithGithub profileSlug={repo.profile.slug}>
+              <Button>
+                <ButtonText>Connect GitHub</ButtonText>
+              </Button>
+            </SignInWithGithub>
           </View>
         </Scroll>
 

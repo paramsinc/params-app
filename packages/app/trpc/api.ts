@@ -18,6 +18,7 @@ import { serverEnv } from 'app/env/env.server'
 import { exampleRepoFiles } from 'app/trpc/routes/repo-files'
 import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 import * as googleCalendar from 'app/vendor/google/google-calendar'
+import { githubOauth } from 'app/vendor/github/github-oauth'
 
 const [firstCdn, ...restCdns] = keys(cdn)
 
@@ -567,7 +568,7 @@ const profileMember = {
       const myMembership = await db.query.profileMembers
         .findFirst({
           where: (profileMembers, { eq, and }) =>
-            and(eq(profileMembers.id, ctx.auth.userId), eq(profileMembers.profile_id, id)),
+            and(eq(profileMembers.user_id, ctx.auth.userId), eq(profileMembers.profile_id, id)),
         })
         .execute()
 
@@ -915,14 +916,27 @@ const repository = {
   repoById: publicProcedure
     .input(z.object({ repo_id: z.string() }))
     .query(async ({ input: { repo_id } }) => {
-      const repo = await db.query.repositories.findFirst({
-        where: (repositories, { eq }) => eq(repositories.id, repo_id),
-        columns: {
-          id: true,
-          slug: true,
-          github_url: true,
-        },
-      })
+      const [repo] = await db
+        .select({
+          ...pick('repositories', {
+            id: true,
+            slug: true,
+            github_url: true,
+          }),
+          profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+        })
+        .from(schema.repositories)
+        .where(d.eq(schema.repositories.id, repo_id))
+        .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
+        .limit(1)
+        .execute()
+
+      if (!repo) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Repository not found.`,
+        })
+      }
       return repo
     }),
 }
@@ -1459,7 +1473,10 @@ const googleOauthRoutes = {
           picture_url: googleUser.picture,
         })
         .onConflictDoUpdate({
-          target: schema.googleCalendarIntegrations.google_user_id,
+          target: [
+            schema.googleCalendarIntegrations.profile_id,
+            schema.googleCalendarIntegrations.google_user_id,
+          ],
           set: {
             access_token: tokens.access_token,
             refresh_token: tokens.refresh_token,
@@ -2171,6 +2188,52 @@ export const appRouter = router({
         }
 
         return updatedBooking?.canceled_at != null
+      }),
+  }),
+  github: router({
+    exchangeCode: authedProcedure
+      .input(z.object({ code: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const tokens = await githubOauth.exchangeCodeForTokens(input.code)
+
+        if (!tokens.access_token) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Failed to exchange code for access token.`,
+          })
+        }
+
+        const githubUser = await githubOauth.getUserInfo({ accessToken: tokens.access_token })
+
+        if (!githubUser.id) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Failed to get GitHub user info.`,
+          })
+        }
+
+        // Store the GitHub integration at user level
+        const [integration] = await db
+          .insert(schema.githubIntegrations)
+          .values({
+            access_token: tokens.access_token,
+            user_id: ctx.auth.userId,
+            github_user_id: githubUser.id,
+            github_username: githubUser.login,
+            avatar_url: githubUser.avatar_url,
+          })
+          .onConflictDoUpdate({
+            target: schema.githubIntegrations.user_id,
+            set: {
+              access_token: tokens.access_token,
+              github_username: githubUser.login,
+              avatar_url: githubUser.avatar_url,
+            },
+          })
+          .returning()
+          .execute()
+
+        return integration != null
       }),
   }),
 })

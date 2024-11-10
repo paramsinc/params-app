@@ -1,0 +1,1 @@
+ALTER TABLE "github_repo_integrations" ADD COLUMN "default_branch" text NOT NULL DEFAULT 'master';

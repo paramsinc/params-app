@@ -2014,10 +2014,35 @@ export const appRouter = router({
       return { email: first.email }
     }),
   repo: router({
+    tree: publicProcedure
+      .input(
+        z.object({ profile_slug: z.string(), repo_slug: z.string(), path: z.string().optional() })
+      )
+      .query(async ({ input }) => {
+        if (process.env.NODE_ENV === 'development') {
+          const {
+            octokit,
+            query: { github_repo },
+          } = await getOctokitFromRepo(input)
+          const tree = await octokit.rest.git
+            .getTree({
+              owner: github_repo.github_repo_owner,
+              repo: github_repo.github_repo_name,
+              tree_sha: github_repo.default_branch,
+              recursive: 'true',
+            })
+            .then((r) => r.data.tree)
+          return tree.map(({ path, type }) => ({ path: path || '', type: type || '' }))
+        }
+        return []
+      }),
     files: publicProcedure
       .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
       .output(z.record(z.string(), z.string()))
       .query(async ({ input }) => {
+        if (process.env.NODE_ENV === 'development') {
+          return exampleRepoFiles
+        }
         return exampleRepoFiles
       }),
     paramsJson: publicProcedure
@@ -2028,8 +2053,20 @@ export const appRouter = router({
           return exampleRepoFiles
         }
         const files = await getFiles()
-        const paramsJson = files['params.json']
-        if (!paramsJson) {
+        let paramsJson = files['params.json'] as string | null
+        if (process.env.NODE_ENV === 'development') {
+          const files = await getRepoFiles({
+            profile_slug: input.profileSlug,
+            repo_slug: input.repoSlug,
+            path: 'params.json',
+          })
+          if (typeof files === 'string') {
+            paramsJson = files
+          } else {
+            paramsJson = null
+          }
+        }
+        if (typeof paramsJson !== 'string') {
           return null
         }
         const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
@@ -2319,6 +2356,14 @@ export const appRouter = router({
           })
         }
 
+        const githubRepo = await githubOauth
+          .fromUser({ accessToken: first.githubIntegration.access_token })
+          .repos.get({
+            owner: input.github_repo_owner,
+            repo: input.github_repo_name,
+          })
+          .then((r) => r.data)
+
         const [result] = await db
           .insert(schema.githubRepoIntegrations)
           .values({
@@ -2327,6 +2372,7 @@ export const appRouter = router({
             github_repo_id: input.github_repo_id,
             github_repo_name: input.github_repo_name,
             github_repo_owner: input.github_repo_owner,
+            default_branch: githubRepo.default_branch,
           })
           .returning()
           .execute()
@@ -2351,86 +2397,96 @@ export const appRouter = router({
       )
       .output(z.string().or(z.array(z.string())).nullable())
       .query(async ({ input }) => {
-        const now = Date.now()
-        const [first] = await db
-          .select({
-            // repo: pick('repositories', {
-            //   id: true,
-            // }),
-            github_repo: pick('githubRepoIntegrations', {
-              github_repo_owner: true,
-              github_repo_name: true,
-              path_to_code: true,
-            }),
-            github_integration: pick('githubIntegrations', {
-              access_token: true,
-            }),
-            // profile: pick('profiles', {
-            //   id: true,
-            // }),
-          })
-          .from(schema.repositories)
-          .where(
-            d.and(
-              d.eq(schema.repositories.slug, input.repo_slug),
-              d.eq(schema.repositories.profile_id, schema.profiles.id)
-            )
-          )
-          .innerJoin(schema.profiles, d.eq(schema.profiles.slug, input.profile_slug))
-          .innerJoin(
-            schema.githubRepoIntegrations,
-            d.eq(schema.githubRepoIntegrations.repo_id, schema.repositories.id)
-          )
-          .innerJoin(
-            schema.githubIntegrations,
-            d.eq(
-              schema.githubIntegrations.user_id,
-              schema.githubRepoIntegrations.github_integration_user_id
-            )
-          )
-          .limit(1)
-          .execute()
-
-        console.log('[repoFiles][time]', Date.now() - now + 'ms')
-
-        if (!first) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: `Repository not found.`,
-          })
-        }
-
-        const { github_repo, github_integration } = first
-
-        const octokit = githubOauth.fromUser({ accessToken: github_integration.access_token })
-
-        // TODO: Implement getting files from GitHub API
-        const files = await octokit.repos
-          .getContent({
-            owner: github_repo.github_repo_owner,
-            repo: github_repo.github_repo_name,
-            path: [github_repo.path_to_code, input.path].filter(Boolean).join('/'),
-          })
-          .then((r) => r.data)
-
-        if (Array.isArray(files)) {
-          let result: string[] = []
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i]!
-            if (file.type === 'file') {
-              result.push(file.path)
-            }
-          }
-          return result
-        }
-
-        if (files.type === 'file') {
-          return Buffer.from(files.content, 'base64').toString()
-        }
-
-        return null
+        return getRepoFiles(input)
       }),
   }),
 })
+
+async function getRepoFiles(input: { profile_slug: string; repo_slug: string; path: string }) {
+  const { query, octokit } = await getOctokitFromRepo(input)
+
+  const { github_repo } = query
+
+  // TODO: Implement getting files from GitHub API
+  const files = await octokit.repos
+    .getContent({
+      owner: github_repo.github_repo_owner,
+      repo: github_repo.github_repo_name,
+      path: [github_repo.path_to_code, input.path].filter(Boolean).join('/'),
+    })
+    .then((r) => r.data)
+
+  if (Array.isArray(files)) {
+    let result: string[] = []
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!
+      if (file.type === 'file') {
+        result.push(file.path)
+      }
+    }
+    return result
+  }
+
+  if (files.type === 'file') {
+    return Buffer.from(files.content, 'base64').toString()
+  }
+  return null
+}
+
+async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: string }) {
+  const [first] = await db
+    .select({
+      // repo: pick('repositories', {
+      //   id: true,
+      // }),
+      github_repo: pick('githubRepoIntegrations', {
+        github_repo_owner: true,
+        github_repo_name: true,
+        path_to_code: true,
+        default_branch: true,
+      }),
+      github_integration: pick('githubIntegrations', {
+        access_token: true,
+      }),
+      // profile: pick('profiles', {
+      //   id: true,
+      // }),
+    })
+    .from(schema.repositories)
+    .where(
+      d.and(
+        d.eq(schema.repositories.slug, input.repo_slug),
+        d.eq(schema.repositories.profile_id, schema.profiles.id)
+      )
+    )
+    .innerJoin(schema.profiles, d.eq(schema.profiles.slug, input.profile_slug))
+    .innerJoin(
+      schema.githubRepoIntegrations,
+      d.eq(schema.githubRepoIntegrations.repo_id, schema.repositories.id)
+    )
+    .innerJoin(
+      schema.githubIntegrations,
+      d.eq(
+        schema.githubIntegrations.user_id,
+        schema.githubRepoIntegrations.github_integration_user_id
+      )
+    )
+    .limit(1)
+    .execute()
+
+  if (!first) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: `Repository not found.`,
+    })
+  }
+
+  const { github_repo, github_integration } = first
+
+  return {
+    query: first,
+    octokit: githubOauth.fromUser({ accessToken: github_integration.access_token }),
+  }
+}
 
 export type AppRouter = typeof appRouter

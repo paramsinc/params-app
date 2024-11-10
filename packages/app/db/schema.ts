@@ -290,5 +290,6 @@ export const githubRepoIntegrations = pgTable('github_repo_integrations', {
   github_repo_name: text('github_repo_name').notNull(),
   github_repo_owner: text('github_repo_owner').notNull(),
   path_to_code: text('path_to_code').notNull().default(''),
+  default_branch: text('default_branch').notNull(),
   ...timestampMixin(),
 })

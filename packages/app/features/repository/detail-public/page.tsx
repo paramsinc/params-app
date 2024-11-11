@@ -162,14 +162,14 @@ function RepositoryDetailPublicPageContent({
       />
       <Page.Scroll>
         <Page.Content maw="100%" gap="$3">
-          <Card row gap="$3" flexWrap="wrap" jbtwn>
+          <Card row gap="$3" flexWrap="wrap" jbtwn ai="center">
             <View flex={1}>
               <Text
                 flexGrow={1}
                 flexBasis={2}
                 bold
                 fontSize={18}
-                $gtSm={{ fontSize: 24 }}
+                // $gtSm={{ fontSize: 24 }}
                 fontFamily="$mono"
               >
                 @{profileSlug}/{repo.slug}
@@ -525,7 +525,10 @@ function Codeblock({
             borderRadius: 12,
             marginBottom: 16,
             fontFamily: 'var(--font-mono)',
-            whiteSpace: 'pre-wrap',
+            // whiteSpace: 'pre-wrap',
+            whiteSpace: 'pre',
+            lineBreak: 'anywhere',
+            overflowX: 'auto',
           }}
           className={className}
         >
@@ -533,7 +536,12 @@ function Codeblock({
             <div key={i} {...getLineProps({ line })}>
               {lineNumbers && (
                 <span
-                  style={{ width: 50, display: 'inline-block', opacity: 0.8, userSelect: 'none' }}
+                  style={{
+                    width: 50,
+                    display: 'inline-block',
+                    // opacity: 0.8,
+                    userSelect: 'none',
+                  }}
                 >
                   {i + 1}
                 </span>

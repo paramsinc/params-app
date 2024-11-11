@@ -788,6 +788,129 @@ const repository = {
 
       return repository
     }),
+  createRepoFromGithub: authedProcedure
+    .input(
+      z.object({
+        github_repo_owner: z.string(),
+        github_repo_name: z.string(),
+        profile_id: z.string(),
+        path_to_code: z.string().optional().default(''),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [first] = await db
+        .select({
+          myMembership: pick('profileMembers', {
+            id: true,
+          }),
+          githubIntegration: pick('githubIntegrations', {
+            access_token: true,
+            user_id: true,
+          }),
+        })
+        .from(schema.profileMembers)
+        .where(
+          d.and(
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId),
+            d.eq(schema.profileMembers.profile_id, input.profile_id)
+          )
+        )
+        .innerJoin(
+          schema.githubIntegrations,
+          d.eq(schema.profileMembers.user_id, schema.githubIntegrations.user_id)
+        )
+        .limit(1)
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Please sync your GitHub account first.`,
+        })
+      }
+
+      const { githubIntegration, myMembership } = first
+      if (!githubIntegration) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Please sync your GitHub account first.`,
+        })
+      }
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You don't have permission to create repositories for this profile.`,
+        })
+      }
+
+      const octokit = githubOauth.fromUser({ accessToken: githubIntegration.access_token })
+      const githubRepo = await octokit.rest.repos.get({
+        owner: input.github_repo_owner,
+        repo: input.github_repo_name,
+      })
+
+      let slug = input.github_repo_name
+
+      const { repo } = await db.transaction(async (tx) => {
+        let slugSearchCount = 0
+        while (
+          await tx.query.repositories.findFirst({
+            where: (repositories, { eq }) => eq(repositories.slug, slug),
+          })
+        ) {
+          const maxSlugsCheck = 100
+          if (slugSearchCount >= maxSlugsCheck) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `Couldn't create user, because the slug ${input.github_repo_name} is already taken. Please try another one.`,
+            })
+          }
+          slugSearchCount++
+          slug = `${input.github_repo_name}-${slugSearchCount}`
+        }
+        const [repo] = await db
+          .insert(schema.repositories)
+          .values({
+            profile_id: input.profile_id,
+            slug: input.github_repo_name,
+            github_url: githubRepo.data.html_url,
+          })
+          .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
+          .execute()
+
+        if (!repo) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `Repository couldn't get created.`,
+          })
+        }
+
+        const [githubRepoIntegration] = await db
+          .insert(schema.githubRepoIntegrations)
+          .values({
+            repo_id: repo.id,
+            github_integration_user_id: githubIntegration.user_id,
+            github_repo_id: githubRepo.data.id,
+            github_repo_name: githubRepo.data.name,
+            default_branch: githubRepo.data.default_branch,
+            github_repo_owner: githubRepo.data.owner.login,
+            path_to_code: input.path_to_code,
+          })
+          .returning()
+          .execute()
+
+        if (!githubRepoIntegration) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `GitHub repo integration couldn't get created.`,
+          })
+        }
+
+        return { repo }
+      })
+
+      return repo
+    }),
   reposByProfileSlug: publicProcedure
     .input(z.object({ profile_slug: z.string() }))
     .query(async ({ input: { profile_slug } }) => {
@@ -2190,6 +2313,7 @@ export const appRouter = router({
               id: true,
               canceled_at: true,
               google_calendar_event_id: true,
+              start_datetime: true,
             }),
             profile_id: profileMembershipSubquery.profile_id,
             organization_id: organizationMembershipSubquery.organization_id,
@@ -2210,6 +2334,13 @@ export const appRouter = router({
         }
         if (booking.canceled_at) {
           return true
+        }
+
+        const now = DateTime.now()
+        const bookingStart = DateTime.fromJSDate(booking.start_datetime)
+
+        if (bookingStart < now) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Booking already started' })
         }
 
         const [updatedBooking] = await db
@@ -2289,21 +2420,23 @@ export const appRouter = router({
         })
 
         if (!integration) {
-          throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: 'GitHub account not connected',
-          })
+          return {
+            missing_github_integration: true,
+          } as const
         }
 
         const octokit = githubOauth.fromUser({ accessToken: integration.access_token })
         const { data: repos } = await octokit.repos.listForAuthenticatedUser({
           visibility: 'all',
-          sort: 'updated',
+          sort: 'pushed',
           per_page: input.limit,
           page: input.page,
         })
 
-        return repos
+        return {
+          repos,
+          missing_github_integration: false,
+        } as const
       }),
 
     createRepoIntegration: authedProcedure
@@ -2436,9 +2569,6 @@ async function getRepoFiles(input: { profile_slug: string; repo_slug: string; pa
 async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: string }) {
   const [first] = await db
     .select({
-      // repo: pick('repositories', {
-      //   id: true,
-      // }),
       github_repo: pick('githubRepoIntegrations', {
         github_repo_owner: true,
         github_repo_name: true,
@@ -2448,9 +2578,6 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
       github_integration: pick('githubIntegrations', {
         access_token: true,
       }),
-      // profile: pick('profiles', {
-      //   id: true,
-      // }),
     })
     .from(schema.repositories)
     .where(

@@ -18,6 +18,7 @@ import {
 } from 'app/features/profile/stripe/modal'
 import { UpdateProfileModal } from 'app/features/profile/update/modal'
 import {
+  NewRepositoryFromGithubModalContent,
   NewRepositoryModal,
   NewRepositoryModalContent,
   NewRepositoryModalTrigger,
@@ -165,7 +166,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
               </Button>
             </NewRepositoryModalTrigger>
 
-            <NewRepositoryModalContent profileId={profile.id} />
+            {/* <NewRepositoryModalContent profileId={profile.id} /> */}
+            <NewRepositoryFromGithubModalContent profileId={profile.id} profileSlug={profileSlug} />
           </NewRepositoryModal>
         </View>
 

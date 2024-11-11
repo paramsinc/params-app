@@ -16,7 +16,7 @@ const discovery = {
   revocationEndpoint: `https://github.com/settings/connections/applications/${env.GITHUB_OAUTH_CLIENT_ID}`,
 }
 
-export default ({ profileSlug }: { profileSlug: string }) => {
+export default () => {
   const path = useCurrentPath()
 
   const authRedirectUrl = makeRedirectUri({
@@ -55,7 +55,7 @@ export default ({ profileSlug }: { profileSlug: string }) => {
         )
       }
     },
-    [code, profileSlug]
+    [code]
   )
 
   return {

@@ -36,7 +36,7 @@ export function GlobalWebLayout({
           }}
         >
           <View w={100}></View>
-          <View grow center>
+          <View flex={1} center>
             <Logo height={20} />
           </View>
           <View

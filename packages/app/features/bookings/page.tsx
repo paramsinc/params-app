@@ -119,10 +119,10 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
               <DropdownMenu.ItemIcon icon={Lucide.Trash} />
               <DropdownMenu.ItemTitle>Cancel</DropdownMenu.ItemTitle>
             </DropdownMenu.Item>
-            <DropdownMenu.Item key="reschedule booking">
+            {/* <DropdownMenu.Item key="reschedule booking">
               <DropdownMenu.ItemIcon icon={Lucide.CalendarClock} />
               <DropdownMenu.ItemTitle>Reschedule</DropdownMenu.ItemTitle>
-            </DropdownMenu.Item>
+            </DropdownMenu.Item> */}
           </DropdownMenu.Content>
         </DropdownMenu>
       </View>

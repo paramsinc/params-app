@@ -3,14 +3,8 @@ import useGithubOauth from './use-github-oauth/use-github-oauth'
 import useToast from 'app/ds/Toast'
 import { getErrorMessages } from 'app/ds/Error/error'
 
-export function SignInWithGithub({
-  children,
-  profileSlug,
-}: {
-  children: React.ReactElement
-  profileSlug: string
-}) {
-  const { prompt, isLoading, error } = useGithubOauth({ profileSlug })
+export function SignInWithGithub({ children }: { children: React.ReactElement }) {
+  const { prompt, isLoading, error } = useGithubOauth()
 
   const { toast } = useToast()
 

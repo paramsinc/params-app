@@ -218,7 +218,7 @@ export default function Home() {
                   </View>
                 </View>
 
-                <View gap="$1" row enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
+                <View gap="$1" row enterStyle={{ o: 0 }} o={1} animation="200ms">
                   <LinkButton grow href={`/@francois`}>
                     <ButtonText>Profile</ButtonText>
                   </LinkButton>
@@ -340,7 +340,7 @@ export default function Home() {
                   </View>
                 </View>
 
-                <View gap="$1" row enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
+                <View gap="$1" row enterStyle={{ o: 0 }} o={1} animation="200ms">
                   <LinkButton grow href={`/@jeremy`}>
                     <ButtonText>Profile</ButtonText>
                   </LinkButton>

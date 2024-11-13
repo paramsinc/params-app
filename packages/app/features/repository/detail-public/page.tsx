@@ -620,15 +620,18 @@ function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoS
                   </Breadcrumbs.Item>
                 </Link>
                 {path?.map((chunk, i) => {
+                  const isLast = i === path.length - 1
+                  const baseHref = `/@${profileSlug}/${repoSlug}/files`
+                  let href = `${baseHref}/${path.slice(0, i + 1).join('/')}`
+
+                  if (isLast) {
+                    href = `${baseHref}/${path.slice(0, i).join('/')}`
+                  }
                   return (
                     <Fragment key={i}>
                       <Breadcrumbs.Separator />
 
-                      <Link
-                        href={`/@${profileSlug}/${repoSlug}/files/${path
-                          .slice(0, i + 1)
-                          .join('/')}`}
-                      >
+                      <Link href={href}>
                         <Breadcrumbs.Item>
                           <Breadcrumbs.Title>{chunk}</Breadcrumbs.Title>
                         </Breadcrumbs.Item>

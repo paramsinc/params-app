@@ -1,6 +1,7 @@
 'use client'
 import { Auth } from 'app/auth'
 import { Header } from 'app/ds/Header'
+import { Link } from 'app/ds/Link'
 import { Logo } from 'app/ds/Logo'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
@@ -37,7 +38,9 @@ export function GlobalWebLayout({
         >
           <View w={100}></View>
           <View flex={1} center>
-            <Logo height={20} />
+            <Link href="/">
+              <Logo height={20} />
+            </Link>
           </View>
           <View
             w={100}

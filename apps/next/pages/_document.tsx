@@ -8,7 +8,7 @@ import NextDocument, {
   NextScript,
 } from 'next/document'
 import { Children } from 'react'
-import { AppRegistry } from 'react-native'
+import { StyleSheet } from 'react-native'
 
 const cssReset = `
 html, body, #__next {
@@ -58,11 +58,10 @@ button:focus, input, div:focus {
 
 export default class Document extends NextDocument {
   static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
-    AppRegistry.registerComponent('Main', () => Main)
     const page = await ctx.renderPage()
 
-    // @ts-ignore
-    const { getStyleElement } = AppRegistry.getApplication('Main')
+    // @ts-ignore RN doesn't have this type
+    const rnwStyle = StyleSheet.getSheet()
 
     /**
      * Note: be sure to keep tamagui styles after react-native-web styles like it is here!
@@ -70,15 +69,12 @@ export default class Document extends NextDocument {
      */
     const styles = [
       <style key="css" dangerouslySetInnerHTML={{ __html: cssReset }} />,
-      getStyleElement(),
+
+      <style id={rnwStyle.id} dangerouslySetInnerHTML={{ __html: rnwStyle.textContent }} />,
       <style
         key="tamagui-css"
         dangerouslySetInnerHTML={{
-          __html: tamaguiConfig.getCSS({
-            // if you are using "outputCSS" option, you should use this "exclude"
-            // if not, then you can leave the option out
-            // exclude: process.env.NODE_ENV === 'production' ? 'design-system' : null,
-          }),
+          __html: tamaguiConfig.getCSS(),
         }}
       />,
     ]

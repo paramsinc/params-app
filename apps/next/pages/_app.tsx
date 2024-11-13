@@ -1,6 +1,6 @@
+import './tailwind.css'
 import 'raf/polyfill'
 import '@tamagui/core/reset.css'
-import './tailwind.css'
 
 import { ColorScheme, NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
 import { Fragment } from 'react'
@@ -33,7 +33,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
       : Fragment
 
   return (
-    <div style={{ display: 'contents' }}>
+    <>
       <Head>
         <title>{APP_NAME}</title>
         <meta name="description" content={`Open source, code-reviewed AI starter templates.`} />
@@ -67,7 +67,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
           </Provider>
         </TamaguiProvider>
       </ThemeProvider>
-    </div>
+    </>
   )
 }
 

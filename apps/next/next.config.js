@@ -14,7 +14,7 @@ const plugins = [
   }),
   withTamagui({
     enableLegacyFontSupport: true,
-    appDir: true,
+    appDir: false,
     themeBuilder: {
       input: '../../packages/app/ds/tamagui/themes/themes-old.tsx',
       output: '../../packages/app/ds/tamagui/themes/theme-generated.ts',

@@ -14,10 +14,11 @@ export default function Home() {
     <View>
       {/* Background gradient */}
       <View
-        zi={-1}
+        zi={0}
         stretch
         ov="hidden"
-        o={0.15}
+        o={0.25}
+        $theme-light={{ opacity: 0.4 }}
         style={{
           backgroundImage: `
             radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 1) 0px, transparent 0%),
@@ -45,7 +46,17 @@ export default function Home() {
         }}
       >
         <View>
-          <Text fontSize={40} fontWeight="500" letterSpacing={'-0.03em'} lineHeight={'1.3em'}>
+          <Text
+            zi={-1}
+            fontWeight="500"
+            letterSpacing={'-0.035em'}
+            $xs={{ fontSize: 20 }}
+            fontSize={24}
+            $gtSm={{ fontSize: 32 }}
+            $gtMd={{ fontSize: 40 }}
+            tag="h1"
+            fontFamily="$mono"
+          >
             Find curated ML templates
             {'\n'}& book a call with the creators
           </Text>
@@ -54,12 +65,24 @@ export default function Home() {
         <View gap="$4">
           {/* François's Template Card */}
           <View>
-            <View $gtSm={{ row: 'reverse' }} br="$4" bw={1} boc="$borderColor" ov="hidden">
-              <View animation="quick" o={0.25} stretch zi={0} bg="$gray11" themeInverse />
+            <View
+              $gtSm={{ row: 'reverse' }}
+              br="$4"
+              style={{
+                boxShadow: `
+                    0px 2px 4px rgba(0, 0, 0, 0.02),
+                    0px 4px 8px rgba(0, 0, 0, 0.02),
+                    inset 0px 1px 1px rgba(255, 255, 255, 0.04),
+                    inset 0px -1px 1px rgba(0, 0, 0, 0.02)
+                  `,
+              }}
+              ov="hidden"
+            >
+              <View animation="quick" o={0.25} stretch zi={0} bg="$color11" themeInverse />
 
               <View p="$3" $gtSm={{ f: 1, p: '$4' }} gap="$4">
-                <View>
-                  <Card.Title>@francois/recommendation-system</Card.Title>
+                <View gap="$2">
+                  <Card.Title fontFamily="$mono">@francois/recommendation-system</Card.Title>
                   <Card.Description>
                     A scalable recommendation engine built with TensorFlow, featuring collaborative
                     filtering, content-based filtering, and hybrid approaches. Includes pre-trained
@@ -86,7 +109,7 @@ export default function Home() {
                 p="$3"
                 ov="hidden"
                 $gtSm={{
-                  maw: 400,
+                  w: 350,
                   p: '$4',
                   br: '$4',
                   m: '$1',
@@ -95,7 +118,6 @@ export default function Home() {
                 }}
                 gap="$4"
                 style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.01)',
                   boxShadow: `
                     0px 2px 4px rgba(0, 0, 0, 0.02),
                     0px 4px 8px rgba(0, 0, 0, 0.02),
@@ -106,8 +128,26 @@ export default function Home() {
                   //   WebkitBackdropFilter: 'blur(10px)',
                 }}
               >
+                <View
+                  //   themeInverse
+                  theme="light"
+                  o={0.15}
+                  stretch
+                  zi={0}
+                  bg="$color2"
+                  $theme-light={{ bg: '$color3' }}
+                  animation="200ms"
+                />
                 {/* <View theme="light" o={0.15} stretch zi={0} bg="$color2" /> */}
-                <View row gap="$4" ai="center">
+                <View $gtSm={{ row: true, ai: 'center' }} gap="$3" ai="center">
+                  <Image
+                    src="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
+                    unoptimized
+                    width={96}
+                    height={96}
+                    alt="François Chollet"
+                    style={{ borderRadius: 999 }}
+                  />
                   {/* <Image
                     src="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
                     width={96}
@@ -115,19 +155,23 @@ export default function Home() {
                     alt="François Chollet"
                     style={{ borderRadius: 999 }}
                   /> */}
-                  <View>
-                    <Text fontWeight="600">François Chollet</Text>
-                    <Text color="$color11">AI Researcher at Google</Text>
+                  <View $gtSm={{ flex: 1 }}>
+                    <Text fontWeight="600" $sm={{ center: true }}>
+                      François Chollet
+                    </Text>
+                    <Text color="$color11" $sm={{ center: true }}>
+                      AI Researcher at Google
+                    </Text>
                   </View>
                 </View>
 
-                <View gap="$2">
+                <View gap="$2" enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
                   <Button>
                     <ButtonText>View Profile</ButtonText>
                   </Button>
 
                   <Button themeInverse>
-                    <ButtonText>Book a Call</ButtonText>
+                    <ButtonText>Book a Call ($400+)</ButtonText>
                   </Button>
                 </View>
               </View>

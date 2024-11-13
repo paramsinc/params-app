@@ -15,6 +15,7 @@ const context = createStyledContext<{ loading?: boolean }>({
 const borderWidth = 2
 
 const Frame = styled(View, {
+  py: 0,
   px: '$2',
   height,
   bg: '$color3',
@@ -54,6 +55,7 @@ const Frame = styled(View, {
   row: true,
   br: 6,
   gap: '$2',
+  testID: 'button',
 })
 
 export const ButtonIcon = (props: {
@@ -78,11 +80,11 @@ export const ButtonIcon = (props: {
       <View o={loading ? 0 : 1}>
         <props.icon color={'$color11'} size={iconSize} />
       </View>
-      {loading && (
+      {/* {loading && (
         <View pos="absolute" top={0} left={0} right={0} bottom={0} ai="center" jc="center">
           <LoadingSpinner size="small" color={'$color11'} />
         </View>
-      )}
+      )} */}
     </View>
   )
 }

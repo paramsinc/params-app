@@ -12,11 +12,11 @@ const context = createStyledContext<{ loading?: boolean }>({
   loading: false,
 })
 
-const borderWidth = 2
+const borderWidth = 0
 
 const Frame = styled(View, {
   py: 0,
-  px: '$2',
+  px: '$2.5',
   height,
   bg: '$color3',
   bw: borderWidth,

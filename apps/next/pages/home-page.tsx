@@ -8,6 +8,51 @@ import { Image } from 'app/ds/Image'
 import { Lucide } from 'app/ds/Lucide'
 import { Link } from 'app/ds/Link'
 import { Theme } from 'app/ds/Theme'
+import { LinkButton } from 'app/ds/Button/link'
+import { styled } from 'app/ds/styled'
+
+const Heading = styled(Text, {
+  fontFamily: '$heading',
+  fontWeight: '500',
+})
+
+const H1 = styled(Heading, {
+  letterSpacing: '-0.035em',
+  tag: 'h1',
+  fontSize: 24,
+
+  //   $gtXs: {
+  //     fontSize: 24,
+  //   },
+  $gtSm: {
+    fontSize: 32,
+  },
+  $gtMd: {
+    fontSize: 40,
+  },
+  $gtLg: {
+    fontSize: 48,
+  },
+  $gtXl: {
+    fontSize: 64,
+  },
+})
+
+const H2 = styled(Heading, {
+  letterSpacing: '-0.025em',
+  tag: 'h2',
+  fontSize: 20,
+
+  $gtXs: {
+    fontSize: 20,
+  },
+  $gtSm: {
+    fontSize: 24,
+  },
+  $gtMd: {
+    fontSize: 32,
+  },
+})
 
 export default function Home() {
   return (
@@ -41,29 +86,20 @@ export default function Home() {
         w="100%"
         mt="$6"
         $sm={{
-          m: '$4',
-          gap: '$4',
+          mt: '$5',
+          gap: '$5',
         }}
       >
         <View>
-          <Text
-            zi={-1}
-            fontWeight="500"
-            letterSpacing={'-0.035em'}
-            $xs={{ fontSize: 20 }}
-            fontSize={24}
-            $gtSm={{ fontSize: 32 }}
-            $gtMd={{ fontSize: 40 }}
-            tag="h1"
-            fontFamily="$mono"
-          >
+          <H1>
             Find curated ML templates
             {'\n'}& book a call with the creators
-          </Text>
+          </H1>
         </View>
 
-        <View gap="$4">
+        <View gap="$3" $gtSm={{ gap: '$4' }}>
           {/* François's Template Card */}
+          <H2>Build a recommendation system</H2>
           <View>
             <View
               $gtSm={{ row: 'reverse' }}
@@ -80,7 +116,7 @@ export default function Home() {
             >
               <View animation="quick" o={0.25} stretch zi={0} bg="$color11" themeInverse />
 
-              <View p="$3" $gtSm={{ f: 1, p: '$4' }} gap="$4">
+              <View p="$3" $gtSm={{ f: 1, p: '$4', jbtwn: true }} gap="$4">
                 <View gap="$2">
                   <Card.Title fontFamily="$mono">@francois/recommendation-system</Card.Title>
                   <Card.Description>
@@ -89,19 +125,20 @@ export default function Home() {
                     models and example datasets.
                   </Card.Description>
                 </View>
+                <View row="wrap" jbtwn ai="center" gap="$2">
+                  <View row ai="center" gap="$2">
+                    <View box={8} br={999} bg="$green10" />
+                    <Text color="$color11">Production-ready</Text>
+                    <View box={8} br={999} bg="$purple10" />
+                    <Text color="$color11">Open Source</Text>
+                  </View>
 
-                <View row ai="center" gap="$2">
-                  <View box={8} br={999} bg="$green10" />
-                  <Text color="$color11">Production-ready</Text>
-                  <Text color="$color11">•</Text>
-                  <Text color="$color11">Updated 2 days ago</Text>
-                </View>
-
-                <View mt="auto" row jc="flex-end">
-                  <Button>
-                    <ButtonText>View Repo</ButtonText>
-                    <ButtonIcon icon={Lucide.ChevronRight} />
-                  </Button>
+                  <View mt="auto" row jc="flex-end">
+                    <LinkButton href={`/@francois/recommendation-system`}>
+                      <ButtonText>View Repo</ButtonText>
+                      <ButtonIcon icon={Lucide.ChevronRight} />
+                    </LinkButton>
+                  </View>
                 </View>
               </View>
 
@@ -109,7 +146,7 @@ export default function Home() {
                 p="$3"
                 ov="hidden"
                 $gtSm={{
-                  w: 350,
+                  w: 450,
                   p: '$4',
                   br: '$4',
                   m: '$1',
@@ -139,7 +176,7 @@ export default function Home() {
                   animation="200ms"
                 />
                 {/* <View theme="light" o={0.15} stretch zi={0} bg="$color2" /> */}
-                <View $gtSm={{ row: true, ai: 'center' }} gap="$3" ai="center">
+                <View row ai="center" gap="$3">
                   <Image
                     src="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
                     unoptimized
@@ -155,23 +192,23 @@ export default function Home() {
                     alt="François Chollet"
                     style={{ borderRadius: 999 }}
                   /> */}
-                  <View $gtSm={{ flex: 1 }}>
-                    <Text fontWeight="600" $sm={{ center: true }}>
-                      François Chollet
-                    </Text>
-                    <Text color="$color11" $sm={{ center: true }}>
-                      AI Researcher at Google
+                  <View flex={1}>
+                    <Text fontWeight="600">François Chollet</Text>
+                    <Text color="$color11">
+                      AI @ Google, Creator of Keras, Cofounder of ARC Prize
                     </Text>
                   </View>
                 </View>
 
-                <View gap="$2" enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
-                  <Button>
+                <View gap="$1" row enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
+                  <LinkButton grow href={`/@francois`}>
+                    <ButtonIcon icon={Lucide.Armchair} />
                     <ButtonText>View Profile</ButtonText>
-                  </Button>
+                  </LinkButton>
 
-                  <Button themeInverse>
-                    <ButtonText>Book a Call ($400+)</ButtonText>
+                  <Button grow themeInverse>
+                    <ButtonIcon icon={Lucide.PhoneCall} />
+                    <ButtonText>Book a Call</ButtonText>
                   </Button>
                 </View>
               </View>

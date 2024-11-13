@@ -21,8 +21,11 @@ const Frame = styled(View, {
   bg: '$color3',
   bw: borderWidth,
   boc: '$color6',
+  animation: '100ms',
+  scale: 1,
   hoverStyle: {
     bg: '$color4',
+    scale: 1.02,
   },
   context,
   variants: {

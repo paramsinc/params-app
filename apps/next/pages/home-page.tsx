@@ -14,6 +14,7 @@ import { styled } from 'app/ds/styled'
 const Heading = styled(Text, {
   fontFamily: '$heading',
   fontWeight: '500',
+  zi: 0,
 })
 
 const H1 = styled(Heading, {
@@ -56,14 +57,15 @@ const H2 = styled(Heading, {
 
 export default function Home() {
   return (
-    <View>
+    <>
       {/* Background gradient */}
       <View
-        zi={0}
+        zi={1}
         stretch
         ov="hidden"
         o={0.25}
         $theme-light={{ opacity: 0.4 }}
+        pointerEvents="none"
         style={{
           backgroundImage: `
             radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 1) 0px, transparent 0%),
@@ -98,9 +100,9 @@ export default function Home() {
         </View>
 
         <View gap="$3" $gtSm={{ gap: '$4' }}>
-          {/* François's Template Card */}
+          {/* Use Case #1: recommendation system */}
           <H2>Build a recommendation system</H2>
-          <View>
+          <View zi={2}>
             <View
               $gtSm={{ row: 'reverse' }}
               br="$4"
@@ -127,10 +129,10 @@ export default function Home() {
                 </View>
                 <View row="wrap" jbtwn ai="center" gap="$2">
                   <View row ai="center" gap="$2">
-                    <View box={8} br={999} bg="$green10" />
+                    {/* <View box={8} br={999} bg="$green10" />
                     <Text color="$color11">Production-ready</Text>
                     <View box={8} br={999} bg="$purple10" />
-                    <Text color="$color11">Open Source</Text>
+                    <Text color="$color11">Open Source</Text> */}
                   </View>
 
                   <View mt="auto" row jc="flex-end">
@@ -197,9 +199,16 @@ export default function Home() {
                     <Text color="$color11">
                       AI @ Google, Creator of Keras, Cofounder of ARC Prize
                     </Text>
-                    <View row gap="$1">
-                      <Lucide.Github size={16} />
-                      <TwitterIcon width={16} height={16} stroke="var(--color)" />
+                    <View row gap="$3">
+                      <Link href="https://github.com/fchollet" target="_blank">
+                        <Lucide.Github size={16} />
+                      </Link>
+                      <Link href="https://x.com/fchollet" target="_blank">
+                        <TwitterIcon width={16} height={16} stroke="var(--color)" />
+                      </Link>
+                      <Link href="https://linkedin.com/in/fchollet" target="_blank">
+                        <Lucide.Linkedin size={16} />
+                      </Link>
                     </View>
                   </View>
                 </View>
@@ -210,17 +219,138 @@ export default function Home() {
                     <ButtonText>View Profile</ButtonText>
                   </LinkButton>
 
-                  <Button grow themeInverse>
-                    <ButtonIcon icon={Lucide.PhoneCall} />
+                  <LinkButton grow themeInverse href={`/book/francois`}>
+                    <ButtonIcon icon={Lucide.Phone} />
                     <ButtonText>Book a Call</ButtonText>
-                  </Button>
+                  </LinkButton>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View />
+
+          {/* Use Case #2: churn prediction */}
+          <H2>Build a churn prediction model</H2>
+          <View zi={2}>
+            <View
+              $gtSm={{ row: 'reverse' }}
+              br="$4"
+              style={{
+                boxShadow: `
+                    0px 2px 4px rgba(0, 0, 0, 0.02),
+                    0px 4px 8px rgba(0, 0, 0, 0.02),
+                    inset 0px 1px 1px rgba(255, 255, 255, 0.04),
+                    inset 0px -1px 1px rgba(0, 0, 0, 0.02)
+                  `,
+              }}
+              ov="hidden"
+            >
+              <View animation="quick" o={0.25} stretch zi={0} bg="$color11" themeInverse />
+
+              <View p="$3" $gtSm={{ f: 1, p: '$4', jbtwn: true }} gap="$4">
+                <View gap="$2">
+                  <Card.Title fontFamily="$mono">@jeremy/churn</Card.Title>
+                  <Card.Description>
+                    Production-grade churn prediction using transformers. Features sequence modeling
+                    of user events, time-aware attention mechanisms, and automated feature
+                    engineering. Includes pre-built data pipelines and evaluation framework.
+                  </Card.Description>
+                </View>
+                <View row="wrap" jbtwn ai="center" gap="$2">
+                  <View row ai="center" gap="$2">
+                    {/* <View box={8} br={999} bg="$green10" />
+                    <Text color="$color11">Production-ready</Text>
+                    <View box={8} br={999} bg="$purple10" />
+                    <Text color="$color11">Open Source</Text> */}
+                  </View>
+
+                  <View mt="auto" row jc="flex-end">
+                    <LinkButton href={`/@jeremy/churn`}>
+                      <ButtonText>View Repo</ButtonText>
+                      <ButtonIcon icon={Lucide.ChevronRight} />
+                    </LinkButton>
+                  </View>
+                </View>
+              </View>
+
+              <View
+                p="$3"
+                ov="hidden"
+                $gtSm={{
+                  w: 450,
+                  p: '$4',
+                  br: '$4',
+                  m: '$1',
+                  boc: '$borderColor',
+                  jc: 'space-between',
+                }}
+                gap="$4"
+                style={{
+                  boxShadow: `
+                    0px 2px 4px rgba(0, 0, 0, 0.02),
+                    0px 4px 8px rgba(0, 0, 0, 0.02),
+                    inset 0px 1px 1px rgba(255, 255, 255, 0.04),
+                    inset 0px -1px 1px rgba(0, 0, 0, 0.02)
+                  `,
+                  //   backdropFilter: 'blur(10px)',
+                  //   WebkitBackdropFilter: 'blur(10px)',
+                }}
+              >
+                <View
+                  //   themeInverse
+                  theme="light"
+                  o={0.15}
+                  stretch
+                  zi={0}
+                  bg="$color2"
+                  $theme-light={{ bg: '$color3' }}
+                  animation="200ms"
+                />
+                {/* <View theme="light" o={0.15} stretch zi={0} bg="$color2" /> */}
+                <View row ai="center" gap="$3">
+                  <Image
+                    src="https://pbs.twimg.com/profile_images/1717254564930347008/jp9Mn1hY_400x400.jpg"
+                    unoptimized
+                    width={96}
+                    height={96}
+                    alt="Jeremy Berman"
+                    style={{ borderRadius: 999 }}
+                  />
+                  <View flex={1} gap="$2">
+                    <Text fontWeight="600">Jeremy Berman</Text>
+                    <Text color="$color11">AI @ Params, Previously Cofounder @ BeatGig</Text>
+                    <View row gap="$3">
+                      <Link href="https://github.com/jerber" target="_blank">
+                        <Lucide.Github size={16} />
+                      </Link>
+                      <Link href="https://x.com/jerber888" target="_blank">
+                        <TwitterIcon width={16} height={16} stroke="var(--color)" />
+                      </Link>
+                      <Link href="https://linkedin.com/in/jeremyberman1" target="_blank">
+                        <Lucide.Linkedin size={16} />
+                      </Link>
+                    </View>
+                  </View>
+                </View>
+
+                <View gap="$1" row enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
+                  <LinkButton grow href={`/@jeremy`}>
+                    <ButtonIcon icon={Lucide.Armchair} />
+                    <ButtonText>View Profile</ButtonText>
+                  </LinkButton>
+
+                  <LinkButton grow themeInverse href={`/book/jeremy`}>
+                    <ButtonIcon icon={Lucide.Phone} />
+                    <ButtonText>Book a Call</ButtonText>
+                  </LinkButton>
                 </View>
               </View>
             </View>
           </View>
         </View>
       </View>
-    </View>
+    </>
   )
 }
 

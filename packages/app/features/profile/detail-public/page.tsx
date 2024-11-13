@@ -186,7 +186,7 @@ const CreateBooking_Link = ({ profileSlug }: { profileSlug: string }) => {
   const plans = plansQuery.data
   const lastPlan = plans?.[plans.length - 1]
   return (
-    <LinkButton themeInverse href={`/@${profileSlug}/book`}>
+    <LinkButton themeInverse href={`/book/${profileSlug}`}>
       <ButtonText>Book a Call</ButtonText>
     </LinkButton>
   )

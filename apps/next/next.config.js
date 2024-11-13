@@ -5,7 +5,7 @@ const path = require('path')
 const { join } = require('path')
 
 const disableExtraction =
-  true || process.env.DISABLE_EXTRACTION === 'true' || process.env.NODE_ENV === 'development'
+  process.env.DISABLE_EXTRACTION === 'true' || process.env.NODE_ENV === 'development'
 
 const plugins = [
   withBundleAnalyzer({

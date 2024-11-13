@@ -24,6 +24,7 @@ import { Tooltip } from 'app/ds/Tooltip'
 import { Link } from 'app/ds/Link'
 import { useCurrentPath } from 'app/navigation/use-pathname'
 import { Modal } from 'app/ds/Modal'
+import { ErrorCard } from 'app/ds/Error/card'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -241,7 +242,7 @@ function RepositoryDetailPublicPageContent({
             )}
             {tab === 'files' && (
               <View $gtLg={{ grow: true }} gap="$3">
-                <FilesPage profileSlug={profileSlug} repoSlug={repoSlug} />
+                <GitHubFilesPage profileSlug={profileSlug} repoSlug={repoSlug} />
               </View>
             )}
           </>
@@ -400,10 +401,15 @@ function DocsPage({
 
 function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
   const filesQuery = api.repo.files.useQuery({ profileSlug, repoSlug })
-
   const {
     params: { path },
   } = useParams()
+  const githubFilesQuery = api.github.repoFiles.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+    path: path?.join('/'),
+  })
+  console.log('[githubFilesQuery]', githubFilesQuery.data)
 
   const files = filesQuery.data ?? {}
 
@@ -497,6 +503,157 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
   )
 }
 
+function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
+  const {
+    params: { path },
+  } = useParams()
+  const filesQuery = api.github.repoFiles.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+    path: path?.join('/'),
+  })
+  const treeQuery = api.repo.tree.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
+
+  const selectedFilePath = path?.join('/')
+
+  const selectedFile = typeof filesQuery.data === 'string' ? filesQuery.data : null
+  const getFileIcon = (fileName: string) => {
+    if (fileName.endsWith('.md')) return Lucide.FileText
+    if (fileName.endsWith('.ts') || fileName.endsWith('.tsx')) return Lucide.FileCode
+    if (fileName.endsWith('.json')) return Lucide.FileJson
+    if (!fileName.includes('.')) return Lucide.Folder
+    return Lucide.File
+  }
+
+  const language =
+    languageByExtension[selectedFilePath?.split('.').at(-1) ?? 'plaintext'] ?? 'plaintext'
+
+  const sidebar = useMedia().gtSm
+
+  if (!treeQuery.data) {
+    return <ErrorCard error={filesQuery.error ?? treeQuery.error} />
+  }
+  const tree = treeQuery.data
+
+  const readmeFileName = tree.find((r) => r.path.toLowerCase() === 'readme.md')?.path
+
+  console.log('[files]', { selectedFileName: selectedFilePath, readmeFileName, tree })
+  const filesNode = (
+    <View>
+      {tree
+        .sort((a, b) => a.path.localeCompare(b.path))
+        .map((file) => {
+          const FileIcon = getFileIcon(file.path)
+          const filename = file.path.split('/').pop()
+
+          const isInCurrentDirectory = (filePath: string, urlPath: string[] | undefined) => {
+            if (!urlPath?.length) {
+              return !filePath.includes('/')
+            }
+
+            const currentDir = urlPath.join('/')
+
+            const hasSelectedFile = urlPath.at(-1)?.includes('.')
+
+            if (hasSelectedFile) {
+              // if i select /users/file.tsx,
+              // then the sidebar should be as if the /users was the url
+              return isInCurrentDirectory(filePath, urlPath.slice(0, -1))
+            }
+
+            // File must:
+            // 1. Start with current directory path
+            // 2. Not have any additional subdirectories after current dir
+            // 3. Not be the current directory itself
+            return (
+              filePath.startsWith(currentDir + '/') &&
+              !filePath.slice(currentDir.length + 1).includes('/') &&
+              filePath !== currentDir
+            )
+          }
+          if (!isInCurrentDirectory(file.path, path)) {
+            return null
+          }
+
+          return (
+            <Link href={`/@${profileSlug}/${repoSlug}/files/${file.path}`} key={file.path}>
+              <View
+                flexDirection="row"
+                alignItems="center"
+                padding="$2"
+                backgroundColor={
+                  selectedFilePath === file.path ? '$backgroundFocus' : 'transparent'
+                }
+                hoverStyle={{ backgroundColor: '$backgroundHover' }}
+                cursor="pointer"
+              >
+                <FileIcon size={18} color="$color" />
+                <Text marginLeft="$2" numberOfLines={1} ellipsizeMode="middle" fontFamily="$mono">
+                  {filename}
+                </Text>
+              </View>
+            </Link>
+          )
+        })}
+    </View>
+  )
+
+  const isImageFilename = ['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(
+    path?.at(-1)?.split('.').at(-1) ?? '__none'
+  )
+
+  return (
+    <View row>
+      {sidebar && (
+        <View width={250} borderRightWidth={1} borderColor="$borderColor" mr="$3">
+          <Scroll>{filesNode}</Scroll>
+        </View>
+      )}
+      <View grow gap="$3">
+        <Scroll horizontal>
+          <Breadcrumbs>
+            <Link href={`/@${profileSlug}/${repoSlug}/files`}>
+              <Breadcrumbs.Item>
+                <Breadcrumbs.Title>Files</Breadcrumbs.Title>
+              </Breadcrumbs.Item>
+            </Link>
+            {path?.map((chunk, i) => {
+              return (
+                <Fragment key={i}>
+                  <Breadcrumbs.Separator />
+
+                  <Link
+                    href={`/@${profileSlug}/${repoSlug}/files/${path.slice(0, i + 1).join('/')}`}
+                  >
+                    <Breadcrumbs.Item>
+                      <Breadcrumbs.Title>{chunk}</Breadcrumbs.Title>
+                    </Breadcrumbs.Item>
+                  </Link>
+                </Fragment>
+              )
+            })}
+          </Breadcrumbs>
+        </Scroll>
+        {selectedFile != null ? (
+          <View gap="$3">
+            <View>
+              {isImageFilename ? null : language === 'markdown' ? (
+                <MarkdownRenderer linkPrefix={`/@${profileSlug}/${repoSlug}/files`}>
+                  {selectedFile}
+                </MarkdownRenderer>
+              ) : (
+                <Codeblock lineNumbers content={selectedFile} language={language} />
+              )}
+            </View>
+          </View>
+        ) : sidebar ? null : (
+          <>{filesNode}</>
+        )}
+      </View>
+    </View>
+  )
+}
+
 const languageByExtension: Record<string, string> = {
   ts: 'typescript',
   tsx: 'typescript',
@@ -583,7 +740,7 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   } = useParams()
 
   if (!paramsJsonQuery.data) {
-    return null
+    return <ErrorCard error={paramsJsonQuery.error} />
   }
   const paramsJson = paramsJsonQuery.data
   const selectedPage = path?.join('/') ?? paramsJson.docs.main

@@ -541,7 +541,7 @@ function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoS
   const filesNode = (
     <View>
       {tree
-        .sort((a, b) => a.path.localeCompare(b.path))
+        .sort((a, b) => a.path.split('/').pop()!.localeCompare(b.path.split('/').pop()!))
         .map((file) => {
           const FileIcon = getFileIcon(file.path)
           const filename = file.path.split('/').pop()
@@ -610,30 +610,36 @@ function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoS
         </View>
       )}
       <View grow gap="$3">
-        <Scroll horizontal>
-          <Breadcrumbs>
-            <Link href={`/@${profileSlug}/${repoSlug}/files`}>
-              <Breadcrumbs.Item>
-                <Breadcrumbs.Title>Files</Breadcrumbs.Title>
-              </Breadcrumbs.Item>
-            </Link>
-            {path?.map((chunk, i) => {
-              return (
-                <Fragment key={i}>
-                  <Breadcrumbs.Separator />
+        {!!path?.length && (
+          <View>
+            <Scroll horizontal>
+              <Breadcrumbs>
+                <Link href={`/@${profileSlug}/${repoSlug}/files`}>
+                  <Breadcrumbs.Item>
+                    <Breadcrumbs.Title>Files</Breadcrumbs.Title>
+                  </Breadcrumbs.Item>
+                </Link>
+                {path?.map((chunk, i) => {
+                  return (
+                    <Fragment key={i}>
+                      <Breadcrumbs.Separator />
 
-                  <Link
-                    href={`/@${profileSlug}/${repoSlug}/files/${path.slice(0, i + 1).join('/')}`}
-                  >
-                    <Breadcrumbs.Item>
-                      <Breadcrumbs.Title>{chunk}</Breadcrumbs.Title>
-                    </Breadcrumbs.Item>
-                  </Link>
-                </Fragment>
-              )
-            })}
-          </Breadcrumbs>
-        </Scroll>
+                      <Link
+                        href={`/@${profileSlug}/${repoSlug}/files/${path
+                          .slice(0, i + 1)
+                          .join('/')}`}
+                      >
+                        <Breadcrumbs.Item>
+                          <Breadcrumbs.Title>{chunk}</Breadcrumbs.Title>
+                        </Breadcrumbs.Item>
+                      </Link>
+                    </Fragment>
+                  )
+                })}
+              </Breadcrumbs>
+            </Scroll>
+          </View>
+        )}
         {selectedFile != null ? (
           <View gap="$3">
             <View>
@@ -655,12 +661,43 @@ function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoS
 }
 
 const languageByExtension: Record<string, string> = {
+  // Existing
   ts: 'typescript',
   tsx: 'typescript',
   py: 'python',
   md: 'markdown',
   json: 'json',
   plaintext: 'plaintext',
+  js: 'javascript',
+
+  // Added mappings
+  jsx: 'javascript',
+  css: 'css',
+  scss: 'scss',
+  sass: 'sass',
+  less: 'less',
+  html: 'html',
+  xml: 'xml',
+  yaml: 'yaml',
+  yml: 'yaml',
+  sh: 'bash',
+  bash: 'bash',
+  zsh: 'bash',
+  rb: 'ruby',
+  rs: 'rust',
+  go: 'go',
+  java: 'java',
+  php: 'php',
+  cs: 'csharp',
+  cpp: 'cpp',
+  c: 'c',
+  swift: 'swift',
+  kt: 'kotlin',
+  r: 'r',
+  sql: 'sql',
+  graphql: 'graphql',
+  dockerfile: 'dockerfile',
+  sol: 'solidity',
 }
 
 function Codeblock({
@@ -738,6 +775,10 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   const {
     params: { path },
   } = useParams()
+
+  if (paramsJsonQuery.data === null) {
+    return <Text>Missing params.json file</Text>
+  }
 
   if (!paramsJsonQuery.data) {
     return <ErrorCard error={paramsJsonQuery.error} />

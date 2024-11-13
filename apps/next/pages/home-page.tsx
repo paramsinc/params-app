@@ -192,11 +192,15 @@ export default function Home() {
                     alt="François Chollet"
                     style={{ borderRadius: 999 }}
                   /> */}
-                  <View flex={1}>
+                  <View flex={1} gap="$2">
                     <Text fontWeight="600">François Chollet</Text>
                     <Text color="$color11">
                       AI @ Google, Creator of Keras, Cofounder of ARC Prize
                     </Text>
+                    <View row gap="$1">
+                      <Lucide.Github size={16} />
+                      <TwitterIcon width={16} height={16} stroke="var(--color)" />
+                    </View>
                   </View>
                 </View>
 
@@ -217,5 +221,22 @@ export default function Home() {
         </View>
       </View>
     </View>
+  )
+}
+
+function TwitterIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+    </svg>
   )
 }

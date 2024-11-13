@@ -20,42 +20,41 @@ export function GlobalWebLayout({
   return (
     <>
       {!hideHeader && (
-        <motion.header>
-          <View
-            ai="center"
-            height={48}
-            px="$3"
-            // bg="$backgroundStrong"
-            bg="#00000020"
-            fd="row"
-            style={{
-              position: 'sticky',
-              top: 0,
-              zIndex: 3,
-              backdropFilter: 'blur(10px)',
-              transform: 'translate3d(0, 0, 0)',
-            }}
-            $theme-light={{
-              bg: '#ffffff20',
-            }}
-          >
-            <View w={100}></View>
-            <View flex={1} center>
-              <Link href="/">
-                <Logo height={20} />
-              </Link>
-            </View>
-            <View
-              w={100}
-              ai="flex-end"
-              jc="center"
-              pointerEvents={pathname === '/' ? 'none' : 'auto'}
-              o={pathname === '/' ? 0 : 1}
-            >
-              <Auth.UserButton />
-            </View>
+        <View
+          tag="header"
+          ai="center"
+          height={48}
+          px="$3"
+          // bg="$backgroundStrong"
+          bg="#00000020"
+          fd="row"
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 3,
+            backdropFilter: 'blur(10px)',
+            transform: 'translate3d(0, 0, 0)',
+          }}
+          $theme-light={{
+            bg: '#ffffff20',
+          }}
+        >
+          <View w={100}></View>
+          <View flex={1} center>
+            <Link href="/">
+              <Logo height={20} />
+            </Link>
           </View>
-        </motion.header>
+          <View
+            w={100}
+            ai="flex-end"
+            jc="center"
+            pointerEvents={pathname === '/' ? 'none' : 'auto'}
+            o={pathname === '/' ? 0 : 1}
+          >
+            <Auth.UserButton />
+          </View>
+        </View>
       )}
       {children}
     </>

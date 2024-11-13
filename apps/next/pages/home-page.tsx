@@ -10,6 +10,7 @@ import { Link } from 'app/ds/Link'
 import { Theme } from 'app/ds/Theme'
 import { LinkButton } from 'app/ds/Button/link'
 import { styled } from 'app/ds/styled'
+import { Page } from 'app/ds/Page'
 
 const Heading = styled(Text, {
   fontFamily: '$heading',
@@ -26,13 +27,13 @@ const H1 = styled(Heading, {
   //     fontSize: 24,
   //   },
   $gtSm: {
-    fontSize: 32,
-  },
-  $gtMd: {
     fontSize: 40,
   },
-  $gtLg: {
+  $gtMd: {
     fontSize: 48,
+  },
+  $gtLg: {
+    fontSize: 64,
   },
   $gtXl: {
     fontSize: 64,
@@ -57,27 +58,26 @@ const H2 = styled(Heading, {
 
 export default function Home() {
   return (
-    <>
+    <Page.Root>
       {/* Background gradient */}
       <View
         zi={1}
         stretch
         ov="hidden"
+        filter="blur(100px) saturate(150%)"
         o={0.25}
         $theme-light={{ opacity: 0.4 }}
+        backgroundImage={`
+    radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 1) 0px, transparent 0%),
+    radial-gradient(at 97% 21%, hsla(125, 98%, 72%, 1) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(354, 98%, 61%, 1) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(256, 96%, 67%, 1) 0px, transparent 50%),
+    radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 1) 0px, transparent 50%),
+    radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 1) 0px, transparent 50%),
+    radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 1) 0px, transparent 50%)
+          `}
         pointerEvents="none"
-        style={{
-          backgroundImage: `
-            radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 1) 0px, transparent 0%),
-            radial-gradient(at 97% 21%, hsla(125, 98%, 72%, 1) 0px, transparent 50%),
-            radial-gradient(at 52% 99%, hsla(354, 98%, 61%, 1) 0px, transparent 50%),
-            radial-gradient(at 10% 29%, hsla(256, 96%, 67%, 1) 0px, transparent 50%),
-            radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 1) 0px, transparent 50%),
-            radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 1) 0px, transparent 50%),
-            radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 1) 0px, transparent 50%)
-          `,
-          filter: 'blur(100px) saturate(150%)',
-        }}
+        overflow="visible"
       />
 
       <View
@@ -117,7 +117,14 @@ export default function Home() {
               }}
               ov="hidden"
             >
-              <View animation="quick" o={0.25} stretch zi={0} bg="$color11" themeInverse />
+              <View
+                animation="quick"
+                o={0.25}
+                stretch
+                zi={0}
+                bg="$gray1Light"
+                $theme-light={{ bg: '$gray2Light' }}
+              />
 
               <View p="$3" $gtSm={{ f: 1, p: '$4', jbtwn: true }} gap="$4">
                 <View gap="$2">
@@ -197,9 +204,7 @@ export default function Home() {
                   /> */}
                   <View flex={1} gap="$2">
                     <Text fontWeight="600">François Chollet</Text>
-                    <Text color="$color11">
-                      AI @ Google, Creator of Keras, Cofounder of ARC Prize
-                    </Text>
+                    <Text>AI @ Google, Creator of Keras, Cofounder of ARC Prize</Text>
                     <View row gap="$3">
                       <Link href="https://github.com/fchollet" target="_blank">
                         <Lucide.Github size={16} />
@@ -245,7 +250,7 @@ export default function Home() {
               }}
               ov="hidden"
             >
-              <View animation="quick" o={0.25} stretch zi={0} bg="$color11" themeInverse />
+              <View animation="quick" o={0.25} stretch zi={0} bg="$color2" theme="light" />
 
               <View p="$3" $gtSm={{ f: 1, p: '$4', jbtwn: true }} gap="$4">
                 <View gap="$2">
@@ -302,11 +307,9 @@ export default function Home() {
                   o={0.15}
                   stretch
                   zi={0}
-                  bg="$color2"
-                  $theme-light={{ bg: '$color3' }}
-                  animation="200ms"
+                  bg="$gray2Light"
+                  $theme-light={{ bg: '$gray1Light' }}
                 />
-                {/* <View theme="light" o={0.15} stretch zi={0} bg="$color2" /> */}
                 <View row ai="center" gap="$3">
                   <Image
                     src="https://pbs.twimg.com/profile_images/1856206784458883072/6q8Vrp59_400x400.jpg"
@@ -318,7 +321,7 @@ export default function Home() {
                   />
                   <View flex={1} gap="$2">
                     <Text fontWeight="600">Jeremy Berman</Text>
-                    <Text color="$color11">AI @ Params, Previously Cofounder @ BeatGig</Text>
+                    <Text>AI @ Params, Previously Cofounder @ BeatGig</Text>
                     <View row gap="$3">
                       <Link href="https://github.com/jerber" target="_blank">
                         <Lucide.Github size={16} />
@@ -335,12 +338,10 @@ export default function Home() {
 
                 <View gap="$1" row enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
                   <LinkButton grow href={`/@jeremy`}>
-                    <ButtonIcon icon={Lucide.Armchair} />
-                    <ButtonText>View Profile</ButtonText>
+                    <ButtonText>Profile</ButtonText>
                   </LinkButton>
 
                   <LinkButton grow themeInverse href={`/book/jeremy`}>
-                    <ButtonIcon icon={Lucide.Phone} />
                     <ButtonText>Book a Call</ButtonText>
                   </LinkButton>
                 </View>
@@ -349,7 +350,7 @@ export default function Home() {
           </View>
         </View>
       </View>
-    </>
+    </Page.Root>
   )
 }
 

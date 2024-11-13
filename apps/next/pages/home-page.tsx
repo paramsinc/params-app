@@ -177,12 +177,11 @@ export default function Home() {
               >
                 <View
                   //   themeInverse
-                  theme="light"
                   o={0.15}
                   stretch
                   zi={0}
-                  bg="$color2"
-                  $theme-light={{ bg: '$color3' }}
+                  bg="$gray2Light"
+                  $theme-light={{ bg: '$gray1Light' }}
                   animation="200ms"
                 />
                 {/* <View theme="light" o={0.15} stretch zi={0} bg="$color2" /> */}
@@ -250,7 +249,14 @@ export default function Home() {
               }}
               ov="hidden"
             >
-              <View animation="quick" o={0.25} stretch zi={0} bg="$color2" theme="light" />
+              <View
+                animation="quick"
+                o={0.25}
+                stretch
+                zi={0}
+                bg="$gray2Light"
+                $theme-light={{ bg: '$gray1Light' }}
+              />
 
               <View p="$3" $gtSm={{ f: 1, p: '$4', jbtwn: true }} gap="$4">
                 <View gap="$2">
@@ -302,8 +308,6 @@ export default function Home() {
                 }}
               >
                 <View
-                  //   themeInverse
-                  theme="light"
                   o={0.15}
                   stretch
                   zi={0}

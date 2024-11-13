@@ -90,6 +90,7 @@ export default function Home() {
         $sm={{
           mt: '$5',
           gap: '$5',
+          p: '$3',
         }}
       >
         <View>
@@ -215,12 +216,10 @@ export default function Home() {
 
                 <View gap="$1" row enterStyle={{ o: 0, y: 10 }} y={0} o={1} animation="200ms">
                   <LinkButton grow href={`/@francois`}>
-                    <ButtonIcon icon={Lucide.Armchair} />
-                    <ButtonText>View Profile</ButtonText>
+                    <ButtonText>Profile</ButtonText>
                   </LinkButton>
 
                   <LinkButton grow themeInverse href={`/book/francois`}>
-                    <ButtonIcon icon={Lucide.Phone} />
                     <ButtonText>Book a Call</ButtonText>
                   </LinkButton>
                 </View>
@@ -310,7 +309,7 @@ export default function Home() {
                 {/* <View theme="light" o={0.15} stretch zi={0} bg="$color2" /> */}
                 <View row ai="center" gap="$3">
                   <Image
-                    src="https://pbs.twimg.com/profile_images/1717254564930347008/jp9Mn1hY_400x400.jpg"
+                    src="https://pbs.twimg.com/profile_images/1856206784458883072/6q8Vrp59_400x400.jpg"
                     unoptimized
                     width={96}
                     height={96}

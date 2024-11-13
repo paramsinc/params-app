@@ -33,19 +33,19 @@ export function GitHubRepoPicker({
 
   if (myReposQuery.data.missing_github_integration) {
     return (
-      <Card>
+      <>
         <Text>Sync your GitHub account to create a new repo</Text>
         <SignInWithGithub>
           <Button>
             <ButtonText>Sign in with GitHub</ButtonText>
           </Button>
         </SignInWithGithub>
-      </Card>
+      </>
     )
   }
 
   return (
-    <Card pb={0}>
+    <>
       <Text>Select a GitHub Repository</Text>
       <View maxHeight={300} position="relative">
         <Scroll>
@@ -68,7 +68,7 @@ export function GitHubRepoPicker({
                   boc={isSelected ? '$color12' : '$borderColor'}
                 >
                   <Text flex={1} userSelect="none" fontFamily="$mono">
-                    {repo.name}
+                    {repo.owner.login}/{repo.name}
                   </Text>
                   <View>{isSelected && <Lucide.Check size={16} />}</View>
                 </View>
@@ -84,6 +84,6 @@ export function GitHubRepoPicker({
           zi={1}
         />
       </View>
-    </Card>
+    </>
   )
 }

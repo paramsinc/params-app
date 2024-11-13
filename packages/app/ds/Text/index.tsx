@@ -1,5 +1,6 @@
 'use client'
 
+import { platform } from 'app/ds/platform'
 import { Text as TamaguiText, styled } from 'tamagui'
 
 export const Text = styled(TamaguiText, {

@@ -4,7 +4,7 @@ import { Input } from 'app/ds/Input'
 import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
-import { SignInWithGithub } from 'app/features/oauth/github/sign-in-with-github'
+
 import { api } from 'app/trpc/client'
 import { useState } from 'react'
 import { Card } from 'app/ds/Form/layout'

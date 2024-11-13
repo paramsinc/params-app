@@ -1047,10 +1047,21 @@ const repository = {
             github_url: true,
           }),
           profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+          githubRepoIntegration: pick('githubRepoIntegrations', {
+            github_repo_id: true,
+            github_repo_name: true,
+            github_repo_owner: true,
+            default_branch: true,
+            path_to_code: true,
+          }),
         })
         .from(schema.repositories)
         .where(d.eq(schema.repositories.id, repo_id))
         .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
+        .leftJoin(
+          schema.githubRepoIntegrations,
+          d.eq(schema.repositories.id, schema.githubRepoIntegrations.repo_id)
+        )
         .limit(1)
         .execute()
 
@@ -2182,6 +2193,8 @@ export const appRouter = router({
             profile_slug: input.profileSlug,
             repo_slug: input.repoSlug,
             path: 'params.json',
+          }).catch((e) => {
+            console.log('[getRepoFiles][error]', e.message)
           })
           if (typeof files === 'string') {
             paramsJson = files
@@ -2428,7 +2441,7 @@ export const appRouter = router({
         const octokit = githubOauth.fromUser({ accessToken: integration.access_token })
         const { data: repos } = await octokit.repos.listForAuthenticatedUser({
           visibility: 'all',
-          sort: 'pushed',
+          sort: 'updated',
           per_page: input.limit,
           page: input.page,
         })
@@ -2507,6 +2520,15 @@ export const appRouter = router({
             github_repo_owner: input.github_repo_owner,
             default_branch: githubRepo.default_branch,
           })
+          .onConflictDoUpdate({
+            target: schema.githubRepoIntegrations.repo_id,
+            set: {
+              github_repo_id: input.github_repo_id,
+              github_repo_name: input.github_repo_name,
+              github_repo_owner: input.github_repo_owner,
+              default_branch: githubRepo.default_branch,
+            },
+          })
           .returning()
           .execute()
 
@@ -2518,6 +2540,39 @@ export const appRouter = router({
         }
 
         return result
+      }),
+
+    deleteRepoIntegration: authedProcedure
+      .input(z.object({ repo_id: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        // first, check persmissions
+        const [first] = await db
+          .select()
+          .from(schema.profileMembers)
+          .where(
+            d.and(
+              d.eq(schema.profileMembers.profile_id, schema.repositories.profile_id),
+              d.eq(schema.profileMembers.user_id, ctx.auth.userId)
+            )
+          )
+          .innerJoin(schema.repositories, d.eq(schema.repositories.id, input.repo_id))
+          .limit(1)
+          .execute()
+
+        if (!first) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'You do not have access to edit this repository',
+          })
+        }
+
+        const [integration] = await db
+          .delete(schema.githubRepoIntegrations)
+          .where(d.eq(schema.githubRepoIntegrations.repo_id, input.repo_id))
+          .returning()
+          .execute()
+
+        return integration != null
       }),
 
     repoFiles: authedProcedure

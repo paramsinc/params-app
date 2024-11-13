@@ -61,7 +61,7 @@ export default function Home() {
     <Page.Root>
       {/* Background gradient */}
       <View
-        zi={1}
+        zi={0}
         stretch
         ov="hidden"
         filter="blur(100px) saturate(150%)"

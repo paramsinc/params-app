@@ -7,7 +7,7 @@ export const paramsJsonShape = z
     $schema: z.string().optional(),
     docs: z.object({
       main: z.string(),
-      sidebar: z.record(z.string(), z.union([z.string(), fileTree])),
+      sidebar: z.record(z.string(), z.union([z.string(), fileTree])).optional(),
       youtube: z
         .object({
           video_id: z.string(),

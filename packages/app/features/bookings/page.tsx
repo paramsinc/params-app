@@ -32,7 +32,7 @@ export function BookingsPage() {
           <Page.Content gap="$3">
             <Card>
               <Text fontWeight="600" fontSize={24} letterSpacing={-0.5}>
-                Your Bookings
+                My Bookings
               </Text>
             </Card>
 

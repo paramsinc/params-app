@@ -29,6 +29,9 @@ export default () => {
       scopes: ['repo'],
       redirectUri: env.GITHUB_OAUTH_REDIRECT_URL,
       state: JSON.stringify({ redirect: authRedirectUrl }),
+      extraParams: {
+        prompt: 'consent',
+      },
     },
     discovery
   )

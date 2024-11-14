@@ -74,7 +74,7 @@ export function ProfileDetailPage() {
 
 function Content({ profileSlug }: { profileSlug: string }) {
   const me = api.me.useQuery()
-  const reposQuery = api.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
+  const reposQuery = api.repo.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
   const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
   const members = api.profileMembersBySlug.useQuery({ profile_slug: profileSlug })
   const calendarIntegrations = api.googleIntegrationsByProfileSlug.useQuery({

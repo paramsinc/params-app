@@ -7,7 +7,7 @@ import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
 import { isValidSlug } from 'app/trpc/slugify'
 
-const { useMutation } = api.createRepo
+const { useMutation } = api.repo.create
 
 const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
 

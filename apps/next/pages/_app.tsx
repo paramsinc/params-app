@@ -28,7 +28,9 @@ const { APP_NAME } = env
 
 function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   const Layout =
-    router.pathname.startsWith('/dashboard') || router.pathname.startsWith('/bookings')
+    router.pathname.startsWith('/dashboard') ||
+    router.pathname.startsWith('/bookings') ||
+    router.pathname.startsWith('/new')
       ? DashboardLayout
       : Fragment
 

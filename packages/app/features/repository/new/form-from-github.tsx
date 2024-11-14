@@ -10,7 +10,7 @@ import { useState } from 'react'
 import { Card } from 'app/ds/Form/layout'
 import { GitHubRepoPicker } from './github-repo-picker'
 
-const { useMutation } = api.createRepoFromGithub
+const { useMutation } = api.repo.createFromGithub
 
 export function NewRepositoryFromGithubForm({
   onDidCreateRepository,

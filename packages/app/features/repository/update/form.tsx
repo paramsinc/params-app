@@ -13,7 +13,8 @@ import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
 import { isValidSlug, slugify } from 'app/trpc/slugify'
 
-const { useMutation } = api.updateRepo
+const { useMutation } = api.repo.update
+const useDeleteMutation = api.repo.delete.useMutation
 
 const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]['patch']>()
 
@@ -24,15 +25,13 @@ export function UpdateRepositoryForm({
 }: {
   repoId: string
   onDidUpdateRepository: NonNullable<Parameters<typeof useMutation>['0']>['onSuccess']
-  onDidDeleteRepository: NonNullable<
-    Parameters<typeof api.deleteRepo.useMutation>['0']
-  >['onSuccess']
+  onDidDeleteRepository: NonNullable<Parameters<typeof useDeleteMutation>['0']>['onSuccess']
 }) {
   const mutation = useMutation({
     onSuccess: onDidUpdateRepository,
   })
 
-  const deleteMutation = api.deleteRepo.useMutation({
+  const deleteMutation = useDeleteMutation({
     onSuccess: onDidDeleteRepository,
   })
 
@@ -56,7 +55,7 @@ export function UpdateRepositoryForm({
     },
   })
 
-  const repoQuery = api.repoById.useQuery(
+  const repoQuery = api.repo.byId.useQuery(
     { repo_id: repoId },
     {
       enabled: !!repoId,

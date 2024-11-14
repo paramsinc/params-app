@@ -733,14 +733,14 @@ export async function repoBySlug({
   return repository
 }
 
-const repository = {
-  repoBySlug: publicProcedure
+const repository = router({
+  bySlug: publicProcedure
     .input(z.object({ repo_slug: z.string(), profile_slug: z.string() }))
     .query(async ({ input: { repo_slug, profile_slug } }) => {
       return repoBySlug({ repo_slug, profile_slug })
     }),
 
-  createRepo: authedProcedure
+  create: authedProcedure
     .input(
       inserts.repositories.pick({
         profile_id: true,
@@ -788,7 +788,7 @@ const repository = {
 
       return repository
     }),
-  createRepoFromGithub: authedProcedure
+  createFromGithub: authedProcedure
     .input(
       z.object({
         github_repo_owner: z.string(),
@@ -926,7 +926,7 @@ const repository = {
 
       return repos
     }),
-  updateRepo: authedProcedure
+  update: authedProcedure
     .input(
       z.object({
         repo_id: z.string(),
@@ -987,7 +987,7 @@ const repository = {
       return result
     }),
 
-  deleteRepo: authedProcedure
+  delete: authedProcedure
     .input(z.object({ repo_id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const [first] = await db
@@ -1036,7 +1036,7 @@ const repository = {
       return true
     }),
 
-  repoById: publicProcedure
+  byId: publicProcedure
     .input(z.object({ repo_id: z.string() }))
     .query(async ({ input: { repo_id } }) => {
       const [repo] = await db
@@ -1073,7 +1073,132 @@ const repository = {
       }
       return repo
     }),
-}
+  myRepos: authedProcedure.query(async ({ ctx }) => {
+    const profileMembershipSubquery = db
+      .select({
+        profile_id: schema.profileMembers.profile_id,
+        user_id: schema.profileMembers.user_id,
+      })
+      .from(schema.profileMembers)
+      .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
+      .as('my_profile_membership')
+
+    const repos = await db
+      .select({
+        repo: pick('repositories', {
+          id: true,
+          slug: true,
+        }),
+        membership: {
+          user_id: profileMembershipSubquery.user_id,
+        },
+        profile: pick('profiles', {
+          id: true,
+          slug: true,
+        }),
+        github_repo_integration: pick('githubRepoIntegrations', {
+          default_branch: true,
+          path_to_code: true,
+        }),
+      })
+      .from(schema.repositories)
+      .where(d.eq(schema.repositories.profile_id, profileMembershipSubquery.profile_id))
+      .innerJoin(
+        profileMembershipSubquery,
+        d.eq(schema.repositories.profile_id, profileMembershipSubquery.profile_id)
+      )
+      .innerJoin(schema.profiles, d.eq(schema.repositories.profile_id, schema.profiles.id))
+      .leftJoin(
+        schema.githubRepoIntegrations,
+        d.eq(schema.repositories.id, schema.githubRepoIntegrations.repo_id)
+      )
+      .execute()
+    return repos
+  }),
+  tree: publicProcedure
+    .input(
+      z.object({ profile_slug: z.string(), repo_slug: z.string(), path: z.string().optional() })
+    )
+    .query(async ({ input }) => {
+      if (process.env.NODE_ENV === 'development') {
+        const {
+          octokit,
+          query: { github_repo },
+        } = await getOctokitFromRepo(input)
+        const tree = await octokit.rest.git
+          .getTree({
+            owner: github_repo.github_repo_owner,
+            repo: github_repo.github_repo_name,
+            tree_sha: github_repo.default_branch,
+            recursive: 'true',
+          })
+          .then((r) => r.data.tree)
+        return tree.map(({ path, type }) => ({ path: path || '', type: type || '' }))
+      }
+      return []
+    }),
+  files: publicProcedure
+    .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+    .output(z.record(z.string(), z.string()))
+    .query(async ({ input }) => {
+      if (process.env.NODE_ENV === 'development') {
+        return exampleRepoFiles
+      }
+      return exampleRepoFiles
+    }),
+  paramsJson: publicProcedure
+    .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+    .output(paramsJsonShape.nullable())
+    .query(async ({ input }) => {
+      const getFiles = async () => {
+        return exampleRepoFiles
+      }
+      const files = await getFiles()
+      let paramsJson = files['params.json'] as string | null
+      if (process.env.NODE_ENV === 'development') {
+        const files = await getRepoFiles({
+          profile_slug: input.profileSlug,
+          repo_slug: input.repoSlug,
+          path: 'params.json',
+        }).catch((e) => {
+          console.log('[getRepoFiles][error]', e.message)
+        })
+        if (typeof files === 'string') {
+          paramsJson = files
+        } else {
+          paramsJson = null
+        }
+      }
+      if (typeof paramsJson !== 'string') {
+        return null
+      }
+      const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
+      if (parsed.success) {
+        return parsed.data
+      }
+      return null
+    }),
+  readme: publicProcedure
+    .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+    .output(z.string().nullable())
+    .query(async ({ input }) => {
+      const getFiles = async () => {
+        return exampleRepoFiles as Record<string, string>
+      }
+      const files = await getFiles()
+      const paramsJson = files['params.json']
+
+      if (!paramsJson) {
+        return null
+      }
+
+      const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
+      if (parsed.success) {
+        return files[parsed.data.docs.main] || null
+      }
+      return null
+    }),
+})
 
 const profilePlan = {
   createOnetimePlan: authedProcedure
@@ -1873,7 +1998,7 @@ export const appRouter = router({
   ...user,
   ...profile,
   ...profileMember,
-  ...repository,
+  repo: repository,
   ...profilePlan,
   ...availability,
   ...googleOauthRoutes,
@@ -2147,91 +2272,6 @@ export const appRouter = router({
 
       return { email: first.email }
     }),
-  repo: router({
-    tree: publicProcedure
-      .input(
-        z.object({ profile_slug: z.string(), repo_slug: z.string(), path: z.string().optional() })
-      )
-      .query(async ({ input }) => {
-        if (process.env.NODE_ENV === 'development') {
-          const {
-            octokit,
-            query: { github_repo },
-          } = await getOctokitFromRepo(input)
-          const tree = await octokit.rest.git
-            .getTree({
-              owner: github_repo.github_repo_owner,
-              repo: github_repo.github_repo_name,
-              tree_sha: github_repo.default_branch,
-              recursive: 'true',
-            })
-            .then((r) => r.data.tree)
-          return tree.map(({ path, type }) => ({ path: path || '', type: type || '' }))
-        }
-        return []
-      }),
-    files: publicProcedure
-      .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
-      .output(z.record(z.string(), z.string()))
-      .query(async ({ input }) => {
-        if (process.env.NODE_ENV === 'development') {
-          return exampleRepoFiles
-        }
-        return exampleRepoFiles
-      }),
-    paramsJson: publicProcedure
-      .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
-      .output(paramsJsonShape.nullable())
-      .query(async ({ input }) => {
-        const getFiles = async () => {
-          return exampleRepoFiles
-        }
-        const files = await getFiles()
-        let paramsJson = files['params.json'] as string | null
-        if (process.env.NODE_ENV === 'development') {
-          const files = await getRepoFiles({
-            profile_slug: input.profileSlug,
-            repo_slug: input.repoSlug,
-            path: 'params.json',
-          }).catch((e) => {
-            console.log('[getRepoFiles][error]', e.message)
-          })
-          if (typeof files === 'string') {
-            paramsJson = files
-          } else {
-            paramsJson = null
-          }
-        }
-        if (typeof paramsJson !== 'string') {
-          return null
-        }
-        const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
-        if (parsed.success) {
-          return parsed.data
-        }
-        return null
-      }),
-    readme: publicProcedure
-      .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
-      .output(z.string().nullable())
-      .query(async ({ input }) => {
-        const getFiles = async () => {
-          return exampleRepoFiles as Record<string, string>
-        }
-        const files = await getFiles()
-        const paramsJson = files['params.json']
-
-        if (!paramsJson) {
-          return null
-        }
-
-        const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
-        if (parsed.success) {
-          return files[parsed.data.docs.main] || null
-        }
-        return null
-      }),
-  }),
   ping: publicProcedure.query(async () => {
     return {
       pong: '🏓',
@@ -2372,6 +2412,71 @@ export const appRouter = router({
       }),
   }),
   github: router({
+    paramsJson: authedProcedure
+      .input(
+        z.object({
+          github_repo_owner: z.string(),
+          github_repo_name: z.string(),
+          path_to_code: z.string().optional().default(''),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const integration = await db.query.githubIntegrations.findFirst({
+          where: (gi, { eq }) => eq(gi.user_id, ctx.auth.userId),
+        })
+
+        if (!integration) {
+          return {
+            missing_github_integration: true,
+          } as const
+        }
+
+        const octokit = githubOauth.fromUser({ accessToken: integration.access_token })
+        const paramsJson = await octokit.repos
+          .getContent({
+            owner: input.github_repo_owner,
+            repo: input.github_repo_name,
+            path: [input.path_to_code, 'params.json'].filter(Boolean).join('/'),
+          })
+          .then((r) => r.data)
+          .then((r) => {
+            if (Array.isArray(r)) {
+              return null
+            }
+            if (r.type === 'file') {
+              return r.content
+            }
+            return null
+          })
+          .then((r) => {
+            if (typeof r === 'string') {
+              let json: object | null = null
+              try {
+                json = JSON.parse(Buffer.from(r, 'base64').toString())
+              } catch {}
+
+              const parsed = json != null && paramsJsonShape.safeParse(json)
+
+              if (parsed && parsed.success) {
+                return {
+                  json: parsed.data,
+                  is_valid: true,
+                } as const
+              }
+
+              return {
+                invalid_json_string: r,
+                is_valid: false,
+              } as const
+            }
+            return null
+          })
+
+        return {
+          missing_github_integration: false,
+          paramsJson,
+        } as const
+      }),
     exchangeCode: authedProcedure
       .input(z.object({ code: z.string() }))
       .mutation(async ({ ctx, input }) => {
@@ -2419,6 +2524,16 @@ export const appRouter = router({
 
         return integration != null
       }),
+
+    deleteIntegration: authedProcedure.mutation(async ({ ctx }) => {
+      const [integration] = await db
+        .delete(schema.githubIntegrations)
+        .where(d.eq(schema.githubIntegrations.user_id, ctx.auth.userId))
+        .returning()
+        .execute()
+
+      return integration != null
+    }),
 
     myRepos: authedProcedure
       .input(

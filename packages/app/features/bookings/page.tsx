@@ -31,9 +31,7 @@ export function BookingsPage() {
         <Page.Scroll>
           <Page.Content gap="$3">
             <Card>
-              <Text fontWeight="600" fontSize={24} letterSpacing={-0.5}>
-                My Bookings
-              </Text>
+              <Card.Title>My Bookings</Card.Title>
             </Card>
 
             <View gap="$1">

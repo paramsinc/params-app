@@ -145,6 +145,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
                     router.replace(`/dashboard/profiles/${patch.slug}`)
                   }
                 }}
+                onDidDeleteProfile={() => {
+                  router.replace('/dashboard/profiles')
+                }}
               />
             </UpdateProfileModal>
             <LinkButton href={`/@${profile.slug}`}>

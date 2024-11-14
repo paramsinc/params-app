@@ -27,7 +27,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
           )
       )
     )
-    .limit(50)
+    .limit(20)
     .execute()
   return {
     paths: profiles.map((p) => ({ params: { profileSlug: p.profileSlug } })),

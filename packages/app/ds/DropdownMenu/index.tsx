@@ -251,9 +251,21 @@ const SubContent = Menu.create(
   'SubContent'
 )
 
-const ItemImage = Menu.create((props: React.ComponentProps<typeof Menu.ItemImage>) => {
-  return <Menu.ItemImage {...props}></Menu.ItemImage>
-}, 'ItemImage')
+const ItemImage = Menu.create(
+  (
+    props: React.ComponentProps<typeof Menu.ItemImage> & {
+      source: string
+    }
+  ) => {
+    return (
+      <Menu.ItemImage
+        style={{ width: 26, height: 26, objectFit: 'cover', ...props.style }}
+        {...props}
+      ></Menu.ItemImage>
+    )
+  },
+  'ItemImage'
+)
 
 const ItemIndicator = Menu.create((props: React.ComponentProps<typeof Menu.ItemIndicator>) => {
   return (

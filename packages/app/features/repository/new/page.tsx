@@ -17,6 +17,13 @@ import { Codeblock } from 'app/ds/Codeblock'
 import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 import useDebounce from 'app/helpers/use-debounce'
 import { ErrorCard } from 'app/ds/Error/card'
+import { DropdownMenu } from 'app/ds/DropdownMenu'
+import { useState } from 'app/react'
+import { NewProfileForm } from 'app/features/profile/new/form'
+import { NewProfileModal, NewProfileModalContent } from 'app/features/profile/new/modal'
+import { imageLoader } from 'app/image/loader'
+import useToast from 'app/ds/Toast'
+import { useRouter } from 'app/navigation/use-router'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -53,7 +60,7 @@ const MaybeReady = styled(View, {
   variants: {
     ready: {
       false: {
-        pointerEvents: 'none',
+        pointerEvents: 'box-only',
         opacity: 0.7,
         cursor: 'not-allowed',
       },
@@ -186,8 +193,8 @@ export function NewRepositoryPage() {
                           <Number>{2}</Number>
                           <Card.Title>Root Directory (optional)</Card.Title>
                           <Card.Description>
-                            The directory within your project, where your code is located. Leave
-                            this field empty if your code is not located in a subdirectory.
+                            The directory within your project where your code is located. Leave this
+                            field empty if your code is not located in a subdirectory.
                           </Card.Description>
 
                           <Input
@@ -236,12 +243,12 @@ function ParamsJson() {
         <Card.Title>
           Add a <Text fontFamily="$mono">params.json</Text> file to the root of your repo
         </Card.Title>
-        <Card.Description>
-          The <Text fontFamily="$mono">docs.main</Text> field should point to your readme file. For
-          any other markdown files you want to include in your docs, place them in the{' '}
-          <Text fontFamily="$mono">docs.sidebar</Text> (or leave it empty{' '}
-          <Text fontFamily="$mono">{`{}`}</Text>).
-        </Card.Description>
+        {path_to_code ? (
+          <Card.Description>
+            Add the file to{' '}
+            <Text fontFamily="$mono">{[path_to_code, 'params.json'].join('/')}</Text>
+          </Card.Description>
+        ) : null}
         <Card.Description>Example:</Card.Description>
         <Codeblock
           language={'json'}
@@ -258,6 +265,12 @@ function ParamsJson() {
             2
           )}
         />
+        <Card.Description>
+          The <Text fontFamily="$mono">docs.main</Text> field should point to your readme file. For
+          any other markdown files you want to include in your docs, place them in the{' '}
+          <Text fontFamily="$mono">docs.sidebar</Text> (or leave it empty{' '}
+          <Text fontFamily="$mono">{`{}`}</Text>).
+        </Card.Description>
         <Card.Description>
           After you add the <Text fontFamily="$mono">params.json</Text> file and push it to your
           default branch, press refresh below.
@@ -325,24 +338,144 @@ function ParamsJson() {
         </Button>
       </Card>
       <MaybeReady ready={data?.paramsJson?.is_valid === true}>
-        <Card>
-          <Number>{4}</Number>
-          <Card.Title>Save</Card.Title>
-          <Card.Description>Your repository is ready to be added to Params.</Card.Description>
-
-          <ErrorCard error={mutation.error} />
-
-          <Button
-            themeInverse
-            loading={mutation.isPending}
-            disabled={!github_repo_owner || !github_repo_name}
-            als="flex-start"
-            onPress={() => mutation.mutate({ github_repo_owner, github_repo_name, path_to_code })}
-          >
-            <Button.Text>Save</Button.Text>
-          </Button>
-        </Card>
+        <Submit />
       </MaybeReady>
     </View>
+  )
+}
+
+function Submit() {
+  const { toast } = useToast()
+  const myProfiles = api.myProfiles.useQuery()
+  const router = useRouter()
+  const mutation = useMutation({
+    onSuccess: ({ slug }) => {
+      toast({
+        preset: 'done',
+        title: 'Repository added!',
+      })
+      router.push()
+    },
+  })
+  const { field } = Form.useController({
+    name: 'input',
+  })
+
+  const {
+    github_repo_owner = '',
+    github_repo_name = '',
+    path_to_code,
+    profile_id = myProfiles.data?.length === 1
+      ? myProfiles.data[0]?.id
+      : myProfiles.data?.length === 0
+      ? null
+      : undefined,
+  } = field.value ?? {}
+
+  const selectedProfile = myProfiles.data?.find((profile) => profile.id === profile_id)
+
+  return (
+    <Card>
+      <Number>{4}</Number>
+      <Card.Title>Save</Card.Title>
+      <Card.Description>Your repository is ready to be added to Params.</Card.Description>
+
+      <ErrorCard error={mutation.error} />
+      <ErrorCard error={myProfiles.error} />
+
+      {(myProfiles.data?.length ?? 0) > 0 && (
+        <View ai="flex-start">
+          <ProfilePicker
+            profileId={profile_id ?? null}
+            onChangeProfileId={(id) => {
+              field.onChange({
+                ...field.value,
+                profile_id: id,
+              } satisfies typeof field.value)
+            }}
+          >
+            <Button als="flex-start">
+              <Button.Text>{selectedProfile?.name ?? 'Select Profile'}</Button.Text>
+              <Button.Icon icon={Lucide.ChevronDown} />
+            </Button>
+          </ProfilePicker>
+        </View>
+      )}
+
+      <Button
+        themeInverse
+        loading={mutation.isPending}
+        disabled={
+          !github_repo_owner || !github_repo_name || !myProfiles.data || profile_id === undefined
+        }
+        als="flex-start"
+        onPress={() =>
+          mutation.mutate({
+            github_repo_owner,
+            github_repo_name,
+            path_to_code,
+            profile_id: profile_id!,
+          })
+        }
+      >
+        <Button.Text>Save</Button.Text>
+      </Button>
+    </Card>
+  )
+}
+
+function ProfilePicker({
+  profileId,
+  onChangeProfileId,
+  children,
+}: {
+  profileId: string | null
+  onChangeProfileId: (profileId: string) => void
+  children: React.ReactElement
+}) {
+  const myProfiles = api.myProfiles.useQuery()
+
+  const [isCreatingProfile, setIsCreatingProfile] = useState(false)
+
+  return (
+    <DropdownMenu>
+      <DropdownMenu.Trigger>{children}</DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        <DropdownMenu.Label>Select a profile</DropdownMenu.Label>
+        <DropdownMenu.Group>
+          {myProfiles.data?.map((profile) => {
+            const loader = profile.image_vendor ? imageLoader[profile.image_vendor] : undefined
+            return (
+              <DropdownMenu.CheckboxItem
+                key={profile.id}
+                value={profile.id === profileId}
+                onValueChange={(value) => onChangeProfileId(profile.id)}
+              >
+                <DropdownMenu.ItemTitle>{profile.name}</DropdownMenu.ItemTitle>
+                {loader && !!profile.image_vendor_id && (
+                  <DropdownMenu.ItemImage
+                    source={loader({ src: profile.image_vendor_id, width: 100 })}
+                  />
+                )}
+              </DropdownMenu.CheckboxItem>
+            )
+          })}
+        </DropdownMenu.Group>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item key="create-new-profile" onSelect={() => setIsCreatingProfile(true)}>
+          <DropdownMenu.ItemIcon icon={Lucide.Plus} />
+          <DropdownMenu.ItemTitle>Create new profile</DropdownMenu.ItemTitle>
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+
+      <NewProfileModal open={isCreatingProfile} onOpenChange={setIsCreatingProfile}>
+        <NewProfileModalContent
+          onDidCreateProfile={({ profile }) => {
+            onChangeProfileId(profile.id)
+            setIsCreatingProfile(false)
+          }}
+        />
+      </NewProfileModal>
+    </DropdownMenu>
   )
 }

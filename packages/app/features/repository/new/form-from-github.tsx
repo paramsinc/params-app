@@ -20,7 +20,6 @@ export function NewRepositoryFromGithubForm({
   profileId: string
 }) {
   const [selectedRepo, setSelectedRepo] = useState<{
-    id: number
     name: string
     owner: { login: string }
   } | null>(null)

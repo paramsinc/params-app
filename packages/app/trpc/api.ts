@@ -19,6 +19,7 @@ import { exampleRepoFiles } from 'app/trpc/routes/repo-files'
 import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 import * as googleCalendar from 'app/vendor/google/google-calendar'
 import { githubOauth } from 'app/vendor/github/github-oauth'
+import { env } from 'app/env'
 
 const [firstCdn, ...restCdns] = keys(cdn)
 
@@ -118,6 +119,17 @@ const user = {
     }),
 }
 
+const profileInsert = inserts.profiles
+  .pick({
+    name: true,
+    slug: true,
+    bio: true,
+    github_username: true,
+    image_vendor: true,
+    image_vendor_id: true,
+  })
+  .merge(z.object({ disableCreateMember: z.boolean().optional() }))
+
 const profile = {
   isProfileSlugAvailable: authedProcedure
     .input(z.object({ slug: z.string() }))
@@ -134,18 +146,7 @@ const profile = {
       return { slug, isAvailable: !existingProfileBySlug }
     }),
   createProfile: authedProcedure
-    .input(
-      inserts.profiles
-        .pick({
-          name: true,
-          slug: true,
-          bio: true,
-          github_username: true,
-          image_vendor: true,
-          image_vendor_id: true,
-        })
-        .merge(z.object({ disableCreateMember: z.boolean().optional() }))
-    )
+    .input(profileInsert)
     .mutation(async ({ input: { disableCreateMember, ...input }, ctx }) => {
       const { profile, member } = await db.transaction(async (tx) => {
         const existingProfileBySlug = await tx.query.profiles
@@ -402,7 +403,6 @@ const profile = {
       return profile
     }),
   myProfiles: authedProcedure.query(async ({ ctx }) => {
-    console.log('[myProfiles]', ctx)
     const profiles = await db
       .select(pick('profiles', publicSchema.profiles.ProfileInternal))
       .from(schema.profiles)
@@ -793,11 +793,26 @@ const repository = router({
       z.object({
         github_repo_owner: z.string(),
         github_repo_name: z.string(),
-        profile_id: z.string(),
+        profile_id: z.string().nullable(),
         path_to_code: z.string().optional().default(''),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      let profile_id = input.profile_id
+      if (input.profile_id === null) {
+        const [firstProfile, ...restProfiles] = await db.query.profileMembers.findMany({
+          where: (profileMembers, { eq, and }) => and(eq(profileMembers.user_id, ctx.auth.userId)),
+        })
+        if (firstProfile && !restProfiles.length) {
+          profile_id = firstProfile.profile_id
+        }
+      }
+      if (!profile_id) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Please create a profile first at ${env.APP_URL}/dashboard/profiles.`,
+        })
+      }
       const [first] = await db
         .select({
           myMembership: pick('profileMembers', {
@@ -807,18 +822,22 @@ const repository = router({
             access_token: true,
             user_id: true,
           }),
+          profile: pick('profiles', {
+            slug: true,
+          }),
         })
         .from(schema.profileMembers)
         .where(
           d.and(
             d.eq(schema.profileMembers.user_id, ctx.auth.userId),
-            d.eq(schema.profileMembers.profile_id, input.profile_id)
+            d.eq(schema.profileMembers.profile_id, profile_id)
           )
         )
         .innerJoin(
           schema.githubIntegrations,
           d.eq(schema.profileMembers.user_id, schema.githubIntegrations.user_id)
         )
+        .innerJoin(schema.profiles, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
         .limit(1)
         .execute()
 
@@ -829,7 +848,7 @@ const repository = router({
         })
       }
 
-      const { githubIntegration, myMembership } = first
+      const { githubIntegration, myMembership, profile } = first
       if (!githubIntegration) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
@@ -849,30 +868,33 @@ const repository = router({
         repo: input.github_repo_name,
       })
 
-      let slug = input.github_repo_name
+      const baseSlug = input.path_to_code.split('/').pop() ?? input.github_repo_name
+
+      let slug = baseSlug
 
       const { repo } = await db.transaction(async (tx) => {
         let slugSearchCount = 0
         while (
           await tx.query.repositories.findFirst({
-            where: (repositories, { eq }) => eq(repositories.slug, slug),
+            where: (repositories, { eq, and }) =>
+              and(eq(repositories.slug, slug), eq(repositories.profile_id, profile_id)),
           })
         ) {
           const maxSlugsCheck = 100
           if (slugSearchCount >= maxSlugsCheck) {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
-              message: `Couldn't create user, because the slug ${input.github_repo_name} is already taken. Please try another one.`,
+              message: `Couldn't create user, because the slug ${baseSlug} is already taken. Please try another one.`,
             })
           }
           slugSearchCount++
-          slug = `${input.github_repo_name}-${slugSearchCount}`
+          slug = `${baseSlug}-${slugSearchCount}`
         }
         const [repo] = await db
           .insert(schema.repositories)
           .values({
-            profile_id: input.profile_id,
-            slug: input.github_repo_name,
+            profile_id: profile_id,
+            slug: slug,
             github_url: githubRepo.data.html_url,
           })
           .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
@@ -906,10 +928,10 @@ const repository = router({
           })
         }
 
-        return { repo }
+        return { repo, profile }
       })
 
-      return repo
+      return { repo, profile }
     }),
   reposByProfileSlug: publicProcedure
     .input(z.object({ profile_slug: z.string() }))

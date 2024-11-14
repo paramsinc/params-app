@@ -17,10 +17,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async (ctx) => {
   const profileSlug = ctx.params?.profileSlug as string
 
-  // await Promise.all([
-  //   ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
-  //   ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
-  // ])
+  await Promise.all([
+    ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
+    ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
+  ])
 
   const trpcState = ssgApi.dehydrate()
 

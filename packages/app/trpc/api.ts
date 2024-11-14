@@ -710,6 +710,11 @@ export async function repoBySlug({
     .select({
       ...pick('repositories', publicSchema.repositories.RepositoryPublic),
       profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+      github_repo: pick('githubRepoIntegrations', {
+        github_repo_owner: true,
+        github_repo_name: true,
+        path_to_code: true,
+      }),
     })
     .from(schema.repositories)
     .where(d.eq(schema.repositories.slug, repo_slug))
@@ -719,6 +724,10 @@ export async function repoBySlug({
         d.eq(schema.repositories.profile_id, schema.profiles.id),
         d.eq(schema.profiles.slug, profile_slug)
       )
+    )
+    .leftJoin(
+      schema.githubRepoIntegrations,
+      d.eq(schema.repositories.id, schema.githubRepoIntegrations.repo_id)
     )
     .limit(1)
     .execute()
@@ -1155,7 +1164,19 @@ const repository = router({
             recursive: 'true',
           })
           .then((r) => r.data.tree)
-        return tree.map(({ path, type }) => ({ path: path || '', type: type || '' }))
+        if (github_repo.path_to_code) {
+          for (let i = 0; i < tree.length; i++) {
+            const item = tree[i]!
+            if (item.path?.startsWith(github_repo.path_to_code)) {
+              item.path = item.path?.replace(github_repo.path_to_code + '/', '') || ''
+              item.type ??= ''
+            } else {
+              tree.splice(i, 1)
+              i--
+            }
+          }
+        }
+        return tree
       }
       return []
     }),
@@ -1169,7 +1190,7 @@ const repository = router({
       return exampleRepoFiles
     }),
   paramsJson: publicProcedure
-    .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+    .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
     .output(paramsJsonShape.nullable())
     .query(async ({ input }) => {
       const getFiles = async () => {
@@ -1179,8 +1200,8 @@ const repository = router({
       let paramsJson = files['params.json'] as string | null
       if (process.env.NODE_ENV === 'development') {
         const files = await getRepoFiles({
-          profile_slug: input.profileSlug,
-          repo_slug: input.repoSlug,
+          profile_slug: input.profile_slug,
+          repo_slug: input.repo_slug,
           path: 'params.json',
         }).catch((e) => {
           console.log('[getRepoFiles][error]', e.message)
@@ -1201,24 +1222,36 @@ const repository = router({
       return null
     }),
   readme: publicProcedure
-    .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
+    .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
     .output(z.string().nullable())
     .query(async ({ input }) => {
-      const getFiles = async () => {
-        return exampleRepoFiles as Record<string, string>
-      }
-      const files = await getFiles()
-      const paramsJson = files['params.json']
+      const {
+        octokit,
+        query: { github_repo },
+      } = await getOctokitFromRepo({
+        profile_slug: input.profile_slug,
+        repo_slug: input.repo_slug,
+      })
+      console.log('[api][readme]', github_repo)
+      const readme = await octokit.rest.repos.getContent({
+        owner: github_repo.github_repo_owner,
+        repo: github_repo.github_repo_name,
+        path: [github_repo.path_to_code, 'README.md'].join('/'),
+      })
 
-      if (!paramsJson) {
+      if (!readme) {
         return null
       }
 
-      const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
-      if (parsed.success) {
-        return files[parsed.data.docs.main] || null
+      if (Array.isArray(readme.data)) {
+        return null
       }
-      return null
+
+      if (readme.data.type !== 'file') {
+        return null
+      }
+
+      return Buffer.from(readme.data.content, 'base64').toString('utf-8')
     }),
 })
 
@@ -2740,19 +2773,24 @@ async function getRepoFiles(input: { profile_slug: string; repo_slug: string; pa
       path: [github_repo.path_to_code, input.path].filter(Boolean).join('/'),
     })
     .then((r) => r.data)
+    .catch((e) => {
+      console.error('[api][repoFiles]', e.message)
+      return null
+    })
 
   if (Array.isArray(files)) {
     let result: string[] = []
     for (let i = 0; i < files.length; i++) {
       const file = files[i]!
       if (file.type === 'file') {
-        result.push(file.path)
+        const path = file.path.replace(github_repo.path_to_code, '')
+        result.push(path)
       }
     }
     return result
   }
 
-  if (files.type === 'file') {
+  if (files?.type === 'file') {
     return Buffer.from(files.content, 'base64').toString()
   }
   return null

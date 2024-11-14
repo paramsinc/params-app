@@ -255,8 +255,9 @@ function ParamsJson() {
           content={JSON.stringify(
             {
               docs: {
-                main: 'readme.md',
+                main: 'README.md',
                 sidebar: {
+                  Introduction: 'README.md',
                   Installation: 'installation.md',
                 },
               },

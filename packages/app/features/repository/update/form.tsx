@@ -1,6 +1,7 @@
 import { Button, ButtonIcon, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Card } from 'app/ds/Form/layout'
+import { Input } from 'app/ds/Input'
 import { Lucide } from 'app/ds/Lucide'
 import { Scroll } from 'app/ds/Scroll'
 import { Text } from 'app/ds/Text'
@@ -16,7 +17,7 @@ import { isValidSlug, slugify } from 'app/trpc/slugify'
 const { useMutation } = api.repo.update
 const useDeleteMutation = api.repo.delete.useMutation
 
-const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]['patch']>()
+const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
 
 export function UpdateRepositoryForm({
   repoId,
@@ -71,15 +72,17 @@ export function UpdateRepositoryForm({
   return (
     <Form.RootProvider
       defaultValues={{
-        slug: repo.slug,
-        github_url: repo.github_url,
+        patch: { slug: repo.slug, github_url: repo.github_url },
+        integration_patch: {
+          path_to_code: repo.githubRepoIntegration?.path_to_code,
+        },
       }}
     >
       <View grow>
         <Scroll>
           <View gap="$3" p="$3">
             <Form.Controller
-              name="slug"
+              name="patch.slug"
               rules={{
                 validate: (value) => (value && isValidSlug(value) ? true : false),
               }}
@@ -94,40 +97,61 @@ export function UpdateRepositoryForm({
             />
             <View
               opacity={createGithubIntegrationMutation.isPending || repoQuery.isFetching ? 0.5 : 1}
+              gap="$3"
             >
               {repo.githubRepoIntegration ? (
-                <Card theme="green" row gap="$2">
-                  <View flex={1} gap="$2">
-                    <Lucide.Github />
-                    <Card.Title fontFamily="$mono" color="$color11">
-                      {repo.githubRepoIntegration.github_repo_owner}/
-                      {repo.githubRepoIntegration.github_repo_name}
-                    </Card.Title>
-                    <Card.Description>GitHub repo is connected.</Card.Description>
-                    {!!repo.githubRepoIntegration.path_to_code && (
-                      <Card.Description fontFamily="$mono">
-                        {repo.githubRepoIntegration.path_to_code}
-                      </Card.Description>
-                    )}
-                    <View row ai="center" gap="$2">
-                      <Lucide.GitBranch size={14} />
-                      <Card.Description bold fontFamily="$mono">
-                        {repo.githubRepoIntegration.default_branch}
-                      </Card.Description>
+                <>
+                  <Card theme="green" row gap="$2">
+                    <View flex={1} gap="$2">
+                      <Lucide.Github />
+                      <Card.Title fontFamily="$mono" color="$color11">
+                        {repo.githubRepoIntegration.github_repo_owner}/
+                        {repo.githubRepoIntegration.github_repo_name}
+                      </Card.Title>
+                      <Card.Description>GitHub repo is connected.</Card.Description>
+                      {!!repo.githubRepoIntegration.path_to_code && (
+                        <Card.Description fontFamily="$mono">
+                          {repo.githubRepoIntegration.path_to_code}
+                        </Card.Description>
+                      )}
+                      <View row ai="center" gap="$2">
+                        <Lucide.GitBranch size={14} />
+                        <Card.Description bold fontFamily="$mono">
+                          {repo.githubRepoIntegration.default_branch}
+                        </Card.Description>
+                      </View>
                     </View>
-                  </View>
-                  <Button
-                    als="flex-start"
-                    theme="gray"
-                    onPress={() => {
-                      removeGithubIntegrationMutation.mutate({ repo_id: repoId })
-                    }}
-                    loading={removeGithubIntegrationMutation.isPending}
-                  >
-                    <ButtonIcon icon={Lucide.X} />
-                    <ButtonText>Remove</ButtonText>
-                  </Button>
-                </Card>
+                    <Button
+                      als="flex-start"
+                      theme="gray"
+                      onPress={() => {
+                        removeGithubIntegrationMutation.mutate({ repo_id: repoId })
+                      }}
+                      loading={removeGithubIntegrationMutation.isPending}
+                    >
+                      <ButtonIcon icon={Lucide.X} />
+                      <ButtonText>Remove</ButtonText>
+                    </Button>
+                  </Card>
+                  <Card>
+                    <Card.Title>Root Directory (optional)</Card.Title>
+                    <Card.Description>
+                      The directory within your project where your code is located. Leave this field
+                      empty if your code is not located in a subdirectory.
+                    </Card.Description>
+                    <Form.Controller
+                      name="integration_patch.path_to_code"
+                      render={({ field }) => (
+                        <Input
+                          value={field.value ?? ''}
+                          onChangeText={(next) => {
+                            field.onChange(next satisfies typeof field.value)
+                          }}
+                        />
+                      )}
+                    />
+                  </Card>
+                </>
               ) : (
                 <Card>
                   <Card.Title>Connect GitHub Repository</Card.Title>
@@ -195,7 +219,11 @@ export function UpdateRepositoryForm({
                 themeInverse
                 disabled={!isDirty}
                 onPress={handleDirtySubmit(async (data) => {
-                  await mutation.mutateAsync({ repo_id: repoId, patch: data })
+                  await mutation.mutateAsync({
+                    repo_id: repoId,
+                    patch: data.patch,
+                    integration_patch: data.integration_patch,
+                  })
                 })}
               >
                 <ButtonText>Save Changes</ButtonText>

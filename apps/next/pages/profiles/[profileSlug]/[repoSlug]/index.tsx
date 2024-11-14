@@ -23,7 +23,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
     ssgApi.repo.bySlug.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.repo.paramsJson.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.repo.tree.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
-    // ssgApi.repo.readme.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
+    ssgApi.repo.readme.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
   ])
 
   const trpcState = ssgApi.dehydrate()

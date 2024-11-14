@@ -966,7 +966,14 @@ const repository = router({
             slug: true,
             github_url: true,
           })
-          .partial(),
+          .partial()
+          .optional(),
+        integration_patch: inserts.githubRepoIntegrations
+          .pick({
+            path_to_code: true,
+          })
+          .partial()
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -1008,12 +1015,25 @@ const repository = router({
         })
       }
 
-      const [result] = await db
-        .update(schema.repositories)
-        .set(input.patch)
-        .where(d.eq(schema.repositories.id, input.repo_id))
-        .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
-        .execute()
+      const result = await db.transaction(async (tx) => {
+        if (input.integration_patch) {
+          await tx
+            .update(schema.githubRepoIntegrations)
+            .set(input.integration_patch)
+            .where(d.eq(schema.githubRepoIntegrations.repo_id, input.repo_id))
+            .execute()
+        }
+
+        if (input.patch) {
+          const [result] = await tx
+            .update(schema.repositories)
+            .set(input.patch)
+            .where(d.eq(schema.repositories.id, input.repo_id))
+            .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
+            .execute()
+          return result
+        }
+      })
 
       return result
     }),
@@ -1185,7 +1205,13 @@ const repository = router({
     .output(z.record(z.string(), z.string()))
     .query(async ({ input }) => {
       if (process.env.NODE_ENV === 'development') {
-        return exampleRepoFiles
+        const {
+          octokit,
+          query: { github_repo },
+        } = await getOctokitFromRepo({
+          profile_slug: input.profileSlug,
+          repo_slug: input.repoSlug,
+        })
       }
       return exampleRepoFiles
     }),
@@ -1233,10 +1259,10 @@ const repository = router({
         repo_slug: input.repo_slug,
       })
       console.log('[api][readme]', github_repo)
-      const readme = await octokit.rest.repos.getContent({
+      let readme = await octokit.rest.repos.getReadmeInDirectory({
         owner: github_repo.github_repo_owner,
         repo: github_repo.github_repo_name,
-        path: [github_repo.path_to_code, 'README.md'].join('/'),
+        dir: github_repo.path_to_code,
       })
 
       if (!readme) {

@@ -266,7 +266,6 @@ function DocsPage({
 }) {
   const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
   const readmeQuery = api.repo.readme.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
-  const filesQuery = api.repo.files.useQuery({ profileSlug, repoSlug })
   const paramsJsonQuery = api.repo.paramsJson.useQuery({
     profile_slug: profileSlug,
     repo_slug: repoSlug,
@@ -278,9 +277,15 @@ function DocsPage({
     params: { path = mainDocsFile },
   } = useParams()
 
+  const filesQuery = api.github.repoFiles.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+    path: path?.join('/'),
+  })
+
   const filePath = path?.join('/')
 
-  const file = filesQuery.data?.[filePath ?? ''] ?? readmeQuery.data
+  const file = typeof filesQuery.data == 'string' ? filesQuery.data : readmeQuery.data
 
   const fileKeys = Object.keys(paramsJsonQuery.data?.docs.sidebar ?? {})
 

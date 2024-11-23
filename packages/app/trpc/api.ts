@@ -1174,6 +1174,12 @@ const availability = {
         .select({
           profile: schema.profiles,
           plan: schema.profileOnetimePlans,
+          googleCalendarIntegration: pick('googleCalendarIntegrations', {
+            access_token: true,
+            refresh_token: true,
+            expires_at_ms: true,
+            calendars_for_avail_blocking: true,
+          }),
         })
         .from(schema.profiles)
         .where(d.eq(schema.profiles.slug, profile_slug))
@@ -1185,6 +1191,10 @@ const availability = {
             d.eq(schema.profileOnetimePlans.id, plan_id)
           )
         )
+        .leftJoin(
+          schema.googleCalendarIntegrations,
+          d.eq(schema.googleCalendarIntegrations.profile_id, schema.profiles.id)
+        )
         .execute()
 
       if (!first) {
@@ -1194,7 +1204,7 @@ const availability = {
         })
       }
 
-      const { profile, plan } = first
+      const { profile, plan, googleCalendarIntegration } = first
 
       const startDate = DateTime.fromObject(start_date, { zone: profile.timezone }).startOf('day')
       const endDate = DateTime.fromObject(end_date, { zone: profile.timezone }).startOf('day')
@@ -1246,6 +1256,40 @@ const availability = {
             )
           )
       )
+
+      if (googleCalendarIntegration) {
+        const { refresh_token, calendars_for_avail_blocking: [calendarId] = [] } =
+          googleCalendarIntegration
+
+        if (calendarId) {
+          const calendarEvents = await googleOauth.getCalendarEvents({
+            refreshToken: refresh_token,
+            minDateTime: startDate,
+            maxDateTime: endDate,
+            calendarId,
+          })
+
+          calendarEvents.items?.forEach(({ start, end }) => {
+            // TODO test this
+            // cache? probably not...
+            if (!start?.dateTime) return
+            if (!end?.dateTime) return
+            if (!start.timeZone) return
+
+            const startDt = DateTime.fromISO(start.dateTime)
+
+            const endDt = DateTime.fromISO(end.dateTime)
+
+            if (!startDt.isValid) return
+
+            conflicts.push({
+              start_datetime: startDt.toJSDate(),
+              timezone: start.timeZone,
+              duration_minutes: endDt.diff(startDt, 'minutes').minutes,
+            })
+          })
+        }
+      }
 
       const slots: Zod.infer<typeof upcomingSlotsShape>['slots'] = []
       const weekdayToEnum: Record<

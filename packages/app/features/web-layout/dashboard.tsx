@@ -12,6 +12,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouter().pathname
   const links = [
     {
+      label: 'My Repos',
+      href: '/dashboard/repos',
+      isActive: pathname.startsWith('/dashboard/repos'),
+    },
+    {
       label: 'My Profiles',
       href: '/dashboard/profiles',
       isActive: pathname.startsWith('/dashboard/profiles'),

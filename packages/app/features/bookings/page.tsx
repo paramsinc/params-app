@@ -31,9 +31,7 @@ export function BookingsPage() {
         <Page.Scroll>
           <Page.Content gap="$3">
             <Card>
-              <Text fontWeight="600" fontSize={24} letterSpacing={-0.5}>
-                Your Bookings
-              </Text>
+              <Card.Title>My Bookings</Card.Title>
             </Card>
 
             <View gap="$1">
@@ -119,10 +117,10 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
               <DropdownMenu.ItemIcon icon={Lucide.Trash} />
               <DropdownMenu.ItemTitle>Cancel</DropdownMenu.ItemTitle>
             </DropdownMenu.Item>
-            <DropdownMenu.Item key="reschedule booking">
+            {/* <DropdownMenu.Item key="reschedule booking">
               <DropdownMenu.ItemIcon icon={Lucide.CalendarClock} />
               <DropdownMenu.ItemTitle>Reschedule</DropdownMenu.ItemTitle>
-            </DropdownMenu.Item>
+            </DropdownMenu.Item> */}
           </DropdownMenu.Content>
         </DropdownMenu>
       </View>

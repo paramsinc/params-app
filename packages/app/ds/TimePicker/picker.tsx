@@ -1,5 +1,6 @@
 import { DateTime } from 'app/dates/date-time'
 import { Input } from 'app/ds/Input'
+import { useThemeName } from 'app/ds/useThemeName'
 import { View } from 'app/ds/View'
 import { useRef } from 'app/react'
 
@@ -36,7 +37,7 @@ export default function Web(props: Props) {
       <input
         type="time"
         ref={inputRef}
-        style={{ width: 140 }}
+        style={{ width: 140, color: 'var(--color)', colorScheme: useThemeName() }}
         defaultValue={
           dt
             ? `${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}`

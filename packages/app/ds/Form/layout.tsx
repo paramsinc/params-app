@@ -36,7 +36,7 @@ export const Card = withStaticProperties(
     return (
       <CardFrame {...props} ov="hidden">
         <Gradient
-          gradient={(f) => `linear-gradient(${f('color4')} 0%, ${f('color1')} 100%)`}
+          gradient={(f) => `linear-gradient(${f('color3')} 0%, ${f('color1')} 100%)`}
           stretch
           zi={-1}
         />
@@ -53,6 +53,10 @@ export const Card = withStaticProperties(
     IconRow: withStaticProperties(IconRow, {
       Icon: Icon,
       Content: IconRowContent,
+    }),
+    Separator: styled(View, {
+      h: 1,
+      bg: '$color7',
     }),
   }
 )

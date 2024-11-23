@@ -1,3 +1,4 @@
+'use client'
 import { useColors } from '../useColors'
 import { View } from '../View'
 import { GradientProps } from './types'

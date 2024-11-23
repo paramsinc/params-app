@@ -7,6 +7,7 @@ import {
   ProfileNameField,
   ProfileSlugField,
   ProfileBioField,
+  ProfileCoverImageField,
 } from 'app/features/profile/new/fields'
 import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
@@ -36,6 +37,42 @@ export function NewProfileForm({
       <Scroll>
         <View gap="$3" p="$3">
           <Form.RootProvider>
+            <Form.Controller
+              name="image_vendor_id"
+              render={(imageVendorId) => {
+                return (
+                  <Form.Controller
+                    name="image_vendor"
+                    render={(imageVendor) => {
+                      return (
+                        <ProfileCoverImageField
+                          image={
+                            imageVendor.field.value && imageVendorId.field.value
+                              ? {
+                                  id: imageVendorId.field.value,
+                                  vendor: imageVendor.field.value,
+                                }
+                              : undefined
+                          }
+                          onChange={(next) => {
+                            imageVendorId.field.onChange(
+                              next.id satisfies typeof imageVendorId.field.value
+                            )
+                            imageVendor.field.onChange(
+                              next.vendor satisfies typeof imageVendor.field.value
+                            )
+                          }}
+                          onRemove={() => {
+                            imageVendorId.field.onChange(undefined)
+                            imageVendor.field.onChange(undefined)
+                          }}
+                        />
+                      )
+                    }}
+                  />
+                )
+              }}
+            />
             <Form.Controller
               name="name"
               rules={{ required: true }}
@@ -87,13 +124,17 @@ export function NewProfileForm({
                 <Button
                   loading={isSubmitting || mutation.isPending}
                   als="flex-start"
-                  onPress={handleSubmit(async ({ name, slug, bio }) => {
-                    mutation.mutate({
-                      name,
-                      slug,
-                      bio,
-                    })
-                  })}
+                  onPress={handleSubmit(
+                    async ({ name, slug, bio, image_vendor_id, image_vendor }) => {
+                      mutation.mutate({
+                        name,
+                        slug,
+                        bio,
+                        image_vendor_id,
+                        image_vendor,
+                      })
+                    }
+                  )}
                   themeInverse
                 >
                   <ButtonText>Submit</ButtonText>

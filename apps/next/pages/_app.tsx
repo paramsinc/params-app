@@ -1,3 +1,4 @@
+import './tailwind.css'
 import 'raf/polyfill'
 import '@tamagui/core/reset.css'
 
@@ -27,12 +28,14 @@ const { APP_NAME } = env
 
 function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   const Layout =
-    router.pathname.startsWith('/dashboard') || router.pathname.startsWith('/bookings')
+    router.pathname.startsWith('/dashboard') ||
+    router.pathname.startsWith('/bookings') ||
+    router.pathname.startsWith('/new')
       ? DashboardLayout
       : Fragment
 
   return (
-    <div style={{ display: 'contents' }}>
+    <>
       <Head>
         <title>{APP_NAME}</title>
         <meta name="description" content={`Open source, code-reviewed AI starter templates.`} />
@@ -66,7 +69,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
           </Provider>
         </TamaguiProvider>
       </ThemeProvider>
-    </div>
+    </>
   )
 }
 

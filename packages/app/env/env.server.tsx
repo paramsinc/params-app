@@ -37,6 +37,7 @@ export const serverEnv = z
       }),
     }),
     RECAPTCHA_SECRET_KEY: z.string(),
+    GITHUB_OAUTH_CLIENT_SECRET: z.string(),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
@@ -52,4 +53,5 @@ export const serverEnv = z
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     GOOGLE_API_CREDENTIALS_JSON: JSON.parse(process.env.GOOGLE_API_CREDENTIALS_JSON!),
     RECAPTCHA_SECRET_KEY: process.env.CAPTCHA_SECRET_KEY,
+    GITHUB_OAUTH_CLIENT_SECRET: process.env.GITHUB_OAUTH_CLIENT_SECRET,
   })

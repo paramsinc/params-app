@@ -11,7 +11,7 @@ import { api } from 'app/trpc/client'
 import Markdown from 'react-markdown'
 import './github-markdown.css'
 import './page.css'
-import { Highlight, themes } from 'prism-react-renderer'
+import { Codeblock, languageByExtension } from 'app/ds/Codeblock'
 import { Image } from 'app/ds/Image'
 import { Lucide } from 'app/ds/Lucide'
 
@@ -24,6 +24,7 @@ import { Tooltip } from 'app/ds/Tooltip'
 import { Link } from 'app/ds/Link'
 import { useCurrentPath } from 'app/navigation/use-pathname'
 import { Modal } from 'app/ds/Modal'
+import { ErrorCard } from 'app/ds/Error/card'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -69,10 +70,13 @@ function RepositoryDetailPublicPageContent({
   repoSlug: string
   tab?: 'docs' | 'files'
 }) {
-  const repoQuery = api.repoBySlug.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
+  const repoQuery = api.repo.bySlug.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
 
-  const paramsJsonQuery = api.repo.paramsJson.useQuery({ profileSlug, repoSlug })
-  const readmeQuery = api.repo.readme.useQuery({ profileSlug, repoSlug })
+  const paramsJsonQuery = api.repo.paramsJson.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+  })
+  const readmeQuery = api.repo.readme.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
 
   if (!repoQuery.data) {
     return null
@@ -162,14 +166,14 @@ function RepositoryDetailPublicPageContent({
       />
       <Page.Scroll>
         <Page.Content maw="100%" gap="$3">
-          <Card row gap="$3" flexWrap="wrap" jbtwn>
+          <Card row gap="$3" flexWrap="wrap" jbtwn ai="center">
             <View flex={1}>
               <Text
                 flexGrow={1}
                 flexBasis={2}
                 bold
                 fontSize={18}
-                $gtSm={{ fontSize: 24 }}
+                // $gtSm={{ fontSize: 24 }}
                 fontFamily="$mono"
               >
                 @{profileSlug}/{repo.slug}
@@ -241,7 +245,7 @@ function RepositoryDetailPublicPageContent({
             )}
             {tab === 'files' && (
               <View $gtLg={{ grow: true }} gap="$3">
-                <FilesPage profileSlug={profileSlug} repoSlug={repoSlug} />
+                <GitHubFilesPage profileSlug={profileSlug} repoSlug={repoSlug} />
               </View>
             )}
           </>
@@ -261,9 +265,11 @@ function DocsPage({
   children: React.ReactNode
 }) {
   const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
-  const readmeQuery = api.repo.readme.useQuery({ profileSlug, repoSlug })
-  const filesQuery = api.repo.files.useQuery({ profileSlug, repoSlug })
-  const paramsJsonQuery = api.repo.paramsJson.useQuery({ profileSlug, repoSlug })
+  const readmeQuery = api.repo.readme.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
+  const paramsJsonQuery = api.repo.paramsJson.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+  })
 
   const mainDocsFile = paramsJsonQuery.data?.docs.main.split('/')
 
@@ -271,9 +277,15 @@ function DocsPage({
     params: { path = mainDocsFile },
   } = useParams()
 
+  const filesQuery = api.github.repoFiles.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+    path: path?.join('/'),
+  })
+
   const filePath = path?.join('/')
 
-  const file = filesQuery.data?.[filePath ?? ''] ?? readmeQuery.data
+  const file = typeof filesQuery.data == 'string' ? filesQuery.data : readmeQuery.data
 
   const fileKeys = Object.keys(paramsJsonQuery.data?.docs.sidebar ?? {})
 
@@ -282,8 +294,8 @@ function DocsPage({
   const nextFileName = fileKeys[fileIndex + 1]
   const prevFileName = fileKeys[fileIndex - 1]
 
-  const nextFilePath = nextFileName ? paramsJsonQuery.data?.docs.sidebar[nextFileName] : null
-  const prevFilePath = prevFileName ? paramsJsonQuery.data?.docs.sidebar[prevFileName] : null
+  const nextFilePath = nextFileName ? paramsJsonQuery.data?.docs.sidebar?.[nextFileName] : null
+  const prevFilePath = prevFileName ? paramsJsonQuery.data?.docs.sidebar?.[prevFileName] : null
 
   if (!profileQuery.data) {
     return null
@@ -398,62 +410,103 @@ function DocsPage({
   )
 }
 
-function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
-  const filesQuery = api.repo.files.useQuery({ profileSlug, repoSlug })
-
+function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
   const {
     params: { path },
   } = useParams()
+  const filesQuery = api.github.repoFiles.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+    path: path?.join('/'),
+  })
+  const treeQuery = api.repo.tree.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
 
-  const files = filesQuery.data ?? {}
+  const selectedFilePath = path?.join('/')
 
-  const readmeFileName = Object.keys(files).find(
-    (fileName) => fileName.toLowerCase() === 'readme.md'
-  )
-
-  const selectedFileName = path?.join('/')
-
-  console.log('[files]', { selectedFileName, readmeFileName })
-
-  const selectedFile =
-    selectedFileName && selectedFileName in files ? files[selectedFileName] : null
+  const selectedFile = typeof filesQuery.data === 'string' ? filesQuery.data : null
   const getFileIcon = (fileName: string) => {
     if (fileName.endsWith('.md')) return Lucide.FileText
     if (fileName.endsWith('.ts') || fileName.endsWith('.tsx')) return Lucide.FileCode
     if (fileName.endsWith('.json')) return Lucide.FileJson
+    if (!fileName.includes('.')) return Lucide.Folder
     return Lucide.File
   }
 
   const language =
-    languageByExtension[selectedFileName?.split('.').at(-1) ?? 'plaintext'] ?? 'plaintext'
+    languageByExtension[selectedFilePath?.split('.').at(-1) ?? 'plaintext'] ?? 'plaintext'
 
   const sidebar = useMedia().gtSm
 
+  if (!treeQuery.data) {
+    return <ErrorCard error={filesQuery.error ?? treeQuery.error} />
+  }
+  const tree = treeQuery.data
+
+  const readmeFileName = tree.find((r) => r.path.toLowerCase() === 'readme.md')?.path
+
+  console.log('[files]', { selectedFileName: selectedFilePath, readmeFileName, tree })
   const filesNode = (
     <View>
-      {Object.keys(files)
-        .sort()
-        .map((fileName) => {
-          const FileIcon = getFileIcon(fileName)
+      {tree
+        .sort((a, b) => a.path.split('/').pop()!.localeCompare(b.path.split('/').pop()!))
+        .map((file) => {
+          const FileIcon = getFileIcon(file.path)
+          const filename = file.path.split('/').pop()
+
+          const isInCurrentDirectory = (filePath: string, urlPath: string[] | undefined) => {
+            if (!urlPath?.length) {
+              return !filePath.includes('/')
+            }
+
+            const currentDir = urlPath.join('/')
+
+            const hasSelectedFile = urlPath.at(-1)?.includes('.')
+
+            if (hasSelectedFile) {
+              // if i select /users/file.tsx,
+              // then the sidebar should be as if the /users was the url
+              return isInCurrentDirectory(filePath, urlPath.slice(0, -1))
+            }
+
+            // File must:
+            // 1. Start with current directory path
+            // 2. Not have any additional subdirectories after current dir
+            // 3. Not be the current directory itself
+            return (
+              filePath.startsWith(currentDir + '/') &&
+              !filePath.slice(currentDir.length + 1).includes('/') &&
+              filePath !== currentDir
+            )
+          }
+          if (!isInCurrentDirectory(file.path, path)) {
+            return null
+          }
+
           return (
-            <Link href={`/@${profileSlug}/${repoSlug}/files/${fileName}`} key={fileName}>
+            <Link href={`/@${profileSlug}/${repoSlug}/files/${file.path}`} key={file.path}>
               <View
                 flexDirection="row"
                 alignItems="center"
                 padding="$2"
-                backgroundColor={selectedFileName === fileName ? '$backgroundFocus' : 'transparent'}
+                backgroundColor={
+                  selectedFilePath === file.path ? '$backgroundFocus' : 'transparent'
+                }
                 hoverStyle={{ backgroundColor: '$backgroundHover' }}
                 cursor="pointer"
               >
                 <FileIcon size={18} color="$color" />
                 <Text marginLeft="$2" numberOfLines={1} ellipsizeMode="middle" fontFamily="$mono">
-                  {fileName}
+                  {filename}
                 </Text>
               </View>
             </Link>
           )
         })}
     </View>
+  )
+
+  const isImageFilename = ['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(
+    path?.at(-1)?.split('.').at(-1) ?? '__none'
   )
 
   return (
@@ -463,22 +516,44 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
           <Scroll>{filesNode}</Scroll>
         </View>
       )}
-      <View grow>
+      <View grow gap="$3">
+        {!!path?.length && (
+          <View>
+            <Scroll horizontal>
+              <Breadcrumbs>
+                <Link href={`/@${profileSlug}/${repoSlug}/files`}>
+                  <Breadcrumbs.Item>
+                    <Breadcrumbs.Title>Files</Breadcrumbs.Title>
+                  </Breadcrumbs.Item>
+                </Link>
+                {path?.map((chunk, i) => {
+                  const isLast = i === path.length - 1
+                  const baseHref = `/@${profileSlug}/${repoSlug}/files`
+                  let href = `${baseHref}/${path.slice(0, i + 1).join('/')}`
+
+                  if (isLast) {
+                    href = `${baseHref}/${path.slice(0, i).join('/')}`
+                  }
+                  return (
+                    <Fragment key={i}>
+                      <Breadcrumbs.Separator />
+
+                      <Link href={href}>
+                        <Breadcrumbs.Item>
+                          <Breadcrumbs.Title>{chunk}</Breadcrumbs.Title>
+                        </Breadcrumbs.Item>
+                      </Link>
+                    </Fragment>
+                  )
+                })}
+              </Breadcrumbs>
+            </Scroll>
+          </View>
+        )}
         {selectedFile != null ? (
           <View gap="$3">
-            <Breadcrumbs>
-              <Link href={`/@${profileSlug}/${repoSlug}/files`}>
-                <Breadcrumbs.Item>
-                  <Breadcrumbs.Title>Files</Breadcrumbs.Title>
-                </Breadcrumbs.Item>
-              </Link>
-              <Breadcrumbs.Separator />
-              <Breadcrumbs.Item>
-                <Breadcrumbs.Title>{selectedFileName}</Breadcrumbs.Title>
-              </Breadcrumbs.Item>
-            </Breadcrumbs>
             <View>
-              {language === 'markdown' ? (
+              {isImageFilename ? null : language === 'markdown' ? (
                 <MarkdownRenderer linkPrefix={`/@${profileSlug}/${repoSlug}/files`}>
                   {selectedFile}
                 </MarkdownRenderer>
@@ -487,65 +562,11 @@ function FilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: s
               )}
             </View>
           </View>
-        ) : sidebar ? (
-          <Text>Select a file to view its contents</Text>
-        ) : (
+        ) : sidebar ? null : (
           <>{filesNode}</>
         )}
       </View>
     </View>
-  )
-}
-
-const languageByExtension: Record<string, string> = {
-  ts: 'typescript',
-  tsx: 'typescript',
-  py: 'python',
-  md: 'markdown',
-  json: 'json',
-  plaintext: 'plaintext',
-}
-
-function Codeblock({
-  content,
-  language,
-  lineNumbers = false,
-}: {
-  content: string
-  language: string
-  lineNumbers?: boolean
-}) {
-  return (
-    <Highlight theme={themes.vsDark} code={content} language={language}>
-      {({ className, style, tokens, getLineProps, getTokenProps }) => (
-        <pre
-          style={{
-            ...style,
-            padding: '16px',
-            borderRadius: 12,
-            marginBottom: 16,
-            fontFamily: 'var(--font-mono)',
-            whiteSpace: 'pre-wrap',
-          }}
-          className={className}
-        >
-          {tokens.map((line, i) => (
-            <div key={i} {...getLineProps({ line })}>
-              {lineNumbers && (
-                <span
-                  style={{ width: 50, display: 'inline-block', opacity: 0.8, userSelect: 'none' }}
-                >
-                  {i + 1}
-                </span>
-              )}
-              {line.map((token, key) => (
-                <span key={key} {...getTokenProps({ token })} />
-              ))}
-            </div>
-          ))}
-        </pre>
-      )}
-    </Highlight>
   )
 }
 
@@ -569,13 +590,20 @@ const Tab = styled(View, {
 })
 
 function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
-  const paramsJsonQuery = api.repo.paramsJson.useQuery({ profileSlug, repoSlug })
+  const paramsJsonQuery = api.repo.paramsJson.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+  })
   const {
     params: { path },
   } = useParams()
 
+  if (paramsJsonQuery.data === null) {
+    return <Text>Missing params.json file</Text>
+  }
+
   if (!paramsJsonQuery.data) {
-    return null
+    return <ErrorCard error={paramsJsonQuery.error} />
   }
   const paramsJson = paramsJsonQuery.data
   const selectedPage = path?.join('/') ?? paramsJson.docs.main

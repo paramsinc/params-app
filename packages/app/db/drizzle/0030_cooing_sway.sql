@@ -1,0 +1,1 @@
+ALTER TABLE "github_repo_integrations" ADD COLUMN "path_to_code" text DEFAULT '' NOT NULL;

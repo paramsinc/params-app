@@ -1,10 +1,12 @@
 'use client'
 import { Auth } from 'app/auth'
 import { Header } from 'app/ds/Header'
+import { Link } from 'app/ds/Link'
 import { Logo } from 'app/ds/Logo'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import { useCurrentPath } from 'app/navigation/use-pathname'
+import { useScroll, motion } from 'framer-motion'
 
 export function GlobalWebLayout({
   children,
@@ -14,10 +16,12 @@ export function GlobalWebLayout({
   hideHeader?: boolean
 }) {
   const pathname = useCurrentPath()
+  const { scrollY } = useScroll()
   return (
     <>
       {!hideHeader && (
-        <Header
+        <View
+          tag="header"
           ai="center"
           height={48}
           px="$3"
@@ -36,8 +40,10 @@ export function GlobalWebLayout({
           }}
         >
           <View w={100}></View>
-          <View grow center>
-            <Logo height={20} />
+          <View flex={1} center>
+            <Link href="/">
+              <Logo height={20} />
+            </Link>
           </View>
           <View
             w={100}
@@ -48,7 +54,7 @@ export function GlobalWebLayout({
           >
             <Auth.UserButton />
           </View>
-        </Header>
+        </View>
       )}
       {children}
     </>

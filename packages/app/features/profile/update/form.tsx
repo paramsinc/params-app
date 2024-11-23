@@ -133,6 +133,14 @@ export function ProfileUpdateForm({
               bg="$color1"
               ai="center"
             >
+              {/* TODO implement deleting a profile... */}
+              {/* with are you sure... */}
+              {null && (
+                <Button onPress={() => deleteMutation.mutate({ id: profile.id })} theme="red">
+                  <ButtonText>Delete</ButtonText>
+                </Button>
+              )}
+              <View grow>{isDirty && <Text>Unsaved changes</Text>}</View>
               <Button
                 loading={isSubmitting}
                 themeInverse
@@ -143,13 +151,6 @@ export function ProfileUpdateForm({
               >
                 <ButtonText>Save</ButtonText>
               </Button>
-              <View grow>{isDirty && <Text>Unsaved changes</Text>}</View>
-              {/* TODO implement deleting a profile... */}
-              {null && (
-                <Button onPress={() => deleteMutation.mutate({ id: profile.id })} theme="red">
-                  <ButtonText>Delete</ButtonText>
-                </Button>
-              )}
             </View>
           )}
         </Form.Submit>

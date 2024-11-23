@@ -87,7 +87,7 @@ export function HomeScreen(props: {
   const deleteMe = api.deleteMe.useMutation()
 
   return (
-    <View bg={fancy && '$backgroundStrong'}>
+    <View bg={fancy ? '$backgroundStrong' : undefined}>
       <View pt={100} maw={750} w="100%" als="center" px="$3" gap="$4">
         <View gap="$1">
           <H1>{`Discover curated machine learning starters`}</H1>

@@ -2,15 +2,12 @@ import { Button, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Scroll } from 'app/ds/Scroll'
 import { View } from 'app/ds/View'
-import {
-  RepositoryGithubUrlField,
-  RepositorySlugField,
-} from 'app/features/repository/new/fields'
+import { RepositoryGithubUrlField, RepositorySlugField } from 'app/features/repository/new/fields'
 import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
-import { isValidSlug, slugify } from 'app/trpc/slugify'
+import { isValidSlug } from 'app/trpc/slugify'
 
-const { useMutation } = api.createRepo
+const { useMutation } = api.repo.create
 
 const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
 

@@ -1,5 +1,5 @@
 import { Auth } from 'app/auth'
-import { Button, ButtonText } from 'app/ds/Button'
+import { Button, ButtonIcon, ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Image } from 'app/ds/Image'
@@ -18,6 +18,7 @@ import {
 } from 'app/features/profile/stripe/modal'
 import { UpdateProfileModal } from 'app/features/profile/update/modal'
 import {
+  NewRepositoryFromGithubModalContent,
   NewRepositoryModal,
   NewRepositoryModalContent,
   NewRepositoryModalTrigger,
@@ -49,6 +50,7 @@ import { group } from 'app/helpers/dash'
 import { entries } from 'app/helpers/object'
 import { SignInWithGoogle } from 'app/features/oauth/google/sign-in-with-google'
 import { Link } from 'app/ds/Link'
+import { Lucide } from 'app/ds/Lucide'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -72,7 +74,7 @@ export function ProfileDetailPage() {
 
 function Content({ profileSlug }: { profileSlug: string }) {
   const me = api.me.useQuery()
-  const reposQuery = api.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
+  const reposQuery = api.repo.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
   const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
   const members = api.profileMembersBySlug.useQuery({ profile_slug: profileSlug })
   const calendarIntegrations = api.googleIntegrationsByProfileSlug.useQuery({
@@ -96,6 +98,11 @@ function Content({ profileSlug }: { profileSlug: string }) {
     },
     onError: (e) => {
       toast({ preset: 'error', title: 'Failed to remove member', message: e.message })
+    },
+  })
+  const deleteGoogleIntegration = api.deleteProfileGoogleIntegration.useMutation({
+    onSuccess: () => {
+      toast({ preset: 'done', title: 'Google integration removed' })
     },
   })
   if (!profileQuery.data) {
@@ -138,6 +145,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
                     router.replace(`/dashboard/profiles/${patch.slug}`)
                   }
                 }}
+                onDidDeleteProfile={() => {
+                  router.replace('/dashboard/profiles')
+                }}
               />
             </UpdateProfileModal>
             <LinkButton href={`/@${profile.slug}`}>
@@ -159,7 +169,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
               </Button>
             </NewRepositoryModalTrigger>
 
-            <NewRepositoryModalContent profileId={profile.id} />
+            {/* <NewRepositoryModalContent profileId={profile.id} /> */}
+            <NewRepositoryFromGithubModalContent profileId={profile.id} profileSlug={profileSlug} />
           </NewRepositoryModal>
         </View>
 
@@ -324,6 +335,23 @@ function Content({ profileSlug }: { profileSlug: string }) {
                       })}
                     </View>
                   </View>
+                  <Button
+                    theme="red"
+                    onPress={() => {
+                      deleteGoogleIntegration.mutate({
+                        google_user_id: integration.google_user_id,
+                        profile_id: profile.id,
+                      })
+                    }}
+                    square
+                    loading={
+                      deleteGoogleIntegration.isPending &&
+                      deleteGoogleIntegration.variables.google_user_id ===
+                        integration.google_user_id
+                    }
+                  >
+                    <ButtonIcon icon={Lucide.Trash} />
+                  </Button>
                 </View>
               )
             })}

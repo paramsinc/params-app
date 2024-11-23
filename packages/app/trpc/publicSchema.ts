@@ -35,6 +35,7 @@ export const publicSchema = {
       image_vendor_id: true,
       availability_ranges: true,
       timezone: true,
+      personal_profile_user_id: true,
     },
     ProfilePublic: {
       id: true,

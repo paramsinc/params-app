@@ -5,7 +5,7 @@ const path = require('path')
 const { join } = require('path')
 
 const disableExtraction =
-  true || process.env.DISABLE_EXTRACTION === 'true' || process.env.NODE_ENV === 'development'
+  process.env.DISABLE_EXTRACTION === 'true' || process.env.NODE_ENV === 'development'
 
 const plugins = [
   withBundleAnalyzer({
@@ -14,7 +14,7 @@ const plugins = [
   }),
   withTamagui({
     enableLegacyFontSupport: true,
-    appDir: true,
+    appDir: false,
     themeBuilder: {
       input: '../../packages/app/ds/tamagui/themes/themes-old.tsx',
       output: '../../packages/app/ds/tamagui/themes/theme-generated.ts',

@@ -12,9 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" dir="ltr">
       <body>
         <NextTamaguiProvider>
-          <TamaguiProvider>
-            <Provider>{children}</Provider>
-          </TamaguiProvider>
+          <Provider>{children}</Provider>
         </NextTamaguiProvider>
       </body>
     </html>

@@ -63,6 +63,7 @@ export function ProfilesListContent() {
               <View grow>
                 <Text bold>{profile.name}</Text>
                 <Text color="$color11">@{profile.slug}</Text>
+                {profile.personal_profile_user_id != null && <Text color="$color11">Personal</Text>}
               </View>
               <View row gap="$2">
                 <LinkButton href={`/@${profile.slug}`}>

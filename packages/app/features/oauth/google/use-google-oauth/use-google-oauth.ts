@@ -5,26 +5,28 @@ import { api } from 'app/trpc/client'
 import qs from 'qs'
 import { useEffect, useMemo } from 'app/react'
 import { env } from 'app/env'
+import useConsoleLog from 'app/helpers/use-console-log'
+import useToast from 'app/ds/Toast'
 
-maybeCompleteAuthSession()
+maybeCompleteAuthSession({
+  // important since we use a proxy api route for auth callback
+  skipRedirectCheck: true,
+})
 
 export default ({ profileSlug }: { profileSlug: string }) => {
   const path = useCurrentPath()
-
-  const redirect = makeRedirectUri({
-    path,
-  })
 
   const authRedirectUrl = makeRedirectUri({
     path: 'api/auth/google/callback',
   })
 
-  const stateParam = useMemo(
-    () => ({
-      redirect,
+  useConsoleLog('[authRedirectUrl]', authRedirectUrl)
+
+  const stateParam = {
+    redirect: makeRedirectUri({
+      path,
     }),
-    [redirect]
-  )
+  }
 
   const authUrlQuery = api.googleOauthUrl.useQuery({
     redirect_url: authRedirectUrl,
@@ -38,9 +40,8 @@ export default ({ profileSlug }: { profileSlug: string }) => {
     }
     return {
       ...(qs.parse(authUrl.split('?')[1] ?? '') as Record<string, string>),
-      state: JSON.stringify(stateParam),
     }
-  }, [authUrlQuery.data, stateParam])
+  }, [authUrlQuery.data])
 
   const [request, response, promptAsync] = useAuthRequest(
     {
@@ -48,6 +49,7 @@ export default ({ profileSlug }: { profileSlug: string }) => {
       redirectUri: authRedirectUrl,
       extraParams,
       usePKCE: false,
+      state: JSON.stringify(stateParam),
     },
     useMemo(
       () => (authUrlQuery.data ? { authorizationEndpoint: authUrlQuery.data.split('?')[0] } : null),
@@ -62,11 +64,24 @@ export default ({ profileSlug }: { profileSlug: string }) => {
   useEffect(
     function exchangeCodeForTokens() {
       if (code) {
-        exchangeCodeMutation.mutate({
-          code,
-          redirect_url: authRedirectUrl,
-          profile_slug: profileSlug,
-        })
+        exchangeCodeMutation.mutate(
+          {
+            code,
+            redirect_url: authRedirectUrl,
+            profile_slug: profileSlug,
+          },
+          {
+            onSettled(data, error, variables, context) {
+              console.log('[exchangeCodeForTokens][onSettled]', data, error, variables, context)
+            },
+            onSuccess(data, variables, context) {
+              useToast.toast({
+                preset: 'done',
+                title: 'Signed in with Google',
+              })
+            },
+          }
+        )
       }
     },
     [code, profileSlug]

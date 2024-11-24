@@ -220,3 +220,32 @@ export const ProfileSlugField = ({
     </Card>
   )
 }
+
+export const ProfilePricePerHourField = ({
+  pricePerHourCents,
+  onChange,
+  error,
+}: {
+  pricePerHourCents: number | null
+  onChange: (pricePerHourCents: number | null) => void
+  error: boolean
+}) => {
+  let num = pricePerHourCents != null ? Number(pricePerHourCents) : null
+  let str = num != null && !isNaN(num) ? Math.round(num).toString() : ''
+  return (
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>Price Per Hour (USD)</Card.Label>
+      <View row gap="$1" ai="center">
+        <Card.Description>$</Card.Description>
+        <Input
+          onChange={(e) => e.preventDefault()}
+          onChangeText={(next) => (next === '' ? onChange(null) : onChange(parseFloat(next)))}
+          value={str}
+          placeholder="200"
+          keyboardType="numeric"
+        />
+      </View>
+      <Card.Description>How much do you charge per hour to get on a call?</Card.Description>
+    </Card>
+  )
+}

@@ -269,8 +269,8 @@ const ItemImage = Menu.create(
 
 const ItemIndicator = Menu.create((props: React.ComponentProps<typeof Menu.ItemIndicator>) => {
   return (
-    <View width={leftWidth}>
-      <Menu.ItemIndicator {...props}>
+    <View width={leftWidth} jc="center">
+      <Menu.ItemIndicator {...props} asChild>
         <Lucide.Check size={18} />
       </Menu.ItemIndicator>
     </View>

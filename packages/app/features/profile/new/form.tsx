@@ -8,6 +8,7 @@ import {
   ProfileSlugField,
   ProfileBioField,
   ProfileCoverImageField,
+  ProfilePricePerHourField,
 } from 'app/features/profile/new/fields'
 import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
@@ -76,6 +77,7 @@ export function NewProfileForm({
             <Form.Controller
               name="name"
               rules={{ required: true }}
+              disableScrollToError
               defaultValue={[me.data?.first_name, me.data?.last_name].filter(Boolean).join(' ')}
               render={({ field, fieldState }) => {
                 const nameValue = field.value
@@ -92,6 +94,7 @@ export function NewProfileForm({
                       name="slug"
                       rules={{ required: 'Please enter a slug' }}
                       defaultValue={slugify(nameValue)}
+                      disableScrollToError
                       render={({ field, fieldState }) => (
                         <ProfileSlugField
                           slug={field.value}
@@ -104,6 +107,18 @@ export function NewProfileForm({
                   </View>
                 )
               }}
+            />
+
+            <Form.Controller
+              name="pricePerHourCents"
+              rules={{ required: 'Please enter a price per hour', min: 0 }}
+              render={({ field, fieldState }) => (
+                <ProfilePricePerHourField
+                  pricePerHourCents={field.value}
+                  error={fieldState.error != null}
+                  onChange={field.onChange}
+                />
+              )}
             />
 
             <Form.Controller

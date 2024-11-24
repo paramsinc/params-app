@@ -1,4 +1,4 @@
-import { Button } from 'app/ds/Button'
+import { Button, ButtonIcon } from 'app/ds/Button'
 import { Card } from 'app/ds/Form/layout'
 import { Modal } from 'app/ds/Modal'
 import { Page } from 'app/ds/Page'
@@ -18,12 +18,13 @@ import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 import useDebounce from 'app/helpers/use-debounce'
 import { ErrorCard } from 'app/ds/Error/card'
 import { DropdownMenu } from 'app/ds/DropdownMenu'
-import { useState } from 'app/react'
+import { useEffect, useState } from 'app/react'
 import { NewProfileForm } from 'app/features/profile/new/form'
 import { NewProfileModal, NewProfileModalContent } from 'app/features/profile/new/modal'
 import { imageLoader } from 'app/image/loader'
 import useToast from 'app/ds/Toast'
 import { useRouter } from 'app/navigation/use-router'
+import { ProfileMembers } from 'app/features/profile/detail/ProfileMembers'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -35,7 +36,7 @@ const Form = makeForm<{
 
 function Number({ children }: { children: number }) {
   return (
-    <View box={30} bg="$color10" br="$rounded" center>
+    <View box={30} bg="$color10" $theme-light={{ bg: '$color5' }} br="$rounded" center>
       <Text color="$color12" bold fontFamily="$mono">
         {children}
       </Text>
@@ -79,109 +80,120 @@ export function NewRepositoryPage() {
               <Transition>
                 <Card>
                   <Number>{1}</Number>
+                  <Card.Title>Select your developer profile</Card.Title>
                   <Card.Description>
-                    To start, pick the repo you want to use from GitHub.
+                    Choose your personal profile or one of your team profiles.
                   </Card.Description>
-                  <Form.Controller
-                    disableScrollToError
-                    name="input"
-                    render={({ field }) => {
-                      const { github_repo_name, github_repo_owner, isPrivateRepo } =
-                        field.value ?? {}
-                      return (
-                        <Modal>
-                          {github_repo_name && github_repo_owner ? (
-                            <>
-                              <View
-                                row
-                                jbtwn
-                                ai="center"
-                                p="$2"
-                                br="$3"
-                                bg="$color2"
-                                bw={1}
-                                boc="$borderColor"
-                                theme="green"
-                                gap="$3"
-                              >
-                                <Lucide.CheckCircle size={16} color="$color10" />
-                                <View flex={1}>
-                                  <Text color="$color11">{`${github_repo_owner}/${github_repo_name}`}</Text>
-                                  <Text>Repo selected</Text>
-                                </View>
-                                <Modal.Trigger>
-                                  <Button>
-                                    <Button.Text>Change</Button.Text>
-                                  </Button>
-                                </Modal.Trigger>
-                              </View>
-                              {isPrivateRepo && (
+                  <ProfileField />
+                </Card>
+              </Transition>
+              <ReadyWithProfile>
+                <Transition>
+                  <Card>
+                    <Number>{2}</Number>
+                    <Card.Description>Pick the repo you want to use from GitHub.</Card.Description>
+                    <Form.Controller
+                      disableScrollToError
+                      name="input"
+                      render={({ field }) => {
+                        const { github_repo_name, github_repo_owner, isPrivateRepo } =
+                          field.value ?? {}
+                        return (
+                          <Modal>
+                            {github_repo_name && github_repo_owner ? (
+                              <>
                                 <View
+                                  row
+                                  jbtwn
+                                  ai="center"
                                   p="$2"
-                                  theme="yellow"
+                                  br="$3"
                                   bg="$color2"
                                   bw={1}
                                   boc="$borderColor"
-                                  row
+                                  theme="green"
                                   gap="$3"
-                                  ai="center"
-                                  br="$3"
                                 >
-                                  <Lucide.AlertTriangle color="$color10" size={16} />
-                                  <Text flex={1} color="$color11">
-                                    You selected a private GitHub repo. Adding it to Params will
-                                    make the code publicly accessible. Please proceed with caution.
-                                  </Text>
-                                </View>
-                              )}
-                            </>
-                          ) : (
-                            <Modal.Trigger>
-                              <Button themeInverse als="flex-start">
-                                <Button.Text>Choose Github Repo</Button.Text>
-                              </Button>
-                            </Modal.Trigger>
-                          )}
-
-                          <Modal.Content>
-                            <Modal.Backdrop />
-                            <Modal.Dialog>
-                              <Modal.Dialog.HeaderSmart title="Github Repo" />
-                              <Scroll p="$3">
-                                <View gap="$3">
+                                  <Lucide.CheckCircle size={16} color="$color10" />
+                                  <View flex={1}>
+                                    <Text color="$color11">{`${github_repo_owner}/${github_repo_name}`}</Text>
+                                    <Text>Repo selected</Text>
+                                  </View>
                                   <Modal.Trigger>
-                                    {({ onOpenChange }) => (
-                                      <GitHubRepoPicker
-                                        onSelectRepo={(next) => {
-                                          field.onChange({
-                                            ...field.value,
-                                            github_repo_name: next.name,
-                                            github_repo_owner: next.owner.login,
-                                            isPrivateRepo: next.private,
-                                          } satisfies typeof field.value)
-                                          onOpenChange(false)
-                                        }}
-                                        selectedRepo={
-                                          (github_repo_name &&
-                                            github_repo_owner && {
-                                              name: github_repo_name,
-                                              owner: { login: github_repo_owner },
-                                            }) ||
-                                          null
-                                        }
-                                      />
-                                    )}
+                                    <Button>
+                                      <Button.Text>Change</Button.Text>
+                                    </Button>
                                   </Modal.Trigger>
                                 </View>
-                              </Scroll>
-                            </Modal.Dialog>
-                          </Modal.Content>
-                        </Modal>
-                      )
-                    }}
-                  />
-                </Card>
-              </Transition>
+                                {isPrivateRepo && (
+                                  <View
+                                    p="$2"
+                                    theme="yellow"
+                                    bg="$color2"
+                                    bw={1}
+                                    boc="$borderColor"
+                                    row
+                                    gap="$3"
+                                    ai="center"
+                                    br="$3"
+                                  >
+                                    <Lucide.AlertTriangle color="$color10" size={16} />
+                                    <Text flex={1} color="$color11">
+                                      You selected a private GitHub repo. Adding it to Params will
+                                      make the code publicly accessible. Please proceed with
+                                      caution.
+                                    </Text>
+                                  </View>
+                                )}
+                              </>
+                            ) : (
+                              <Modal.Trigger>
+                                <Button themeInverse als="flex-start">
+                                  <Button.Text>Choose Github Repo</Button.Text>
+                                </Button>
+                              </Modal.Trigger>
+                            )}
+
+                            <Modal.Content>
+                              <Modal.Backdrop />
+                              <Modal.Dialog>
+                                <Modal.Dialog.HeaderSmart title="Github Repo" />
+                                <Scroll p="$3">
+                                  <View gap="$3">
+                                    <Modal.Trigger>
+                                      {({ onOpenChange }) => (
+                                        <GitHubRepoPicker
+                                          onSelectRepo={(next) => {
+                                            field.onChange({
+                                              ...field.value,
+                                              github_repo_name: next.name,
+                                              github_repo_owner: next.owner.login,
+                                              isPrivateRepo: next.private,
+                                            } satisfies typeof field.value)
+                                            onOpenChange(false)
+                                          }}
+                                          selectedRepo={
+                                            (github_repo_name &&
+                                              github_repo_owner && {
+                                                name: github_repo_name,
+                                                owner: { login: github_repo_owner },
+                                              }) ||
+                                            null
+                                          }
+                                        />
+                                      )}
+                                    </Modal.Trigger>
+                                  </View>
+                                </Scroll>
+                              </Modal.Dialog>
+                            </Modal.Content>
+                          </Modal>
+                        )
+                      }}
+                    />
+                  </Card>
+                </Transition>
+              </ReadyWithProfile>
               <Form.Controller
                 name="input"
                 render={({ field }) => {
@@ -190,7 +202,7 @@ export function NewRepositoryPage() {
                     <MaybeReady ready={Boolean(github_repo_name && github_repo_owner)} gap="$3">
                       <Transition delay={50}>
                         <Card>
-                          <Number>{2}</Number>
+                          <Number>{3}</Number>
                           <Card.Title>Root Directory (optional)</Card.Title>
                           <Card.Description>
                             The directory within your project where your code is located. Leave this
@@ -224,6 +236,10 @@ export function NewRepositoryPage() {
   )
 }
 
+function ReadyWithProfile({ children }: { children: React.ReactElement }) {
+  return <MaybeReady ready={useProfileId().profile_id != null}>{children}</MaybeReady>
+}
+
 function ParamsJson() {
   const mutation = useMutation()
   const {
@@ -239,7 +255,7 @@ function ParamsJson() {
   return (
     <View gap="$3">
       <Card>
-        <Number>{3}</Number>
+        <Number>{4}</Number>
         <Card.Title>
           Add a <Text fontFamily="$mono">params.json</Text> file to the root of your repo
         </Card.Title>
@@ -316,9 +332,9 @@ function ParamsJson() {
             </Card>
             <Codeblock language="json" content={data.paramsJson.invalid_json_string} />
           </>
-        ) : (
-          <></>
-        )}
+        ) : data?.paramsJson == null ? (
+          <Text color="$yellow11">params.json file not found in your repo.</Text>
+        ) : null}
 
         <ErrorCard error={paramsJsonQuery.error} />
 
@@ -345,22 +361,11 @@ function ParamsJson() {
   )
 }
 
-function Submit() {
-  const { toast } = useToast()
-  const myProfiles = api.myProfiles.useQuery()
-  const router = useRouter()
-  const mutation = useMutation({
-    onSuccess: ({ slug }) => {
-      toast({
-        preset: 'done',
-        title: 'Repository added!',
-      })
-      router.push()
-    },
-  })
+function useProfileId() {
   const { field } = Form.useController({
     name: 'input',
   })
+  const myProfiles = api.myProfiles.useQuery()
 
   const {
     github_repo_owner = '',
@@ -373,6 +378,63 @@ function Submit() {
       : undefined,
   } = field.value ?? {}
 
+  return {
+    profile_id,
+    myProfiles: myProfiles.data,
+    setProfileId: (next: string) =>
+      field.onChange({
+        ...field.value,
+        profile_id: next,
+      } satisfies typeof field.value),
+  }
+}
+
+function ProfileField() {
+  const { profile_id, setProfileId, myProfiles } = useProfileId()
+
+  const profile = myProfiles?.find((profile) => profile.id === profile_id)
+
+  return (
+    <View gap="$3">
+      <View ai="flex-start">
+        <ProfilePicker profileId={profile_id ?? null} onChangeProfileId={setProfileId}>
+          <Button>
+            <Button.Text>{profile?.slug ? `@${profile.slug}` : `Select Profile`}</Button.Text>
+            <ButtonIcon icon={Lucide.ChevronDown} />
+          </Button>
+        </ProfilePicker>
+      </View>
+      {profile && (
+        <>
+          <View h={2} bg="$borderColor" />
+          <Text>Members</Text>
+          <ProfileMembers profileSlug={profile.slug} />
+        </>
+      )}
+    </View>
+  )
+}
+
+function Submit() {
+  const { toast } = useToast()
+  const myProfiles = api.myProfiles.useQuery()
+  const router = useRouter()
+  const mutation = useMutation({
+    onSuccess: ({ profile, repo }) => {
+      toast({
+        preset: 'done',
+        title: 'Repository added!',
+      })
+      router.push(`/@${profile.slug}/${repo.slug}`)
+    },
+  })
+  const { field } = Form.useController({
+    name: 'input',
+  })
+  const { profile_id } = useProfileId()
+
+  const { github_repo_owner = '', github_repo_name = '' } = field.value ?? {}
+
   const selectedProfile = myProfiles.data?.find((profile) => profile.id === profile_id)
 
   return (
@@ -384,43 +446,34 @@ function Submit() {
       <ErrorCard error={mutation.error} />
       <ErrorCard error={myProfiles.error} />
 
-      {(myProfiles.data?.length ?? 0) > 0 && (
-        <View ai="flex-start">
-          <ProfilePicker
-            profileId={profile_id ?? null}
-            onChangeProfileId={(id) => {
-              field.onChange({
-                ...field.value,
-                profile_id: id,
-              } satisfies typeof field.value)
-            }}
+      <Form.Submit>
+        {({ handleSubmit }) => (
+          <Button
+            themeInverse
+            loading={mutation.isPending}
+            disabled={
+              !github_repo_owner ||
+              !github_repo_name ||
+              !myProfiles.data ||
+              profile_id === undefined
+            }
+            als="flex-start"
+            onPress={handleSubmit(
+              async ({
+                input: { github_repo_owner, github_repo_name, path_to_code, profile_id },
+              }) =>
+                await mutation.mutateAsync({
+                  github_repo_owner,
+                  github_repo_name,
+                  path_to_code,
+                  profile_id: profile_id!,
+                })
+            )}
           >
-            <Button als="flex-start">
-              <Button.Text>{selectedProfile?.name ?? 'Select Profile'}</Button.Text>
-              <Button.Icon icon={Lucide.ChevronDown} />
-            </Button>
-          </ProfilePicker>
-        </View>
-      )}
-
-      <Button
-        themeInverse
-        loading={mutation.isPending}
-        disabled={
-          !github_repo_owner || !github_repo_name || !myProfiles.data || profile_id === undefined
-        }
-        als="flex-start"
-        onPress={() =>
-          mutation.mutate({
-            github_repo_owner,
-            github_repo_name,
-            path_to_code,
-            profile_id: profile_id!,
-          })
-        }
-      >
-        <Button.Text>Save</Button.Text>
-      </Button>
+            <Button.Text>Save</Button.Text>
+          </Button>
+        )}
+      </Form.Submit>
     </Card>
   )
 }
@@ -443,6 +496,7 @@ function ProfilePicker({
       <DropdownMenu.Trigger>{children}</DropdownMenu.Trigger>
       <DropdownMenu.Content>
         <DropdownMenu.Label>Select a profile</DropdownMenu.Label>
+        <DropdownMenu.Separator />
         <DropdownMenu.Group>
           {myProfiles.data?.map((profile) => {
             const loader = profile.image_vendor ? imageLoader[profile.image_vendor] : undefined
@@ -452,12 +506,12 @@ function ProfilePicker({
                 value={profile.id === profileId}
                 onValueChange={(value) => onChangeProfileId(profile.id)}
               >
-                <DropdownMenu.ItemTitle>{profile.name}</DropdownMenu.ItemTitle>
-                {loader && !!profile.image_vendor_id && (
+                <DropdownMenu.ItemTitle>{`@${profile.slug}`}</DropdownMenu.ItemTitle>
+                {/* {loader && !!profile.image_vendor_id && (
                   <DropdownMenu.ItemImage
                     source={loader({ src: profile.image_vendor_id, width: 100 })}
                   />
-                )}
+                )} */}
               </DropdownMenu.CheckboxItem>
             )
           })}

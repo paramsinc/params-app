@@ -128,7 +128,12 @@ const profileInsert = inserts.profiles
     image_vendor: true,
     image_vendor_id: true,
   })
-  .merge(z.object({ disableCreateMember: z.boolean().optional() }))
+  .merge(
+    z.object({
+      disableCreateMember: z.boolean().optional(),
+      pricePerHourCents: z.number().optional(),
+    })
+  )
 
 const profile = {
   isProfileSlugAvailable: authedProcedure
@@ -147,7 +152,7 @@ const profile = {
     }),
   createProfile: authedProcedure
     .input(profileInsert)
-    .mutation(async ({ input: { disableCreateMember, ...input }, ctx }) => {
+    .mutation(async ({ input: { disableCreateMember, pricePerHourCents, ...input }, ctx }) => {
       const { profile, member } = await db.transaction(async (tx) => {
         const existingProfileBySlug = await tx.query.profiles
           .findFirst({
@@ -219,6 +224,24 @@ const profile = {
               })
               .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
               .execute()
+
+        if (pricePerHourCents) {
+          const minutesPerHour = 60
+          const minuteCalls = [30, 60]
+
+          await tx.insert(schema.profileOnetimePlans).values(
+            minuteCalls.map((duration_mins) => {
+              const hours = duration_mins / minutesPerHour
+              const price = pricePerHourCents * hours
+              return {
+                currency: 'usd' as const,
+                duration_mins,
+                price,
+                profile_id: profile.id,
+              }
+            })
+          )
+        }
 
         return { profile, member }
       })
@@ -2594,6 +2617,10 @@ export const appRouter = router({
                 is_valid: false,
               } as const
             }
+            return null
+          })
+          .catch((e) => {
+            console.error('[api][github][paramsJson]', e.message)
             return null
           })
 

@@ -51,6 +51,7 @@ import { entries } from 'app/helpers/object'
 import { SignInWithGoogle } from 'app/features/oauth/google/sign-in-with-google'
 import { Link } from 'app/ds/Link'
 import { Lucide } from 'app/ds/Lucide'
+import { ProfileMembers } from 'app/features/profile/detail/ProfileMembers'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -76,7 +77,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
   const me = api.me.useQuery()
   const reposQuery = api.repo.reposByProfileSlug.useQuery({ profile_slug: profileSlug })
   const profileQuery = api.profileBySlug.useQuery({ slug: profileSlug })
-  const members = api.profileMembersBySlug.useQuery({ profile_slug: profileSlug })
   const calendarIntegrations = api.googleIntegrationsByProfileSlug.useQuery({
     profile_slug: profileSlug,
   })
@@ -92,14 +92,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
     }
   )
   const { toast } = useToast()
-  const deleteProfileMember = api.deleteProfileMember.useMutation({
-    onSuccess: () => {
-      toast({ preset: 'done', title: 'Member removed' })
-    },
-    onError: (e) => {
-      toast({ preset: 'error', title: 'Failed to remove member', message: e.message })
-    },
-  })
   const deleteGoogleIntegration = api.deleteProfileGoogleIntegration.useMutation({
     onSuccess: () => {
       toast({ preset: 'done', title: 'Google integration removed' })
@@ -211,33 +203,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <Text bold>Members</Text>
         </View>
 
-        {members.data?.length === 0 && <Text color="$color11">Add your first member</Text>}
-        {!!members.data?.length && (
-          <View gap="$1">
-            {members.data?.map((member) => (
-              <Card key={member.id} row jbtwn ai="center">
-                <View grow>
-                  <Card.Title>
-                    {member.first_name} {member.last_name}
-                  </Card.Title>
-                  <Text color="$color11">{member.email}</Text>
-                </View>
-
-                <Button
-                  theme="red"
-                  loading={
-                    deleteProfileMember.isPending && deleteProfileMember.variables.id === member.id
-                  }
-                  onPress={() => {
-                    deleteProfileMember.mutate({ id: member.id })
-                  }}
-                >
-                  <ButtonText>{member.user_id === me.data?.id ? 'Leave' : 'Remove'}</ButtonText>
-                </Button>
-              </Card>
-            ))}
-          </View>
-        )}
+        <ProfileMembers profileSlug={profileSlug} />
       </View>
 
       <View h={2} bg="$borderColor" />

@@ -19,6 +19,7 @@ import { env } from 'app/env'
 import { entries } from 'app/helpers/object'
 import fonts from 'app/ds/tamagui/font/fonts'
 import { fontVars } from 'app/ds/tamagui/font/font-vars'
+import { View } from 'app/ds/View'
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode

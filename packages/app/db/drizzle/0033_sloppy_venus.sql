@@ -1,0 +1,2 @@
+ALTER TABLE "repositories" ADD COLUMN "allow_booking_for_main_profile" boolean DEFAULT true;--> statement-breakpoint
+ALTER TABLE "repositories" ADD COLUMN "allow_booking_for_member_personal_profiles" boolean DEFAULT false;

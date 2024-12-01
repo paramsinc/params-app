@@ -34,7 +34,7 @@ const IconRowContent = styled(View, {
 export const Card = withStaticProperties(
   CardFrame.styleable(function Frame(props) {
     return (
-      <CardFrame {...props} ov="hidden">
+      <CardFrame ov="hidden" {...props}>
         <Gradient
           gradient={(f) => `linear-gradient(${f('color3')} 0%, ${f('color1')} 100%)`}
           stretch

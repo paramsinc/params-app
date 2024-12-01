@@ -830,6 +830,8 @@ const repository = router({
         github_repo_name: z.string(),
         profile_id: z.string().nullable(),
         path_to_code: z.string().optional().default(''),
+        allow_booking_for_main_profile: z.boolean().optional().default(true),
+        allow_booking_for_member_personal_profiles: z.boolean().optional().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -931,6 +933,9 @@ const repository = router({
             profile_id: profile_id,
             slug: slug,
             github_url: githubRepo.data.html_url,
+            allow_booking_for_main_profile: input.allow_booking_for_main_profile,
+            allow_booking_for_member_personal_profiles:
+              input.allow_booking_for_member_personal_profiles,
           })
           .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
           .execute()

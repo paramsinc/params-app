@@ -92,6 +92,7 @@ export const ModalDialog = styled(View, {
   defaultVariants: {
     autoHeight: false,
   },
+  group: true,
 })
 
 const headerHeight = 50

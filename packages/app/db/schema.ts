@@ -100,6 +100,10 @@ export const repositories = pgTable(
       }),
     index: serial('index').notNull(),
     description: text('description'),
+    allow_booking_for_main_profile: boolean('allow_booking_for_main_profile').default(true),
+    allow_booking_for_member_personal_profiles: boolean(
+      'allow_booking_for_member_personal_profiles'
+    ).default(false),
     ...timestampMixin(),
   },
   (table) => ({

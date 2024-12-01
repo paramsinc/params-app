@@ -26,7 +26,7 @@ export function RepositoryListPage() {
               <Card row ai="center">
                 <Card.Title flex={1}>My Repos</Card.Title>
 
-                <LinkButton href="/new" themeInverse>
+                <LinkButton absolute right={0} m="$2" href="/new" themeInverse>
                   <ButtonIcon icon={Lucide.Plus} />
                   <ButtonText>New</ButtonText>
                 </LinkButton>

@@ -7,6 +7,7 @@ import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import { api } from 'app/trpc/client'
 import { useRouter } from 'next/router'
+import { motion } from 'framer-motion'
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouter().pathname
@@ -14,7 +15,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     {
       label: 'My Repos',
       href: '/dashboard/repos',
-      isActive: pathname.startsWith('/dashboard/repos') || pathname === '/dashboard',
+      isActive:
+        pathname.startsWith('/dashboard/repos') || pathname === '/dashboard' || pathname === '/new',
     },
     {
       label: 'My Profiles',
@@ -34,15 +36,29 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <>
           {isSignedIn ? (
             <>
-              <View bbw={1} boc="$borderColor" row px="$2">
+              <View boc="$borderColor" row px="$2">
                 {links.map((link) => (
                   <Link href={link.href} key={link.href}>
                     <View py="$2" px="$2">
-                      <Text
-                        bold
-                        textDecorationLine="underline"
-                        textDecorationColor={link.isActive ? '$color12' : 'transparent'}
-                      >
+                      {link.isActive && (
+                        <motion.div
+                          layoutId="active-tab"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            pointerEvents: 'none',
+                            background: 'var(--color3)',
+                            borderRadius: 'var(--t-radius-3)',
+                            zIndex: -1,
+                            boxShadow: `
+                              inset 0px 1px 0px var(--color4),
+                              inset 0px 8px 16px var(--color2),
+                              inset 0px -1px 0px var(--color5)
+                            `,
+                          }}
+                        />
+                      )}
+                      <Text bold zIndex={1}>
                         {link.label}
                       </Text>
                     </View>

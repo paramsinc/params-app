@@ -17,18 +17,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouter().pathname
   const links = [
     {
-      label: 'My Repos',
+      label: 'Repos',
       href: '/dashboard/repos',
       isActive:
         pathname.startsWith('/dashboard/repos') || pathname === '/dashboard' || pathname === '/new',
     },
     {
-      label: 'My Profiles',
+      label: 'Profiles',
       href: '/dashboard/profiles',
       isActive: pathname.startsWith('/dashboard/profiles'),
     },
     {
-      label: 'My Bookings',
+      label: 'Bookings',
       href: '/dashboard/bookings',
       isActive: pathname.startsWith('/dashboard/bookings') || pathname.startsWith('/bookings'),
     },
@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   {links.map((link, i) => (
                     <View key={link.href} zi={1}>
                       <Link href={link.href}>
-                        <View py="$2" px="$2">
+                        <View py="$2" px="$2" containerType="normal" group={`link` as any}>
                           {link.isActive && (
                             <motion.div
                               layoutId="active-tab"
@@ -69,7 +69,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                               }}
                             />
                           )}
-                          <Text bold zIndex={1}>
+                          <Text
+                            bold
+                            zIndex={1}
+                            textDecorationLine="underline"
+                            textDecorationColor="transparent"
+                            {...{
+                              [`$group-link-hover`]: {
+                                textDecorationColor: '$color',
+                              },
+                            }}
+                          >
                             {link.label}
                           </Text>
                         </View>

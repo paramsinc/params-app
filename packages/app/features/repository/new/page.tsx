@@ -117,9 +117,7 @@ export function NewRepositoryPage() {
                     <Transition>
                       <Card>
                         <Number>{3}</Number>
-                        <Card.Description>
-                          Pick the repo you want to use from GitHub.
-                        </Card.Description>
+                        <Card.Title>Pick the repo you want to use from GitHub.</Card.Title>
                         <Form.Controller
                           disableScrollToError
                           name="input"

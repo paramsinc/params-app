@@ -43,10 +43,14 @@ export const profiles = pgTable(
     slug: text('slug').notNull().unique(),
     name: text('name').notNull(),
     bio: text('bio'),
+    short_bio: text('short_bio'),
     github_username: text('github_username'),
     image_vendor: text('image_vendor', { enum: ['cloudinary', 'raw'] }),
     image_vendor_id: text('image_vendor_id'),
     stripe_connect_account_id: text('stripe_connect_account_id').notNull(),
+
+    x_social_username: text('x_social_username'),
+    linkedin_social_username: text('linkedin_social_username'),
 
     availability_ranges: jsonb('availability_ranges')
       .$type<Zod.infer<typeof availabilityRangesShape>>()
@@ -95,6 +99,7 @@ export const repositories = pgTable(
         onDelete: 'cascade',
       }),
     index: serial('index').notNull(),
+    description: text('description'),
     ...timestampMixin(),
   },
   (table) => ({

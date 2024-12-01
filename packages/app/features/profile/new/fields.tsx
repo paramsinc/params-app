@@ -149,7 +149,7 @@ export const ProfileBioField = ({
 }) => {
   return (
     <Card theme={error ? 'red' : undefined}>
-      <Card.Label>Bio (Markdown)</Card.Label>
+      <Card.Label>Bio</Card.Label>
       <TextArea
         onChangeText={onChange}
         value={bio ?? ''}
@@ -160,6 +160,39 @@ export const ProfileBioField = ({
     </Card>
   )
 }
+
+export const ProfileShortBioField = ({
+  shortBio,
+  onChange,
+  error,
+  inputRef,
+}: {
+  shortBio: string | undefined
+  onChange: (shortBio: string) => void
+  error?: { message?: string }
+  inputRef: any
+}) => {
+  const length = shortBio?.trim().length ?? 0
+  return (
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>Job Title / Mini Bio</Card.Label>
+      <Input
+        onChangeText={onChange}
+        value={shortBio ?? ''}
+        placeholder="ex: Software Engineer @ Params"
+        ref={inputRef}
+        numberOfLines={2}
+      />
+      <Card.Description>
+        {length}/{ProfileShortBioField.maxLength} characters
+      </Card.Description>
+      {error && <Card.Description color="$color11">{error.message}</Card.Description>}
+    </Card>
+  )
+}
+
+ProfileShortBioField.maxLength = 100
+
 export const ProfileSlugField = ({
   slug,
   onChange,
@@ -219,6 +252,10 @@ export const ProfileSlugField = ({
       )}
     </Card>
   )
+}
+
+export const ProfileSocialMediaFields = ({}) => {
+  return <View></View>
 }
 
 export const ProfilePricePerHourField = ({

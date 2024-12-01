@@ -225,6 +225,13 @@
       "when": 1731278966331,
       "tag": "0031_great_nico_minoru",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1733073241494,
+      "tag": "0032_cynical_adam_warlock",
+      "breakpoints": true
     }
   ]
 }

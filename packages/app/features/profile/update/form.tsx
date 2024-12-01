@@ -7,6 +7,7 @@ import {
   ProfileBioField,
   ProfileCoverImageField,
   ProfileNameField,
+  ProfileShortBioField,
   ProfileSlugField,
 } from 'app/features/profile/new/fields'
 import { makeForm } from 'app/form'
@@ -104,6 +105,23 @@ export function ProfileUpdateForm({
                 />
               )}
               rules={{ required: 'Slug is required' }}
+            />
+            <Form.Controller
+              name="short_bio"
+              rules={{
+                maxLength: {
+                  value: ProfileShortBioField.maxLength,
+                  message: "That's a bit too long.",
+                },
+              }}
+              render={({ field, fieldState }) => (
+                <ProfileShortBioField
+                  shortBio={field.value ?? profile.short_bio ?? ''}
+                  onChange={field.onChange}
+                  inputRef={field.ref}
+                  error={fieldState.error}
+                />
+              )}
             />
             <Form.Controller
               name="bio"

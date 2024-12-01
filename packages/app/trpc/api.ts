@@ -260,6 +260,7 @@ const profile = {
             github_username: true,
             image_vendor_id: true,
             image_vendor: true,
+            short_bio: true,
           })
           .merge(
             z.object({

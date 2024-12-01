@@ -56,7 +56,7 @@ const Frame = styled(View, {
   jc: 'center',
   tag: 'button',
   row: true,
-  br: 6,
+  br: 8,
   gap: '$2',
   testID: 'button',
 })

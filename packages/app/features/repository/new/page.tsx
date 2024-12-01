@@ -25,6 +25,7 @@ import { imageLoader } from 'app/image/loader'
 import useToast from 'app/ds/Toast'
 import { useRouter } from 'app/navigation/use-router'
 import { ProfileMembers } from 'app/features/profile/detail/ProfileMembers'
+import { Badge } from 'app/ds/Badge'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -396,13 +397,18 @@ function ProfileField() {
 
   return (
     <View gap="$3">
-      <View ai="flex-start">
+      <View row="wrap" ai="center" gap="$2">
         <ProfilePicker profileId={profile_id ?? null} onChangeProfileId={setProfileId}>
           <Button>
             <Button.Text>{profile?.slug ? `@${profile.slug}` : `Select Profile`}</Button.Text>
             <ButtonIcon icon={Lucide.ChevronDown} />
           </Button>
         </ProfilePicker>
+        {profile && (
+          <Badge theme={profile.personal_profile_user_id ? 'purple' : 'pink'}>
+            <Badge.Text>{profile.personal_profile_user_id ? 'Personal' : 'Team'}</Badge.Text>
+          </Badge>
+        )}
       </View>
       {profile && (
         <>

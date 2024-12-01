@@ -28,6 +28,10 @@ import { ProfileMembers } from 'app/features/profile/detail/ProfileMembers'
 import { Badge } from 'app/ds/Badge'
 import { env } from 'app/env'
 import { Switch } from 'app/ds/Switch'
+import {
+  RepoAllowBookingForMainProfileField,
+  RepoAllowBookingForMemberPersonalProfilesField,
+} from 'app/features/repository/new/fields/allow-booking'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -522,13 +526,22 @@ function Submit() {
             als="flex-start"
             onPress={handleSubmit(
               async ({
-                input: { github_repo_owner, github_repo_name, path_to_code, profile_id },
+                input: {
+                  github_repo_owner,
+                  github_repo_name,
+                  path_to_code,
+                  profile_id,
+                  allow_booking_for_main_profile,
+                  allow_booking_for_member_personal_profiles,
+                },
               }) =>
                 await mutation.mutateAsync({
                   github_repo_owner,
                   github_repo_name,
                   path_to_code,
                   profile_id: profile_id!,
+                  allow_booking_for_main_profile,
+                  allow_booking_for_member_personal_profiles,
                 })
             )}
           >
@@ -611,7 +624,7 @@ function useProfileMembers() {
 }
 
 function WhoCanGetBooked() {
-  const { profile_id, setProfileId, myProfiles } = useProfileId()
+  const { profile_id, myProfiles } = useProfileId()
 
   const profile = myProfiles?.find((profile) => profile.id === profile_id)
 
@@ -631,64 +644,18 @@ function WhoCanGetBooked() {
 
   return (
     <>
-      <Card row gap="$3">
-        <View flex={1} gap="$3">
-          <Card.Title>Enable bookings for main profile (recommended)</Card.Title>
-          <Card.Description>
-            When enabled, a button will appear on your repository that lets people book a call with{' '}
-            <Card.Description bold textDecorationLine="underline" textDecorationColor="$color12">
-              @{profile.slug}
-            </Card.Description>
-            .
-          </Card.Description>
-        </View>
-        <Switch
-          checked={allowBookingForMainProfile.field.value ?? false}
-          onCheckedChange={allowBookingForMainProfile.field.onChange}
-        />
-      </Card>
+      <RepoAllowBookingForMainProfileField
+        profileSlug={profile.slug}
+        value={allowBookingForMainProfile.field.value ?? false}
+        onChange={allowBookingForMainProfile.field.onChange}
+      />
 
       {profile.personal_profile_user_id == null && (
-        <Card row gap="$3">
-          <View flex={1} gap="$3">
-            <Card.Title>Allow bookings for individual team members</Card.Title>
-            <Card.Description>
-              When enabled, a button will appear on your repository that lets people book a call
-              with any of the individual team members of{' '}
-              <Card.Description bold textDecorationLine="underline" textDecorationColor="$color12">
-                @{profile.slug}
-              </Card.Description>
-              . This is recommended for team profiles with multiple members.
-            </Card.Description>
-
-            {allowBookingForMemberPersonalProfiles.field.value === true && (
-              <>
-                <View h={2} bg="$borderColor" />
-                <Text color="$color11">
-                  The following individual team{' '}
-                  {membersQuery.data?.length === 1 ? 'member' : 'members'} can get booked for a call
-                  from this repository, as long as they create a personal profile on {env.APP_NAME}:
-                </Text>
-                <View>
-                  {membersQuery.data?.map((member) => (
-                    <View key={member.id} gap="$2">
-                      <Text>
-                        → {member.first_name} {member.last_name}
-                        {!member.user_id && (
-                          <Text color="$red11">(Needs to sign up for {env.APP_NAME})</Text>
-                        )}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              </>
-            )}
-          </View>
-          <Switch
-            checked={allowBookingForMemberPersonalProfiles.field.value ?? false}
-            onCheckedChange={allowBookingForMemberPersonalProfiles.field.onChange}
-          />
-        </Card>
+        <RepoAllowBookingForMemberPersonalProfilesField
+          profileSlug={profile.slug}
+          value={allowBookingForMemberPersonalProfiles.field.value ?? false}
+          onChange={allowBookingForMemberPersonalProfiles.field.onChange}
+        />
       )}
     </>
   )

@@ -32,6 +32,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       href: '/dashboard/bookings',
       isActive: pathname.startsWith('/dashboard/bookings') || pathname.startsWith('/bookings'),
     },
+    {
+      label: 'Availability',
+      href: '/dashboard/availability',
+      isActive: pathname.startsWith('/dashboard/availability'),
+    },
   ]
   const { hasLoaded, isSignedIn } = Auth.useUser()
   const activeIndex = links.findIndex((link) => link.isActive)

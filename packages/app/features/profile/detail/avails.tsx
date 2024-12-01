@@ -28,7 +28,7 @@ export function ProfileAvailsForm() {
       disableScrollToError
       name="availability_ranges"
       render={({ field }) => {
-        const availability_ranges = field.value
+        const availability_ranges = field.value ?? []
         const displayDow = {
           sunday: 'Sunday',
           monday: 'Monday',

@@ -2,6 +2,7 @@ import { Input } from 'app/ds/Input'
 import { env } from 'app/env'
 import { Card } from 'app/ds/Form/layout'
 import { slugify } from 'app/trpc/slugify'
+import { TextArea } from 'app/ds/TextArea'
 
 export const RepositorySlugField = ({
   slug,
@@ -26,6 +27,35 @@ export const RepositorySlugField = ({
       />
       <Card.Description>
         Lowercase letters, numbers, and dashes. Shown publicly on {env.APP_NAME}.
+      </Card.Description>
+    </Card>
+  )
+}
+
+export const RepositoryDescriptionField = ({
+  description,
+  onChange,
+  error,
+  inputRef,
+}: {
+  description: string
+  onChange: (description: string) => void
+  error?: { message?: string }
+  inputRef: any
+}) => {
+  return (
+    <Card theme={error ? 'red' : undefined}>
+      <Card.Label>Description</Card.Label>
+      <TextArea
+        onChangeText={onChange}
+        value={description}
+        placeholder="Describe your project in 1-2 sentences."
+        ref={inputRef}
+      />
+      <Card.Description>
+        Example: A scalable recommendation engine built with TensorFlow, featuring collaborative
+        filtering, content-based filtering, and hybrid approaches. Includes pre-trained models and
+        example datasets.
       </Card.Description>
     </Card>
   )

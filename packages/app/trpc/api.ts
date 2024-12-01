@@ -127,6 +127,7 @@ const profileInsert = inserts.profiles
     github_username: true,
     image_vendor: true,
     image_vendor_id: true,
+    short_bio: true,
   })
   .merge(
     z.object({
@@ -779,6 +780,7 @@ const repository = router({
         profile_id: true,
         slug: true,
         github_url: true,
+        description: true,
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -989,6 +991,7 @@ const repository = router({
           .pick({
             slug: true,
             github_url: true,
+            description: true,
           })
           .partial()
           .optional(),

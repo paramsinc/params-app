@@ -11,7 +11,6 @@ import { View } from 'app/ds/View'
 import { env } from 'app/env'
 import { Card } from 'app/ds/Form/layout'
 import useDebounce from 'app/helpers/use-debounce'
-import { CDNVendor } from 'app/multi-media/CDNVendor'
 import { api } from 'app/trpc/client'
 import { slugify } from 'app/trpc/slugify'
 
@@ -149,7 +148,7 @@ export const ProfileBioField = ({
 }) => {
   return (
     <Card theme={error ? 'red' : undefined}>
-      <Card.Label>Bio</Card.Label>
+      <Card.Label>Bio (Markdown)</Card.Label>
       <TextArea
         onChangeText={onChange}
         value={bio ?? ''}
@@ -157,6 +156,11 @@ export const ProfileBioField = ({
         styled
         ref={inputRef}
       />
+      <Card.Description>
+        A full description of your professional background, skills, and experience. Shown on your
+        public profile to people who might want to book a call with you. You can use bullet points
+        and other markdown.
+      </Card.Description>
     </Card>
   )
 }

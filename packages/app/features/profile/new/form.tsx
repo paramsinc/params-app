@@ -9,6 +9,7 @@ import {
   ProfileBioField,
   ProfileCoverImageField,
   ProfilePricePerHourField,
+  ProfileShortBioField,
 } from 'app/features/profile/new/fields'
 import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
@@ -16,7 +17,9 @@ import { slugify } from 'app/trpc/slugify'
 
 const { useMutation } = api.createProfile
 
-const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
+const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>({
+  scrollToError: false,
+})
 
 export function NewProfileForm({
   onDidCreateProfile,
@@ -114,9 +117,22 @@ export function NewProfileForm({
               rules={{ required: 'Please enter a price per hour', min: 0 }}
               render={({ field, fieldState }) => (
                 <ProfilePricePerHourField
-                  pricePerHourCents={field.value}
+                  pricePerHourCents={field.value ?? null}
                   error={fieldState.error != null}
                   onChange={field.onChange}
+                />
+              )}
+            />
+
+            <Form.Controller
+              name="short_bio"
+              rules={{ required: 'Please enter a short bio' }}
+              render={({ field, fieldState }) => (
+                <ProfileShortBioField
+                  shortBio={field.value ?? ''}
+                  onChange={field.onChange}
+                  error={fieldState.error}
+                  inputRef={field.ref}
                 />
               )}
             />

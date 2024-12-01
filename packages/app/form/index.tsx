@@ -23,7 +23,7 @@ import { Target, useScrollTo } from '@nandorojo/anchor'
 import { useEffect, useImperativeHandle, useRef } from 'react'
 import { ulid } from 'ulid'
 
-const makeForm = <FormState extends object>() => {
+const makeForm = <FormState extends object>(options: { scrollToError?: boolean } = {}) => {
   const Provider = (
     props: FormProviderProps<FormState> & {
       devtools?: boolean
@@ -63,7 +63,7 @@ const makeForm = <FormState extends object>() => {
   }
   return {
     Controller: function CustomController<Name extends Path<FormState> = Path<FormState>>({
-      disableScrollToError: disableScrollToError,
+      disableScrollToError: disableScrollToError = options.scrollToError === false,
       ...props
     }: ControllerProps<FormState, Name> & {
       disableScrollToError?: boolean

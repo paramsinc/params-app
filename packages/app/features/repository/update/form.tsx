@@ -8,7 +8,11 @@ import { Text } from 'app/ds/Text'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { SignInWithGithub } from 'app/features/oauth/github/sign-in-with-github'
-import { RepositoryGithubUrlField, RepositorySlugField } from 'app/features/repository/new/fields'
+import {
+  RepositoryDescriptionField,
+  RepositoryGithubUrlField,
+  RepositorySlugField,
+} from 'app/features/repository/new/fields'
 import { GitHubRepoPicker } from 'app/features/repository/new/github-repo-picker'
 import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
@@ -89,6 +93,17 @@ export function UpdateRepositoryForm({
               render={({ field, fieldState }) => (
                 <RepositorySlugField
                   slug={field.value ?? ''}
+                  onChange={field.onChange}
+                  error={fieldState.error}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+            <Form.Controller
+              name="patch.description"
+              render={({ field, fieldState }) => (
+                <RepositoryDescriptionField
+                  description={field.value ?? ''}
                   onChange={field.onChange}
                   error={fieldState.error}
                   inputRef={field.ref}

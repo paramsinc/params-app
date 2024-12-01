@@ -14,7 +14,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     {
       label: 'My Repos',
       href: '/dashboard/repos',
-      isActive: pathname.startsWith('/dashboard/repos'),
+      isActive: pathname.startsWith('/dashboard/repos') || pathname === '/dashboard',
     },
     {
       label: 'My Profiles',

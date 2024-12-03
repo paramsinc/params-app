@@ -84,6 +84,9 @@ export async function cancelCalendarEvent({ eventId }: { eventId: string }) {
     eventId,
     requestBody: {
       status: 'cancelled',
+      description: `Canceled on ${DateTime.now().toLocaleString({
+        dateStyle: 'full',
+      })}`,
     },
   })
 

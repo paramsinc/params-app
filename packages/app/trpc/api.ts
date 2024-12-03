@@ -2663,6 +2663,8 @@ export const appRouter = router({
               canceled_at: true,
               google_calendar_event_id: true,
               start_datetime: true,
+              stripe_payment_intent_id: true,
+              stripe_payout_id: true,
             }),
             profile_id: profileMembershipSubquery.profile_id,
             organization_id: organizationMembershipSubquery.organization_id,
@@ -2689,20 +2691,36 @@ export const appRouter = router({
         const bookingStart = DateTime.fromJSDate(booking.start_datetime)
 
         if (bookingStart < now) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Booking already started' })
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Booking already started.' })
+        }
+
+        await stripe.refunds.create(
+          {
+            payment_intent: booking.stripe_payment_intent_id,
+            metadata: {
+              booking_id: booking.id,
+            },
+          },
+          {
+            idempotencyKey: booking.stripe_payment_intent_id,
+          }
+        )
+
+        if (booking.google_calendar_event_id) {
+          await googleCalendar
+            .cancelCalendarEvent({
+              eventId: booking.google_calendar_event_id,
+            })
+            .catch(() => void 0)
         }
 
         const [updatedBooking] = await db
           .update(schema.bookings)
           .set({ canceled_at: new Date(), canceled_by_user_id: ctx.auth.userId })
           .where(d.eq(schema.bookings.id, input.id))
-          .returning()
-
-        if (booking.google_calendar_event_id) {
-          await googleCalendar.cancelCalendarEvent({
-            eventId: booking.google_calendar_event_id,
+          .returning({
+            canceled_at: schema.bookings.canceled_at,
           })
-        }
 
         return updatedBooking?.canceled_at != null
       }),

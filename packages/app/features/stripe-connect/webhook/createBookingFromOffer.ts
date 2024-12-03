@@ -84,5 +84,5 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
     })
     .returning()
 
-  // TODO send email
+  // TODO notify
 }

@@ -2722,6 +2722,8 @@ export const appRouter = router({
             canceled_at: schema.bookings.canceled_at,
           })
 
+        // TODO notify
+
         return updatedBooking?.canceled_at != null
       }),
   }),

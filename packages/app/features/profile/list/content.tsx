@@ -12,10 +12,12 @@ import {
   NewProfileModalContent,
   NewProfileModalTrigger,
 } from 'app/features/profile/new/modal'
+import { useRouter } from 'app/navigation/use-router'
 import { api } from 'app/trpc/client'
 
 export function ProfilesListContent() {
   const myProfiles = api.myProfiles.useQuery()
+  const router = useRouter()
 
   return (
     <Page.Root>
@@ -33,7 +35,11 @@ export function ProfilesListContent() {
                       <ButtonText>New</ButtonText>
                     </Button>
                   </NewProfileModalTrigger>
-                  <NewProfileModalContent />
+                  <NewProfileModalContent
+                    onDidCreateProfile={({ profile }) => {
+                      router.push(`/dashboard/profiles/${profile.slug}`)
+                    }}
+                  />
                 </NewProfileModal>
               </Card>
 

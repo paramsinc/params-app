@@ -51,7 +51,7 @@ export function NewProfileForm({
             defaultValues={{
               is_personal_profile: !hasPersonalProfile,
               name: hasPersonalProfile
-                ? undefined
+                ? ''
                 : [me.data?.first_name, me.data?.last_name].filter(Boolean).join(' '),
             }}
           >

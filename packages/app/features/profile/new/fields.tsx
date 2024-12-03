@@ -179,7 +179,7 @@ export const ProfileShortBioField = ({
   const length = shortBio?.trim().length ?? 0
   return (
     <Card theme={error ? 'red' : undefined}>
-      <Card.Label>Job Title / Mini Bio</Card.Label>
+      <Card.Label>Mini Bio / Job Title</Card.Label>
       <Input
         onChangeText={onChange}
         value={shortBio ?? ''}

@@ -150,6 +150,42 @@ function Content({ profileSlug }: { profileSlug: string }) {
       </View>
 
       <View h={2} bg="$borderColor" />
+      <View
+        gap="$3"
+        theme={
+          connectAccountQuery.data?.payouts_enabled === false
+            ? 'red'
+            : connectAccountQuery.data?.payouts_enabled === true
+            ? 'green'
+            : undefined
+        }
+      >
+        <View row ai="center" jbtwn>
+          <Text bold>Payouts</Text>
+
+          <ConnectAccountModal>
+            <ConnectAccountModalTrigger>
+              <Button
+                themeInverse={connectAccountQuery.data?.payouts_enabled === false}
+                loading={connectAccountQuery.isLoading}
+              >
+                <ButtonText>Configure</ButtonText>
+              </Button>
+            </ConnectAccountModalTrigger>
+            <ConnectAccountModalContent profileSlug={profileSlug} />
+          </ConnectAccountModal>
+        </View>
+
+        {connectAccountQuery.data?.payouts_enabled === false ? (
+          <Text color="$color11">
+            You cannot receive payouts. Please complete your payment onboarding.
+          </Text>
+        ) : connectAccountQuery.data?.payouts_enabled === true ? (
+          <Text color="$color11">Payouts configured successfully.</Text>
+        ) : null}
+      </View>
+
+      <View h={2} bg="$borderColor" />
       <View gap="$3">
         <View row ai="center" jbtwn>
           <Text bold>Repositories</Text>
@@ -206,41 +242,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
         <ProfileMembers profileSlug={profileSlug} />
       </View>
 
-      <View h={2} bg="$borderColor" />
-      <View
-        gap="$3"
-        theme={
-          connectAccountQuery.data?.payouts_enabled === false
-            ? 'red'
-            : connectAccountQuery.data?.payouts_enabled === true
-            ? 'green'
-            : undefined
-        }
-      >
-        <View row ai="center" jbtwn>
-          <Text bold>Payouts</Text>
-
-          <ConnectAccountModal>
-            <ConnectAccountModalTrigger>
-              <Button
-                themeInverse={connectAccountQuery.data?.payouts_enabled === false}
-                loading={connectAccountQuery.isLoading}
-              >
-                <ButtonText>Configure</ButtonText>
-              </Button>
-            </ConnectAccountModalTrigger>
-            <ConnectAccountModalContent profileSlug={profileSlug} />
-          </ConnectAccountModal>
-        </View>
-
-        {connectAccountQuery.data?.payouts_enabled === false ? (
-          <Text color="$color11">
-            You cannot receive payouts. Please complete your payment onboarding.
-          </Text>
-        ) : connectAccountQuery.data?.payouts_enabled === true ? (
-          <Text color="$color11">Payouts configured successfully.</Text>
-        ) : null}
-      </View>
       <View h={2} bg="$borderColor" />
       <View row ai="center" jbtwn>
         <Text bold>Plans</Text>

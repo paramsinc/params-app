@@ -28,7 +28,8 @@ export const NewProfileModalContent = (
         <Modal.Dialog.HeaderSmart title="Developer Profile" />
         <NewProfileForm
           {...props}
-          onDidCreateProfile={() => {
+          onDidCreateProfile={(...profile) => {
+            props.onDidCreateProfile?.(...profile)
             toast({
               title: 'Profile created.',
               preset: 'done',

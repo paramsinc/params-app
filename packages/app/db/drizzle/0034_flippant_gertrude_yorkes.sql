@@ -1,0 +1,2 @@
+ALTER TABLE "profiles" ADD COLUMN "has_stripe_payouts_enabled" boolean DEFAULT false;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "index_profile_id_and_user_id" ON "profile_members" USING btree ("profile_id","user_id");

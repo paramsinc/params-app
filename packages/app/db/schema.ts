@@ -63,6 +63,8 @@ export const profiles = pgTable(
         onDelete: 'set null',
       }),
 
+    has_stripe_payouts_enabled: boolean('has_stripe_payouts_enabled').default(false),
+
     ...timestampMixin(),
   },
   (table) => ({

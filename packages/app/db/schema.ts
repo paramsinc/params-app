@@ -132,6 +132,10 @@ export const profileMembers = pgTable(
     ...timestampMixin(),
   },
   (table) => ({
+    index_profile_id_and_user_id: index('index_profile_id_and_user_id').on(
+      table.profile_id,
+      table.user_id
+    ),
     uniqueUserIdForProfile: unique().on(table.profile_id, table.user_id),
   })
 )

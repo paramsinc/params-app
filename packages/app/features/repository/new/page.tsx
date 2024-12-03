@@ -302,13 +302,19 @@ function ParamsJson() {
           language={'json'}
           content={JSON.stringify(
             {
+              $schema: 'https://params.com/params.json',
               docs: {
                 main: 'README.md',
                 sidebar: {
                   Introduction: 'README.md',
                   Installation: 'installation.md',
                 },
+                youtube: {
+                  video_id: '0lnbdRweJtA',
+                  thumbnail_url: 'https://img.youtube.com/vi/0lnbdRweJtA/0.jpg',
+                },
               },
+              notebook_url: '',
             } satisfies Zod.infer<typeof paramsJsonShape>,
             null,
             2
@@ -318,6 +324,10 @@ function ParamsJson() {
           The <Text fontFamily="$mono">docs.main</Text> field should point to your readme file. For
           any other markdown files you want to include in your docs, place them in the{' '}
           <Text fontFamily="$mono">docs.sidebar</Text>.
+        </Card.Description>
+        <Card.Description>
+          The Google Colab <Text fontFamily="$mono">notebook_url</Text> is optional, as is the{' '}
+          <Text fontFamily="$mono">docs.youtube</Text> field.
         </Card.Description>
         <Card.Description>
           After you add the <Text fontFamily="$mono">params.json</Text> file and push it to your
@@ -490,6 +500,7 @@ function Submit() {
       toast({
         preset: 'done',
         title: 'Repository added!',
+        message: 'Redirecting...',
       })
       router.push(`/@${profile.slug}/${repo.slug}`)
     },
@@ -530,22 +541,25 @@ function Submit() {
                   github_repo_owner,
                   github_repo_name,
                   path_to_code,
-                  profile_id,
                   allow_booking_for_main_profile,
                   allow_booking_for_member_personal_profiles,
                 },
-              }) =>
+              }) => {
+                if (!profile_id) {
+                  return
+                }
                 await mutation.mutateAsync({
                   github_repo_owner,
                   github_repo_name,
                   path_to_code,
-                  profile_id: profile_id!,
+                  profile_id,
                   allow_booking_for_main_profile,
                   allow_booking_for_member_personal_profiles,
                 })
+              }
             )}
           >
-            <Button.Text>Save</Button.Text>
+            <Button.Text>Save Repo</Button.Text>
           </Button>
         )}
       </Form.Submit>

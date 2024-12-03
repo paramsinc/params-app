@@ -1,6 +1,8 @@
 import { Button, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
+import { Card } from 'app/ds/Form/layout'
 import { Scroll } from 'app/ds/Scroll'
+import { Switch } from 'app/ds/Switch'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import {
@@ -30,9 +32,14 @@ export function NewProfileForm({
   const mutation = useMutation({
     onSuccess: onDidCreateProfile,
   })
+  const myProfiles = api.myProfiles.useQuery()
 
   // TODO loading state
-  if (me.data === undefined) return null
+  if (me.data === undefined || myProfiles.data === undefined) {
+    return <ErrorCard error={me.error ?? myProfiles.error} m="$3" />
+  }
+
+  const hasPersonalProfile = myProfiles.data.some((profile) => profile.personal_profile_user_id)
 
   // TODO if me.data is undefined...throw
 
@@ -40,7 +47,14 @@ export function NewProfileForm({
     <View grow>
       <Scroll>
         <View gap="$3" p="$3">
-          <Form.RootProvider>
+          <Form.RootProvider
+            defaultValues={{
+              is_personal_profile: !hasPersonalProfile,
+              name: hasPersonalProfile
+                ? undefined
+                : [me.data?.first_name, me.data?.last_name].filter(Boolean).join(' '),
+            }}
+          >
             <Form.Controller
               name="image_vendor_id"
               render={(imageVendorId) => {
@@ -81,7 +95,6 @@ export function NewProfileForm({
               name="name"
               rules={{ required: true }}
               disableScrollToError
-              defaultValue={[me.data?.first_name, me.data?.last_name].filter(Boolean).join(' ')}
               render={({ field, fieldState }) => {
                 const nameValue = field.value
                 return (
@@ -112,6 +125,39 @@ export function NewProfileForm({
               }}
             />
 
+            <Form.Controller
+              name="is_personal_profile"
+              render={({ field }) => {
+                return (
+                  <Card>
+                    <View row gap="$1" ai="center">
+                      <View f={1} gap="$3">
+                        <Card.Label tag="label" htmlFor="team_profile">
+                          Profile Type
+                        </Card.Label>
+                      </View>
+
+                      {[
+                        { title: 'Personal', value: true },
+                        { title: 'Team', value: false },
+                      ].map(({ title, value }) => (
+                        <Button
+                          themeInverse={field.value === value}
+                          onPress={() => field.onChange(value)}
+                          key={title}
+                        >
+                          <ButtonText>{title}</ButtonText>
+                        </Button>
+                      ))}
+                    </View>
+                    <Card.Description>
+                      Team profiles are for organizations, companies, or groups with more than one
+                      person.
+                    </Card.Description>
+                  </Card>
+                )
+              }}
+            />
             <Form.Controller
               name="pricePerHourCents"
               rules={{ required: 'Please enter a price per hour', min: 0 }}
@@ -156,13 +202,21 @@ export function NewProfileForm({
                   loading={isSubmitting || mutation.isPending}
                   als="flex-start"
                   onPress={handleSubmit(
-                    async ({ name, slug, bio, image_vendor_id, image_vendor }) => {
+                    async ({
+                      name,
+                      slug,
+                      bio,
+                      image_vendor_id,
+                      image_vendor,
+                      is_personal_profile,
+                    }) => {
                       mutation.mutate({
                         name,
                         slug,
                         bio,
                         image_vendor_id,
                         image_vendor,
+                        is_personal_profile,
                       })
                     }
                   )}

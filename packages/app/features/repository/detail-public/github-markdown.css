@@ -1277,3 +1277,11 @@
   text-align: start !important;
   text-align-last: start !important;
 }
+
+/* CUSTOM */
+.markdown-body p {
+  overflow-wrap: break-word;
+  unicode-bidi: isolate;
+  text-size-adjust: 100%;
+  display: block;
+}

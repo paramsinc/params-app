@@ -43,56 +43,56 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const prevActiveIndex = usePrevious(activeIndex)
   return (
     <>
+      <Header group bbw={StyleSheet.hairlineWidth} bbc="$borderColor">
+        <Page.ContentWidthComponent row>
+          {links.map((link, i) => (
+            <View key={link.href} zi={1}>
+              <Link href={link.href}>
+                <View py="$2" px="$2" containerType="normal" group={`link` as any}>
+                  {link.isActive && (
+                    <motion.div
+                      layoutId="active-tab"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        background: 'var(--color3)',
+                        borderTopLeftRadius: 'var(--t-radius-3)',
+                        borderTopRightRadius: 'var(--t-radius-3)',
+                        zIndex: -1,
+                        boxShadow: `
+                    inset 0px 1px 0px var(--color4),
+                    inset 0px 8px 16px var(--color2),
+                    inset 1px 0px 0px var(--color5),
+                    inset -1px 0px 0px var(--color5)
+                  `,
+                        overflow: 'hidden',
+                      }}
+                    />
+                  )}
+                  <Text
+                    bold
+                    zIndex={1}
+                    textDecorationLine="underline"
+                    textDecorationColor="transparent"
+                    {...{
+                      [`$group-link-hover`]: {
+                        textDecorationColor: '$color',
+                      },
+                    }}
+                  >
+                    {link.label}
+                  </Text>
+                </View>
+              </Link>
+            </View>
+          ))}
+        </Page.ContentWidthComponent>
+      </Header>
       {hasLoaded && (
         <>
           {isSignedIn ? (
             <>
-              <Header group bbw={StyleSheet.hairlineWidth} bbc="$borderColor">
-                <Page.ContentWidthComponent row>
-                  {links.map((link, i) => (
-                    <View key={link.href} zi={1}>
-                      <Link href={link.href}>
-                        <View py="$2" px="$2" containerType="normal" group={`link` as any}>
-                          {link.isActive && (
-                            <motion.div
-                              layoutId="active-tab"
-                              style={{
-                                position: 'absolute',
-                                inset: 0,
-                                pointerEvents: 'none',
-                                background: 'var(--color3)',
-                                borderTopLeftRadius: 'var(--t-radius-3)',
-                                borderTopRightRadius: 'var(--t-radius-3)',
-                                zIndex: -1,
-                                boxShadow: `
-                              inset 0px 1px 0px var(--color4),
-                              inset 0px 8px 16px var(--color2),
-                              inset 1px 0px 0px var(--color5),
-                              inset -1px 0px 0px var(--color5)
-                            `,
-                                overflow: 'hidden',
-                              }}
-                            />
-                          )}
-                          <Text
-                            bold
-                            zIndex={1}
-                            textDecorationLine="underline"
-                            textDecorationColor="transparent"
-                            {...{
-                              [`$group-link-hover`]: {
-                                textDecorationColor: '$color',
-                              },
-                            }}
-                          >
-                            {link.label}
-                          </Text>
-                        </View>
-                      </Link>
-                    </View>
-                  ))}
-                </Page.ContentWidthComponent>
-              </Header>
               <MeGate>{children}</MeGate>
             </>
           ) : (

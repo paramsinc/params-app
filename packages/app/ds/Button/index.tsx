@@ -1,4 +1,5 @@
 import { LoadingSpinner } from 'app/ds/LoadingSpinner'
+import { platform } from 'app/ds/platform'
 import { styled } from 'app/ds/styled'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
@@ -23,9 +24,15 @@ const Frame = styled(View, {
   boc: '$color6',
   animation: '100ms',
   scale: 1,
+  style: {
+    // @ts-ignore
+    '--icon-color': 'var(--color11)',
+  },
   hoverStyle: {
     bg: '$color4',
     scale: 1.02,
+    // @ts-ignore
+    '--icon-color': 'var(--color12)',
   },
   context,
   variants: {
@@ -67,8 +74,6 @@ export const ButtonIcon = (props: {
 }) => {
   const ctx = useContext(context)
   const loading = ctx && typeof ctx === 'object' && 'loading' in ctx && ctx.loading
-  // const height = (typeof size === 'number' ? size : getTokens()?.size[size]?.val) ?? 0
-  // const tokens = getTokens()
 
   const iconSize = height * (props.scale ?? 0.5)
   return (
@@ -81,13 +86,14 @@ export const ButtonIcon = (props: {
       minWidth={iconSize}
     >
       <View o={loading ? 0 : 1}>
-        <props.icon color={'$color11'} size={iconSize} />
+        <props.icon
+          color={platform.select({
+            web: 'var(--icon-color)',
+            native: '$color11',
+          })}
+          size={iconSize}
+        />
       </View>
-      {/* {loading && (
-        <View pos="absolute" top={0} left={0} right={0} bottom={0} ai="center" jc="center">
-          <LoadingSpinner size="small" color={'$color11'} />
-        </View>
-      )} */}
     </View>
   )
 }

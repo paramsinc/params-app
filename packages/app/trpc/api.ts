@@ -152,103 +152,129 @@ const profile = {
       return { slug, isAvailable: !existingProfileBySlug }
     }),
   createProfile: authedProcedure
-    .input(profileInsert)
-    .mutation(async ({ input: { disableCreateMember, pricePerHourCents, ...input }, ctx }) => {
-      const { profile, member } = await db.transaction(async (tx) => {
-        const existingProfileBySlug = await tx.query.profiles
-          .findFirst({
-            where: (profiles, { eq }) => eq(profiles.slug, input.slug),
+    .input(profileInsert.merge(z.object({ is_personal_profile: z.boolean().optional() })))
+    .mutation(
+      async ({
+        input: { disableCreateMember, pricePerHourCents, is_personal_profile = false, ...input },
+        ctx,
+      }) => {
+        const { profile, member } = await db.transaction(async (tx) => {
+          const existingProfileBySlug = await tx.query.profiles
+            .findFirst({
+              where: (profiles, { eq }) => eq(profiles.slug, input.slug),
+            })
+            .execute()
+
+          if (existingProfileBySlug) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
+            })
+          }
+
+          const me = await tx.query.users.findFirst({
+            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
           })
-          .execute()
 
-        if (existingProfileBySlug) {
-          throw new TRPCError({
-            code: 'CONFLICT',
-            message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
-          })
-        }
+          if (!me) {
+            throw new TRPCError({
+              code: 'UNAUTHORIZED',
+              message: `Please complete creating your account.`,
+            })
+          }
 
-        const me = await tx.query.users.findFirst({
-          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-        })
-
-        if (!me) {
-          throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: `Please complete creating your account.`,
-          })
-        }
-
-        const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
-          first_name: me.first_name,
-          last_name: me.last_name,
-          email: me.email,
-          user_id: me.id,
-        }
-
-        const stripe_connect_account_id = await stripe.accounts
-          .create({
-            settings: {
-              payouts: {
-                schedule: {
-                  interval: 'manual',
+          if (is_personal_profile) {
+            const personalProfile = await tx.query.profiles
+              .findFirst({
+                where: (profiles, { eq }) => eq(profiles.personal_profile_user_id, ctx.auth.userId),
+                columns: {
+                  slug: true,
                 },
-              },
-            },
-          })
-          .then((account) => account.id)
-
-        const [profile] = await tx
-          .insert(schema.profiles)
-          .values({
-            ...input,
-            stripe_connect_account_id,
-          })
-          .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
-          .execute()
-
-        if (!profile) {
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: `Couldn't create profile.`,
-          })
-        }
-
-        // add this user as a member
-        const [member] = disableCreateMember
-          ? []
-          : await tx
-              .insert(schema.profileMembers)
-              .values({
-                ...memberInsert,
-                profile_id: profile.id,
               })
-              .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
               .execute()
 
-        if (pricePerHourCents) {
-          const minutesPerHour = 60
-          const minuteCalls = [30, 60]
+            if (personalProfile) {
+              throw new TRPCError({
+                code: 'CONFLICT',
+                message: `You already have a personal profile (@${personalProfile.slug}).`,
+              })
+            }
+          }
 
-          await tx.insert(schema.profileOnetimePlans).values(
-            minuteCalls.map((duration_mins) => {
-              const hours = duration_mins / minutesPerHour
-              const price = pricePerHourCents * hours
-              return {
-                currency: 'usd' as const,
-                duration_mins,
-                price,
-                profile_id: profile.id,
-              }
+          const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
+            first_name: me.first_name,
+            last_name: me.last_name,
+            email: me.email,
+            user_id: me.id,
+          }
+
+          const stripe_connect_account_id = await stripe.accounts
+            .create({
+              settings: {
+                payouts: {
+                  schedule: {
+                    interval: 'manual',
+                  },
+                },
+              },
             })
-          )
-        }
+            .then((account) => account.id)
+
+          const [profile] = await tx
+            .insert(schema.profiles)
+            .values({
+              ...input,
+              stripe_connect_account_id,
+              personal_profile_user_id: is_personal_profile ? ctx.auth.userId : null,
+            })
+            .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
+            .execute()
+
+          if (!profile) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `Couldn't create profile.`,
+            })
+          }
+
+          // add this user as a member
+          const [member] = disableCreateMember
+            ? []
+            : await tx
+                .insert(schema.profileMembers)
+                .values({
+                  ...memberInsert,
+                  profile_id: profile.id,
+                })
+                .returning(
+                  pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal)
+                )
+                .execute()
+
+          if (pricePerHourCents) {
+            const minutesPerHour = 60
+            const minuteCalls = [30, 60]
+
+            await tx.insert(schema.profileOnetimePlans).values(
+              minuteCalls.map((duration_mins) => {
+                const hours = duration_mins / minutesPerHour
+                const price = pricePerHourCents * hours
+                return {
+                  currency: 'usd' as const,
+                  duration_mins,
+                  price,
+                  profile_id: profile.id,
+                }
+              })
+            )
+          }
+
+          return { profile, member }
+        })
 
         return { profile, member }
-      })
-
-      return { profile, member }
-    }),
+      }
+    ),
   updateProfile: authedProcedure
     .input(
       z.object({
@@ -1310,6 +1336,110 @@ const repository = router({
       }
 
       return Buffer.from(readme.data.content, 'base64').toString('utf-8')
+    }),
+  bookableProfiles_public: publicProcedure
+    .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
+    .query(async ({ input: { profile_slug, repo_slug } }) => {
+      const profileSubQuery = db
+        .select({
+          profile_id: schema.profiles.id,
+        })
+        .from(schema.profiles)
+        .where(d.eq(schema.profiles.slug, profile_slug))
+        .as('profile_sub_query')
+
+      const cheapestPlanSubquery = db
+        .select({
+          profile_id: schema.profileOnetimePlans.profile_id,
+          price: d.min(schema.profileOnetimePlans.price),
+        })
+        .from(schema.profileOnetimePlans)
+        .groupBy(schema.profileOnetimePlans.profile_id) // Group by profile_id to get min price per profile
+        .as('cheapest_plan')
+
+      const [mainQuery, memberProfilesQuery] = await Promise.all([
+        db
+          .select({
+            profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+            // repo: pick('repositories', { ...publicSchema.repositories.RepositoryPublic }),
+            repoSettings: pick('repositories', {
+              allow_booking_for_main_profile: true,
+              allow_booking_for_member_personal_profiles: true,
+            }),
+          })
+          .from(schema.profiles)
+          .where(d.eq(schema.profiles.slug, profile_slug))
+          .innerJoin(
+            schema.repositories,
+            d.and(
+              d.eq(schema.repositories.profile_id, schema.profiles.id),
+              d.eq(schema.repositories.slug, repo_slug)
+            )
+          )
+          .limit(1)
+          .execute(),
+
+        // profileMembers for which there exists a profile.personal_profile_user_id matching the user_id
+        db
+          .selectDistinctOn([schema.profiles.id], {
+            profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+            // cheapest_price: cheapestPlanSubquery,
+          })
+          .from(schema.profiles)
+          .innerJoin(
+            schema.profileMembers,
+            d.and(
+              d.isNotNull(schema.profileMembers.user_id),
+              d.eq(schema.profiles.personal_profile_user_id, schema.profileMembers.user_id)
+            )
+          )
+          .innerJoin(
+            profileSubQuery,
+            d.eq(schema.profileMembers.profile_id, profileSubQuery.profile_id)
+          )
+          .leftJoin(cheapestPlanSubquery, d.eq(schema.profiles.id, cheapestPlanSubquery.profile_id))
+          .execute(),
+      ])
+      const [first] = mainQuery
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Profile not found.`,
+        })
+      }
+
+      const { profile, repoSettings } = first
+
+      let bookableProfiles: Array<
+        typeof profile & {
+          can_get_booked: boolean
+        }
+      > = [
+        {
+          ...profile,
+          can_get_booked: repoSettings.allow_booking_for_main_profile ?? true,
+        },
+      ]
+
+      const seenProfileIds = new Set<string>(bookableProfiles.map((p) => p.id))
+
+      console.log('[bookableProfiles]', memberProfilesQuery.length)
+
+      if (repoSettings.allow_booking_for_member_personal_profiles) {
+        for (const { profile } of memberProfilesQuery) {
+          if (seenProfileIds.has(profile.id)) {
+            continue
+          }
+          seenProfileIds.add(profile.id)
+          bookableProfiles.push({
+            ...profile,
+            can_get_booked: true,
+          })
+        }
+      }
+
+      return bookableProfiles
     }),
 })
 

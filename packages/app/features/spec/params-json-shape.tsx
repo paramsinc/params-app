@@ -21,5 +21,6 @@ export const paramsJsonShape = z
         steps: z.array(z.object({ file: z.string() })),
       })
       .optional(),
+    notebook_url: z.string().optional(),
   })
   .describe('Describe your Params repository and auto-generate docs.')

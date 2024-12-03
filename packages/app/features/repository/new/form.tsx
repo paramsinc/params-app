@@ -6,10 +6,6 @@ import { RepositoryGithubUrlField, RepositorySlugField } from 'app/features/repo
 import { makeForm } from 'app/form'
 import { api } from 'app/trpc/client'
 import { isValidSlug } from 'app/trpc/slugify'
-import {
-  RepoAllowBookingForMainProfileField,
-  RepoAllowBookingForTeamField,
-} from './fields/allow-booking'
 
 const { useMutation } = api.repo.create
 
@@ -54,25 +50,6 @@ export function NewRepositoryForm({
                   onChange={field.onChange}
                   error={fieldState.error}
                   inputRef={field.ref}
-                />
-              )}
-            />
-            <Form.Controller
-              name="allow_booking_for_main_profile"
-              render={({ field }) => (
-                <RepoAllowBookingForMainProfileField
-                  profileSlug={profile.slug}
-                  value={field.value ?? false}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            <Form.Controller
-              name="allow_booking_for_team"
-              render={({ field }) => (
-                <RepoAllowBookingForTeamField
-                  value={field.value ?? false}
-                  onChange={field.onChange}
                 />
               )}
             />

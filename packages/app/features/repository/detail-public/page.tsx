@@ -261,14 +261,14 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
   })
 
   return (
-    <>
+    <View gap="$2">
       {bookableProfilesQuery.data?.map((profile) => {
         return (
           <Card>
             <View gap="$3" $lg={{ row: true, ai: 'center' }}>
-              {!!profile.image_vendor_id && (
-                <View ai="center">
-                  <View br="$rounded" als="center" ov="hidden">
+              <View ai="center">
+                <View br="$rounded" als="center" ov="hidden" box={100}>
+                  {!!profile.image_vendor_id && (
                     <Image
                       src={profile.image_vendor_id}
                       loader={profile.image_vendor || 'raw'}
@@ -281,9 +281,9 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                       alt={profile.name}
                       contentFit="cover"
                     />
-                  </View>
+                  )}
                 </View>
-              )}
+              </View>
 
               <View gap="$3" $lg={{ grow: true }}>
                 <Text bold $gtLg={{ center: true }}>
@@ -317,7 +317,7 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
           </Card>
         )
       })}
-    </>
+    </View>
   )
 }
 

@@ -2487,6 +2487,9 @@ export const appRouter = router({
             profile_id: true,
             email: true,
           }),
+          organizationMember: pick('organizationMembers', {
+            email: true,
+          }),
         })
         .from(schema.offers)
         .where(d.eq(schema.offers.stripe_payment_intent_id, payment_intent_id))
@@ -2494,6 +2497,10 @@ export const appRouter = router({
         .innerJoin(
           schema.organizations,
           d.eq(schema.offers.organization_id, schema.organizations.id)
+        )
+        .leftJoin(
+          schema.organizationMembers,
+          d.eq(schema.organizations.id, schema.organizationMembers.organization_id)
         )
         .leftJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
         .execute()
@@ -2527,7 +2534,9 @@ export const appRouter = router({
           next_action,
         },
         offer,
-        profileMemberEmails: results.map((result) => result.profileMember?.email).filter(Boolean),
+        organizationMemberEmails: results
+          .map((result) => result.organizationMember?.email)
+          .filter(Boolean),
       }
     }),
 

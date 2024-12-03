@@ -12,33 +12,13 @@ import { usePrevious } from 'app/helpers/use-previous'
 import { Page } from 'app/ds/Page'
 import { StyleSheet } from 'react-native'
 import { Header } from 'app/ds/Header'
+import { useDashboardLinks } from 'app/features/web-layout/useDashboardLinks'
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouter().pathname
-  const links = [
-    {
-      label: 'Repos',
-      href: '/dashboard/repos',
-      isActive:
-        pathname.startsWith('/dashboard/repos') || pathname === '/dashboard' || pathname === '/new',
-    },
-    {
-      label: 'Profiles',
-      href: '/dashboard/profiles',
-      isActive: pathname.startsWith('/dashboard/profiles'),
-    },
-    {
-      label: 'Bookings',
-      href: '/dashboard/bookings',
-      isActive: pathname.startsWith('/dashboard/bookings') || pathname.startsWith('/bookings'),
-    },
-    {
-      label: 'Availability',
-      href: '/dashboard/availability',
-      isActive: pathname.startsWith('/dashboard/availability'),
-    },
-  ]
+
   const { hasLoaded, isSignedIn } = Auth.useUser()
+  const links = useDashboardLinks()
   const activeIndex = links.findIndex((link) => link.isActive)
   const prevActiveIndex = usePrevious(activeIndex)
   return (

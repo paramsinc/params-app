@@ -19,6 +19,7 @@ import { useEffect, useState, useServerEffect } from 'app/react'
 import { platform } from 'app/ds/platform'
 import { useCurrentPath } from 'app/navigation/use-pathname'
 import { Lucide } from 'app/ds/Lucide'
+import { useDashboardLinks } from 'app/features/web-layout/useDashboardLinks'
 
 const clerk = new Clerk(env.CLERK_PUBLISHABLE_KEY!)
 
@@ -37,16 +38,20 @@ const getToken = async (): Promise<string | null> => {
 }
 
 function UserTrigger({ children }: { children?: React.ReactElement }) {
+  const links = useDashboardLinks()
   return (
     <Font>
       <UserButton>
         {children}
         <UserButton.MenuItems>
-          <UserButton.Link
-            label="Dashboard"
-            labelIcon={<Lucide.Home size={16} color="$color11" />}
-            href="/dashboard"
-          />
+          {links.map((link) => (
+            <UserButton.Link
+              key={link.href}
+              label={link.label}
+              href={link.href}
+              labelIcon={<link.icon size={16} color="var(--accent)" />}
+            />
+          ))}
         </UserButton.MenuItems>
       </UserButton>
     </Font>

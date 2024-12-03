@@ -33,6 +33,7 @@
     "@trpc/next": "^11.0.0-rc.502",
     "@trpc/react-query": "^11.0.0-rc.502",
     "@trpc/server": "^11.0.0-rc.502",
+    "@vvo/tzdb": "^6.151.0",
     "bufferutil": "^4.0.8",
     "burnt": "0.12.2",
     "cloudinary": "^2.5.0",

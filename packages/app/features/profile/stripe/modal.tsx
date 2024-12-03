@@ -28,6 +28,7 @@ export const ConnectAccountModalContent = (
       enabled: false,
     }
   )
+  const invalidateProfile = api.useUtils().profileBySlug.invalidate
   const { toast } = useToast()
   return (
     <ModalContent id={id}>
@@ -38,12 +39,15 @@ export const ConnectAccountModalContent = (
           profileSlug={props.profileSlug}
           onComplete={() => {
             onOpenChange(false)
-            toast({
-              preset: 'done',
-              title: 'Payout onboarding complete',
-              message: 'You can now receive payments.',
+            invalidateProfile({ slug: props.profileSlug })
+            query.refetch().then((result) => {
+              if (result.data?.payouts_enabled) {
+                toast({
+                  preset: 'done',
+                  title: 'You can now receive payments!',
+                })
+              }
             })
-            query.refetch()
           }}
         />
       </ModalDialog>
@@ -51,8 +55,6 @@ export const ConnectAccountModalContent = (
   )
 }
 
-export const ConnectAccountModalTrigger = (
-  props: React.ComponentProps<typeof ModalTrigger>
-) => {
+export const ConnectAccountModalTrigger = (props: React.ComponentProps<typeof ModalTrigger>) => {
   return <ModalTrigger {...props} id={id} />
 }

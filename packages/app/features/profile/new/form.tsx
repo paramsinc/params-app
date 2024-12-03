@@ -48,6 +48,7 @@ export function NewProfileForm({
       <Scroll>
         <View gap="$3" p="$3">
           <Form.RootProvider
+            devtools
             defaultValues={{
               is_personal_profile: !hasPersonalProfile,
               name: hasPersonalProfile
@@ -209,6 +210,7 @@ export function NewProfileForm({
                       image_vendor_id,
                       image_vendor,
                       is_personal_profile,
+                      pricePerHourCents,
                     }) => {
                       mutation.mutate({
                         name,
@@ -217,6 +219,7 @@ export function NewProfileForm({
                         image_vendor_id,
                         image_vendor,
                         is_personal_profile,
+                        pricePerHourCents,
                       })
                     }
                   )}

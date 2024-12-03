@@ -288,6 +288,7 @@ const profile = {
             image_vendor_id: true,
             image_vendor: true,
             short_bio: true,
+            timezone: true,
           })
           .merge(
             z.object({
@@ -310,6 +311,7 @@ const profile = {
             name,
             slug,
             availability_ranges,
+            timezone,
           },
         },
       }) => {
@@ -336,6 +338,7 @@ const profile = {
             name,
             slug,
             availability_ranges,
+            timezone,
           })
           .where(d.eq(schema.profiles.id, id))
           .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
@@ -2060,7 +2063,13 @@ const googleOauthRoutes = {
           }),
         })
         .from(schema.googleCalendarIntegrations)
-        .innerJoin(schema.profiles, d.eq(schema.profiles.slug, input.profile_slug))
+        .innerJoin(
+          schema.profiles,
+          d.and(
+            d.eq(schema.profiles.slug, input.profile_slug),
+            d.eq(schema.profiles.id, schema.googleCalendarIntegrations.profile_id)
+          )
+        )
         // ensure membership
         .where(
           d.exists(

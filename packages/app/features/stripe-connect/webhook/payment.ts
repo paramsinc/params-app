@@ -45,6 +45,21 @@ export default async function POST(req: Request) {
         .update(schema.offers)
         .set({ voided: true, stripe_payment_intent_id: event.data.object.id })
         .where(d.eq(schema.offers.id, offer_id))
+    } else if (event.type === 'account.updated') {
+      const { id, payouts_enabled } = event.data.object
+
+      const profile = await db.query.profiles.findFirst({
+        where: d.eq(schema.profiles.stripe_connect_account_id, id),
+      })
+
+      if (profile) {
+        await db
+          .update(schema.profiles)
+          .set({ has_stripe_payouts_enabled: payouts_enabled })
+          .where(d.eq(schema.profiles.id, profile.id))
+      } else {
+        return new Response(`Profile not found with stripe account id ${id}`, { status: 404 })
+      }
     }
 
     return new Response('OK', { status: 200 })

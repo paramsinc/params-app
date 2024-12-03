@@ -52,6 +52,11 @@ import { SignInWithGoogle } from 'app/features/oauth/google/sign-in-with-google'
 import { Link } from 'app/ds/Link'
 import { Lucide } from 'app/ds/Lucide'
 import { ProfileMembers } from 'app/features/profile/detail/ProfileMembers'
+import {
+  CreateProfileMemberModalContent,
+  CreateProfileMemberModalTrigger,
+} from 'app/features/profile/member/new/modal'
+import { CreateProfileMemberModal } from 'app/features/profile/member/new/modal'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -113,6 +118,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
                 contentFit="cover"
                 fill
                 sizes="(min-width: 1200px) 80vw, 100vw"
+                alt={profile.name}
               />
             ) : null}
           </View>
@@ -169,6 +175,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
                 themeInverse={connectAccountQuery.data?.payouts_enabled === false}
                 loading={connectAccountQuery.isLoading}
               >
+                <ButtonIcon icon={Lucide.Settings} />
                 <ButtonText>Configure</ButtonText>
               </Button>
             </ConnectAccountModalTrigger>
@@ -193,7 +200,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <NewRepositoryModal>
             <NewRepositoryModalTrigger>
               <Button>
-                <ButtonText>Add Repository</ButtonText>
+                <ButtonIcon icon={Lucide.Plus} />
+                <ButtonText>Add Repo</ButtonText>
               </Button>
             </NewRepositoryModalTrigger>
 
@@ -237,6 +245,16 @@ function Content({ profileSlug }: { profileSlug: string }) {
       <View gap="$3">
         <View row ai="center" jbtwn>
           <Text bold>Members</Text>
+
+          <CreateProfileMemberModal>
+            <CreateProfileMemberModalTrigger>
+              <Button>
+                <ButtonIcon icon={Lucide.UserPlus} />
+                <ButtonText>Add Member</ButtonText>
+              </Button>
+            </CreateProfileMemberModalTrigger>
+            <CreateProfileMemberModalContent profileId={profile.id} />
+          </CreateProfileMemberModal>
         </View>
 
         <ProfileMembers profileSlug={profileSlug} />
@@ -271,8 +289,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <Card>
             {calendarIntegrations.data?.length === 0 && (
               <Text>
-                You don't have any Google Calendar integrations. Click below to connect your Google
-                Calendar.
+                You don't have any Google Calendar integrations for this profile. Click below to
+                connect your Google Calendar.
               </Text>
             )}
 

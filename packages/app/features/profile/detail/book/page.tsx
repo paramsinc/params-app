@@ -179,6 +179,7 @@ function Booker({ profileSlug }: { profileSlug: string }) {
                   zone: profile.timezone,
                 }
               )
+              const dateTimeLocal = dateTime.setZone('local')
               return (
                 <StripeProvider_ConfirmOnBackend amountCents={plan.price} currency="usd">
                   <Card
@@ -219,6 +220,18 @@ function Booker({ profileSlug }: { profileSlug: string }) {
                             }),
                           ].join(' - ')}{' '}
                           ({dateTime.toFormat('ZZZZ')})
+                        </Text>
+                        <Text mt="$2">
+                          (
+                          {dateTimeLocal.day !== dateTime.day &&
+                            dateTimeLocal.toLocaleString({
+                              month: 'long',
+                              day: 'numeric',
+                            }) + ' '}
+                          {dateTimeLocal.toLocaleString({
+                            timeStyle: 'short',
+                          })}{' '}
+                          {dateTimeLocal.toFormat('ZZZZ')})
                         </Text>
                       </View>
                     </View>
@@ -315,20 +328,51 @@ const SlotPicker = ({
   if (!slotsQuery.data) {
     return <Text>Loading...</Text>
   }
-  const timezone = slotsQuery.data.timezone
+  const profileTimezone = slotsQuery.data.timezone
+  const selectedTimezone = profileTimezone
   const slotsByDate = group(
     slotsQuery.data.slots,
     ({ date }) => DateTime.fromObject(date).toISODate()!
   )
+  const timezoneDt = DateTime.fromObject({}, { zone: selectedTimezone })
+  const timezoneShiftedSlotsByDate = entries(slotsByDate).map(([date, slots]) => {
+    const dateObj = DateTime.fromISO(date, { zone: profileTimezone })
+    if (!dateObj.isValid) {
+      return null
+    }
+    const timezoneShiftedDateObj =
+      selectedTimezone !== profileTimezone ? dateObj.setZone(selectedTimezone) : dateObj
+    return {
+      date,
+      timezoneShiftedSlots: slots?.map((slot) => {
+        let dt = dateObj.set({
+          hour: slot.time.hour,
+          minute: slot.time.minute,
+        })
+        if (selectedTimezone !== profileTimezone) {
+          const next = dt.setZone(selectedTimezone)
+
+          if (next.isValid) {
+            dt = next
+          }
+        }
+        return {
+          slot,
+          displayDt: dt,
+        }
+      }),
+      timezoneShiftedDateObj,
+    }
+  })
   return (
     <View gap="$3">
       <Text color="$color11">
-        All times are in{' '}
-        {DateTime.fromObject({}, { zone: slotsQuery.data.timezone }).toFormat('ZZZZ')} timezone.
+        All times are in {timezoneDt.zoneName?.replaceAll('_', ' ')} ({timezoneDt.toFormat('ZZZZ')})
+        timezone.
       </Text>
       <View gap="$1">
         {entries(slotsByDate).map(([date, slots]) => {
-          const dateObj = DateTime.fromISO(date, { zone: timezone })
+          let dateObj = DateTime.fromISO(date, { zone: profileTimezone })
           if (!dateObj.isValid) {
             return null
           }
@@ -338,17 +382,16 @@ const SlotPicker = ({
                 <Text bold>{dateObj.toLocaleString({ dateStyle: 'full' })}</Text>
                 <View gap="$1" row flexWrap="wrap">
                   {slots?.map((slot, index) => {
+                    let dt = dateObj.set({
+                      hour: slot.time.hour,
+                      minute: slot.time.minute,
+                    })
                     return (
                       <Button key={index} onPress={() => onSelectSlot(slot)}>
                         <ButtonText>
-                          {dateObj
-                            .set({
-                              hour: slot.time.hour,
-                              minute: slot.time.minute,
-                            })
-                            .toLocaleString({
-                              timeStyle: 'short',
-                            })}
+                          {dt.toLocaleString({
+                            timeStyle: 'short',
+                          })}
                         </ButtonText>
                       </Button>
                     )

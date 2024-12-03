@@ -7747,6 +7747,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vvo/tzdb@npm:^6.151.0":
+  version: 6.151.0
+  resolution: "@vvo/tzdb@npm:6.151.0"
+  checksum: 10/e808836b0103efa1c1165a84ac24bb38faac9d71b60629d733c33ea79e1b89a2f329441047a569431e0151f4eff37b7aafa23c6c2319abe60cf37bc62cccae29
+  languageName: node
+  linkType: hard
+
 "@xmldom/xmldom@npm:~0.7.7":
   version: 0.7.9
   resolution: "@xmldom/xmldom@npm:0.7.9"
@@ -8085,6 +8092,7 @@ __metadata:
     "@types/react-google-recaptcha": "npm:^2.1.9"
     "@types/react-syntax-highlighter": "npm:^15"
     "@types/ws": "npm:^8"
+    "@vvo/tzdb": "npm:^6.151.0"
     bufferutil: "npm:^4.0.8"
     burnt: "npm:0.12.2"
     cloudinary: "npm:^2.5.0"

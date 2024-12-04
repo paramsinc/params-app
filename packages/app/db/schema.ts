@@ -139,16 +139,9 @@ export const profileMembers = pgTable(
       table.user_id
     ),
     uniqueUserIdForProfile: unique().on(table.profile_id, table.user_id),
+    uniqueEmailForProfile: unique().on(table.profile_id, table.email),
   })
 )
-
-export const calcomUsers = pgTable('calcom_users', {
-  id: integer('id').primaryKey(),
-  access_token: text('access_token').notNull(),
-  refresh_token: text('refresh_token').notNull(),
-  email: text('email').unique().notNull(),
-  ...timestampMixin(),
-})
 
 export const offers = pgTable('offers', {
   id: text('id')

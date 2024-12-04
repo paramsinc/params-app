@@ -44,46 +44,49 @@ export function CreateProfileMemberForm({
                     placeholder="member@company.com"
                     value={field.value}
                     onChangeText={field.onChange}
-                    error={fieldState.error}
-                    inputRef={field.ref}
+                    ref={field.ref}
+                    theme={fieldState.error ? 'red' : undefined}
                   />
                 )}
               />
             </Card>
 
-            <Card>
-              <Card.Title>First Name</Card.Title>
-              <Form.Controller
-                name="first_name"
-                rules={{ required: 'First name is required' }}
-                render={({ field, fieldState }) => (
-                  <Input
-                    placeholder="John"
-                    value={field.value}
-                    onChangeText={field.onChange}
-                    error={fieldState.error}
-                    inputRef={field.ref}
-                  />
-                )}
-              />
-            </Card>
-
-            <Card>
-              <Card.Title>Last Name</Card.Title>
-              <Form.Controller
-                name="last_name"
-                rules={{ required: 'Last name is required' }}
-                render={({ field, fieldState }) => (
-                  <Input
-                    placeholder="Doe"
-                    value={field.value}
-                    onChangeText={field.onChange}
-                    error={fieldState.error}
-                    inputRef={field.ref}
-                  />
-                )}
-              />
-            </Card>
+            <Form.Controller
+              name="first_name"
+              rules={{ required: 'First name is required' }}
+              render={({ field, fieldState }) => (
+                <Card>
+                  <Card.Title>Name</Card.Title>
+                  <View row gap="$2">
+                    <Input
+                      theme={fieldState.error ? 'red' : undefined}
+                      placeholder="First Name"
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      ref={field.ref}
+                      flexGrow={1}
+                      flexBasis={0}
+                    />
+                    <Form.Controller
+                      name="last_name"
+                      rules={{ required: 'Last name is required' }}
+                      disableScrollToError
+                      render={({ field, fieldState }) => (
+                        <Input
+                          placeholder="Last Name"
+                          value={field.value}
+                          theme={fieldState.error ? 'red' : undefined}
+                          onChangeText={field.onChange}
+                          ref={field.ref}
+                          flexGrow={1}
+                          flexBasis={0}
+                        />
+                      )}
+                    />
+                  </View>
+                </Card>
+              )}
+            />
 
             <ErrorCard error={mutation.error} />
 

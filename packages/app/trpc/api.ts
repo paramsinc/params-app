@@ -579,6 +579,19 @@ const profileMember = {
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const myMembership = await db.query.profileMembers.findFirst({
+        where: (profileMembers, { eq, and }) =>
+          and(
+            eq(profileMembers.profile_id, input.profile_id),
+            eq(profileMembers.user_id, ctx.auth.userId)
+          ),
+      })
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not authorized to create a member for this profile.`,
+        })
+      }
       const existentUser = await db.query.users.findFirst({
         where: (users, { eq }) => {
           if (input.user_id) {
@@ -589,6 +602,10 @@ const profileMember = {
         },
       })
       input.user_id = existentUser?.id
+      if (existentUser) {
+        input.first_name = existentUser.first_name
+        input.last_name = existentUser.last_name
+      }
 
       const [profileMember] = await db
         .insert(schema.profileMembers)
@@ -603,7 +620,54 @@ const profileMember = {
         })
       }
 
-      // TODO send an email to the new member
+      const [profile, me] = await Promise.all([
+        db.query.profiles.findFirst({
+          where: (profiles, { eq }) => eq(profiles.id, input.profile_id),
+          columns: { name: true, slug: true },
+        }),
+        db.query.users.findFirst({
+          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+          columns: { first_name: true, last_name: true },
+        }),
+      ])
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      if (!me) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Please try signing in again (or refreshing).`,
+        })
+      }
+
+      if (existentUser) {
+        await sendEmailHTML({
+          to: [existentUser.email],
+          subject: `${me.first_name} added you to @${profile.slug} on ${env.APP_NAME}`,
+          html: [
+            `<p>Hi ${existentUser.first_name},</p>`,
+            `<p><strong>${me.first_name} ${me.last_name}</strong> added you to <a href="https://${env.APP_URL}/@${profile.slug}">@${profile.slug}</a> on <a href="https://${env.APP_URL}">${env.APP_NAME}</a></p>`,
+            `<p>You have been automatically added to the profile.</p>`,
+            `<p>To view & manage <strong>${profile.name}</strong>, click this URL: <a href="https://${env.APP_URL}/dashboard/profiles/${profile.slug}">${env.APP_URL}/dashboard/profiles/${profile.slug}</a></p>`,
+          ].join('\n'),
+        })
+      } else {
+        await sendEmailHTML({
+          to: [input.email],
+          subject: `${me.first_name} added you to @${profile.slug} on ${env.APP_NAME}`,
+          html: [
+            `<p>Hi ${input.first_name},</p>`,
+            `<p><strong>${me.first_name} ${me.last_name}</strong> added you to <a href="https://${env.APP_URL}/@${profile.slug}">@${profile.slug}</a> on <a href="https://${env.APP_URL}">${env.APP_NAME}</a>.</p>`,
+            `<p>Params lets you share your open source code and let people pay to book calls with you.</p>`,
+            `<p>To accept the invitation, you can sign up and view <strong>${profile.name}</strong> at <a href="https://${env.APP_URL}/dashboard/profiles">${env.APP_URL}/dashboard/profiles</a>.</p>`,
+          ].join('\n'),
+        })
+      }
 
       return profileMember
     }),
@@ -721,14 +785,22 @@ const profileMember = {
         })
       }
 
-      const profileMembers = await db.query.profileMembers
-        .findMany({
-          where: (profileMembers, { eq, and }) => and(eq(profileMembers.profile_id, profile.id)),
-          columns: publicSchema.profileMembers.ProfileMemberInternal,
+      const members = await db
+        .select({
+          user: pick('users', publicSchema.users.UserPublic),
+          ...pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal),
+          personal_profile: pick('profiles', { id: true, slug: true }),
         })
+        .from(schema.profileMembers)
+        .where(d.eq(schema.profileMembers.profile_id, profile.id))
+        .leftJoin(schema.users, d.eq(schema.profileMembers.user_id, schema.users.id))
+        .leftJoin(
+          schema.profiles,
+          d.eq(schema.profileMembers.user_id, schema.profiles.personal_profile_user_id)
+        )
         .execute()
 
-      const amIMember = profileMembers.find((member) => member.user_id === ctx.auth.userId)
+      const amIMember = members.find((member) => member.user_id === ctx.auth.userId)
 
       if (!amIMember) {
         throw new TRPCError({
@@ -736,6 +808,14 @@ const profileMember = {
           message: `You are not a member of this profile.`,
         })
       }
+
+      const profileMembers = members.map((member) => {
+        return {
+          ...member,
+          first_name: member.user?.first_name ?? member.first_name,
+          last_name: member.user?.last_name ?? member.last_name,
+        }
+      })
 
       return profileMembers
     }),

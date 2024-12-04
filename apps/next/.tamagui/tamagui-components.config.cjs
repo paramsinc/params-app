@@ -5857,9 +5857,9 @@ var require_es53 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/medium.js
+// ../../node_modules/react-remove-scroll/dist/es5/medium.js
 var require_medium2 = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/medium.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/medium.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.effectCar = void 0;
@@ -5868,9 +5868,9 @@ var require_medium2 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/UI.js
+// ../../node_modules/react-remove-scroll/dist/es5/UI.js
 var require_UI = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/UI.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/UI.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScroll = void 0;
@@ -7288,9 +7288,9 @@ var require_es56 = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/aggresiveCapture.js
+// ../../node_modules/react-remove-scroll/dist/es5/aggresiveCapture.js
 var require_aggresiveCapture = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/aggresiveCapture.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/aggresiveCapture.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.nonPassive = void 0;
@@ -7314,9 +7314,9 @@ var require_aggresiveCapture = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/handleScroll.js
+// ../../node_modules/react-remove-scroll/dist/es5/handleScroll.js
 var require_handleScroll = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/handleScroll.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/handleScroll.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.handleScroll = exports2.locationCouldBeScrolled = void 0;
@@ -7423,9 +7423,9 @@ var require_handleScroll = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/SideEffect.js
+// ../../node_modules/react-remove-scroll/dist/es5/SideEffect.js
 var require_SideEffect = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/SideEffect.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/SideEffect.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScrollSideCar = exports2.getDeltaXY = exports2.getTouchXY = void 0;
@@ -7606,9 +7606,9 @@ var require_SideEffect = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/sidecar.js
+// ../../node_modules/react-remove-scroll/dist/es5/sidecar.js
 var require_sidecar = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/sidecar.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/sidecar.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var use_sidecar_1 = require_es53();
@@ -7618,9 +7618,9 @@ var require_sidecar = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/Combination.js
+// ../../node_modules/react-remove-scroll/dist/es5/Combination.js
 var require_Combination = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/Combination.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/Combination.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -7635,9 +7635,9 @@ var require_Combination = __commonJS({
   }
 });
 
-// ../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/index.js
+// ../../node_modules/react-remove-scroll/dist/es5/index.js
 var require_es57 = __commonJS({
-  "../../node_modules/@tamagui/remove-scroll/node_modules/react-remove-scroll/dist/es5/index.js"(exports2) {
+  "../../node_modules/react-remove-scroll/dist/es5/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RemoveScroll = void 0;

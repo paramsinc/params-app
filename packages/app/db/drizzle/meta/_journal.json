@@ -253,6 +253,13 @@
       "when": 1733331135597,
       "tag": "0035_quick_brother_voodoo",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1733336143722,
+      "tag": "0036_unique_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

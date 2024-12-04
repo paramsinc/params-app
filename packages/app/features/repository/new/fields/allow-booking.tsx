@@ -75,10 +75,16 @@ export function RepoAllowBookingForMemberPersonalProfilesField({
               {members.map((member) => (
                 <View key={member.id} gap="$2">
                   <Text>
-                    → {member.first_name} {member.last_name}
-                    {!member.user_id && (
-                      <Text color="$red11">(Needs to sign up for {env.APP_NAME})</Text>
-                    )}
+                    → {member.first_name} {member.last_name} ({member.email})
+                    {!member.user_id ? (
+                      <Text color="$red11"> 🚨 (Still needs to sign up for {env.APP_NAME})</Text>
+                    ) : !member.personal_profile ? (
+                      <Text color="$yellow11">
+                        {' '}
+                        ⚠️ (Signed up, but still needs to create a personal developer profile on{' '}
+                        {env.APP_NAME})
+                      </Text>
+                    ) : null}
                   </Text>
                 </View>
               ))}

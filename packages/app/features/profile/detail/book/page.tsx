@@ -1,5 +1,4 @@
 import { Page } from 'app/ds/Page'
-import { useEventTypes } from '@calcom/atoms'
 import { createParam } from 'app/navigation/use-params'
 import { api } from 'app/trpc/client'
 import { ErrorCard } from 'app/ds/Error/card'

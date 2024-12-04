@@ -33,6 +33,11 @@ import {
   RepoAllowBookingForMemberPersonalProfilesField,
 } from 'app/features/repository/new/fields/allow-booking'
 import { ProfilePicker } from 'app/features/profile/picker'
+import {
+  CreateProfileMemberModal,
+  CreateProfileMemberModalContent,
+  CreateProfileMemberModalTrigger,
+} from 'app/features/profile/member/new/modal'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -312,7 +317,6 @@ function ParamsJson() {
                 },
                 youtube: {
                   video_id: '0lnbdRweJtA',
-                  thumbnail_url: 'https://img.youtube.com/vi/0lnbdRweJtA/0.jpg',
                 },
               },
               notebook_url: '',
@@ -327,8 +331,10 @@ function ParamsJson() {
           <Text fontFamily="$mono">docs.sidebar</Text>.
         </Card.Description>
         <Card.Description>
-          The Google Colab <Text fontFamily="$mono">notebook_url</Text> is optional, as is the{' '}
-          <Text fontFamily="$mono">docs.youtube</Text> field.
+          The Google Colab <Text fontFamily="$mono">notebook_url</Text> is optional.
+        </Card.Description>
+        <Card.Description>
+          The <Text fontFamily="$mono">docs.youtube</Text> field is optional as well.
         </Card.Description>
         <Card.Description>
           After you add the <Text fontFamily="$mono">params.json</Text> file and push it to your
@@ -468,7 +474,19 @@ function ProfileField() {
       {profile && (
         <>
           <View gap="$3" display={shouldShowMembers ? 'flex' : 'none'}>
-            <Text>Profile Members</Text>
+            <View row="wrap" ai="center" gap="$2" jbtwn>
+              <Text>Profile Members</Text>
+
+              <CreateProfileMemberModal>
+                <CreateProfileMemberModalTrigger>
+                  <Button>
+                    <Button.Text>Add Member</Button.Text>
+                  </Button>
+                </CreateProfileMemberModalTrigger>
+
+                <CreateProfileMemberModalContent profileId={profile.id} />
+              </CreateProfileMemberModal>
+            </View>
             <ProfileMembers profileSlug={profile.slug} />
           </View>
         </>

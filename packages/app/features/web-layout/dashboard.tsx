@@ -13,6 +13,7 @@ import { Page } from 'app/ds/Page'
 import { StyleSheet } from 'react-native'
 import { Header } from 'app/ds/Header'
 import { useDashboardLinks } from 'app/features/web-layout/useDashboardLinks'
+import { UserGate } from 'app/features/user/gate'
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = useRouter().pathname
@@ -70,24 +71,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </Page.ContentWidthComponent>
       </Header>
       {hasLoaded && (
-        <>
-          {isSignedIn ? (
-            <>
-              <MeGate>{children}</MeGate>
-            </>
-          ) : (
-            <Empty>
-              <EmptyCard>
-                <EmptyCardTitle>Please sign in to continue.</EmptyCardTitle>
-                <Auth.AuthFlowTrigger>
-                  <Button themeInverse>
-                    <ButtonText>Sign in</ButtonText>
-                  </Button>
-                </Auth.AuthFlowTrigger>
-              </EmptyCard>
-            </Empty>
-          )}
-        </>
+        <UserGate>
+          <>{children}</>
+        </UserGate>
       )}
     </>
   )

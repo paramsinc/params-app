@@ -474,6 +474,7 @@ const profile = {
       .from(schema.profiles)
       .innerJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
       .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
+      .orderBy(d.desc(schema.profiles.created_at))
       .execute()
 
     return profiles

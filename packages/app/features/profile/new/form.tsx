@@ -212,6 +212,8 @@ export function NewProfileForm({
                       image_vendor,
                       is_personal_profile,
                       pricePerHourCents,
+                      timezone = DateTime.local().zoneName ?? 'America/New_York',
+                      short_bio,
                     }) => {
                       mutation.mutate({
                         name,
@@ -221,7 +223,8 @@ export function NewProfileForm({
                         image_vendor,
                         is_personal_profile,
                         pricePerHourCents,
-                        timezone: DateTime.local().zoneName ?? 'America/New_York',
+                        timezone,
+                        short_bio,
                       })
                     }
                   )}

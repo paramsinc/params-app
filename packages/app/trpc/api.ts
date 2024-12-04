@@ -129,6 +129,7 @@ const profileInsert = inserts.profiles
     image_vendor: true,
     image_vendor_id: true,
     short_bio: true,
+    timezone: true,
   })
   .merge(
     z.object({
@@ -197,7 +198,7 @@ const profile = {
             if (personalProfile) {
               throw new TRPCError({
                 code: 'CONFLICT',
-                message: `You already have a personal profile (@${personalProfile.slug}).`,
+                message: `You already have a personal profile (@${personalProfile.slug}). Did you mean to create a team profile?`,
               })
             }
           }
@@ -224,7 +225,17 @@ const profile = {
           const [profile] = await tx
             .insert(schema.profiles)
             .values({
+              availability_ranges: (
+                ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const
+              ).map((day_of_week) => ({
+                day_of_week,
+                start_time: { hour: 9, minute: 0 },
+                end_time: { hour: 17, minute: 0 },
+              })),
+              timezone: 'America/New_York',
+
               ...input,
+              created_by_user_id: ctx.auth.userId,
               stripe_connect_account_id,
               personal_profile_user_id: is_personal_profile ? ctx.auth.userId : null,
             })
@@ -733,18 +744,42 @@ const profileMember = {
         })
       }
 
-      const [profileMember] = await db
-        .delete(schema.profileMembers)
-        .where(d.eq(schema.profileMembers.id, id))
-        .returning()
-        .execute()
-
-      if (!profileMember) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Profile member couldn't get deleted.`,
+      await db.transaction(async (tx) => {
+        const profile = await tx.query.profiles.findFirst({
+          where: (profiles, { eq }) => eq(profiles.id, id),
+          columns: {
+            personal_profile_user_id: true,
+            id: true,
+          },
         })
-      }
+        if (!profile) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Profile not found.`,
+          })
+        }
+        const [profileMember] = await tx
+          .delete(schema.profileMembers)
+          .where(d.eq(schema.profileMembers.id, id))
+          .returning()
+          .execute()
+        if (!profileMember) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Profile member couldn't get deleted.`,
+          })
+        }
+
+        if (profile?.personal_profile_user_id === profileMember.user_id) {
+          await tx
+            .update(schema.profiles)
+            .set({
+              personal_profile_user_id: null,
+            })
+            .where(d.eq(schema.profiles.id, profile.id))
+            .execute()
+        }
+      })
 
       return true
     }),

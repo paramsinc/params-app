@@ -63,6 +63,10 @@ export const profiles = pgTable(
         onDelete: 'set null',
       }),
 
+    created_by_user_id: text('created_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+
     has_stripe_payouts_enabled: boolean('has_stripe_payouts_enabled').default(false),
 
     ...timestampMixin(),

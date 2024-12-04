@@ -1,17 +1,11 @@
 'use dom'
 import { useStripeConnectForProfile } from 'app/features/profile/stripe/use-stripe-connect'
-import {
-  ConnectAccountOnboarding,
-  ConnectComponentsProvider,
-} from '@stripe/react-connect-js'
+import { ConnectAccountOnboarding, ConnectComponentsProvider } from '@stripe/react-connect-js'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
 import { Scroll } from 'app/ds/Scroll'
 
-export function ConnectAccountContent(props: {
-  profileSlug: string
-  onComplete: () => void
-}) {
+export function ConnectAccountContent(props: { profileSlug: string; onComplete: () => void }) {
   const { stripe } = useStripeConnectForProfile(props)
   const { toast } = useToast()
 
@@ -36,7 +30,7 @@ export function ConnectAccountContent(props: {
   )
 
   return (
-    <View grow style={{ overflowY: 'auto' }}>
+    <View grow style={{ overflowY: 'auto', backgroundColor: 'white', padding: 16 }}>
       {/* <Scroll> */}
       {s}
       {/* </Scroll> */}

@@ -1,3 +1,4 @@
+import { DateTime } from 'app/dates/date-time'
 import { Button, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Card } from 'app/ds/Form/layout'
@@ -220,6 +221,7 @@ export function NewProfileForm({
                         image_vendor,
                         is_personal_profile,
                         pricePerHourCents,
+                        timezone: DateTime.local().zoneName ?? 'America/New_York',
                       })
                     }
                   )}

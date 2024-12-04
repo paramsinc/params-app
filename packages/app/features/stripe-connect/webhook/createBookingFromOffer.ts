@@ -105,8 +105,10 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
   const hourEmoji = timeEmojiByHour[dt.hour] ?? '🕖'
   const moneyEmoji = currencyEmoji[booking.currency ?? 'usd'] ?? '💵'
 
+  const shortId = booking.id.slice(-6).toUpperCase()
+
   await sendEmailHTML({
-    to: allAttendeeEmails.join(','),
+    to: allAttendeeEmails,
     subject: `New Booking: ${organization.name} <> ${profile.name} (${env.APP_NAME})`,
     html: [
       `<p><strong>${organization.name}</strong> just booked a call with <strong>${profile.name}</strong> on <a href="https://${env.APP_URL}">${env.APP_URL}</a></p>`,
@@ -114,6 +116,8 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
       `<p>${hourEmoji} ${dt.toLocaleString({ timeStyle: 'short' })} (${dt.toFormat('ZZZZ')})</p>`,
       currencyFormatter &&
         `<p>${moneyEmoji} ${currencyFormatter.format((booking.amount || 0) / 100)}</p>`,
+      `<p>You will receive a calendar invite in a separate email. Please use the meeting link on the invite for the call.</p>`,
+      `<p>Booking #${shortId}</p>`,
       `<p>To cancel, please visit <a href="https://${env.APP_URL}/dashboard/bookings">${env.APP_URL}/dashboard/bookings</a></p>`,
     ]
       .filter(Boolean)

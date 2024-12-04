@@ -8,7 +8,7 @@ export async function sendEmailHTML({
   subject,
   html,
 }: {
-  to: string
+  to: string[]
   subject: string
   html: string
 }) {

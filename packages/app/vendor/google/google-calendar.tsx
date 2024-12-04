@@ -75,13 +75,7 @@ export async function createGoogleCalendarEventForOffer({
   return response
 }
 
-export async function cancelCalendarEvent({
-  eventId,
-  calendarId,
-}: {
-  eventId: string
-  calendarId: string
-}) {
+export async function cancelCalendarEvent({ eventId }: { eventId: string }) {
   const calendarClient = google.calendar({
     version: 'v3',
     auth,

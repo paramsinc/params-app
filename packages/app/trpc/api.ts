@@ -2732,9 +2732,45 @@ export const appRouter = router({
           .where(d.eq(schema.bookings.id, input.id))
           .returning({
             canceled_at: schema.bookings.canceled_at,
+            start_datetime: schema.bookings.start_datetime,
+            timezone: schema.bookings.timezone,
           })
 
-        // TODO notify
+        const all = await db
+          .select({
+            org_email: schema.organizationMembers.email,
+            profile_email: schema.profileMembers.email,
+          })
+          .from(schema.bookings)
+          .where(d.eq(schema.bookings.id, input.id))
+          .leftJoin(
+            schema.organizationMembers,
+            d.eq(schema.bookings.organization_id, schema.organizationMembers.organization_id)
+          )
+          .leftJoin(
+            schema.profileMembers,
+            d.eq(schema.bookings.profile_id, schema.profileMembers.profile_id)
+          )
+          .execute()
+
+        const emails = Array.from(
+          new Set(all.map((r) => r.org_email).concat(all.map((r) => r.profile_email)))
+        ).filter(Boolean)
+
+        const shortId = booking.id.slice(-6).toUpperCase()
+
+        await sendEmailHTML({
+          to: emails,
+          subject: `Booking #${shortId} canceled`,
+          html: [
+            `<p>Booking #${shortId} has been canceled.</p>`,
+            `<p>🗓️ <strike>${bookingStart.toLocaleString({ dateStyle: 'full' })}</strike></p>`,
+            `<p>🕒 <strike>${bookingStart.toLocaleString({
+              timeStyle: 'short',
+            })} (${bookingStart.toFormat('ZZZZ')})</strike></p>`,
+            `<p>A refund has been issued to the buyer. It will appear within 1-2 weeks on the original method of payment.</p>`,
+          ].join('\n'),
+        })
 
         return updatedBooking?.canceled_at != null
       }),

@@ -38,6 +38,7 @@ const TextFrame = styled(Text, {
   opacity: 0,
   whiteSpace: 'pre',
   pointerEvents: 'none',
+  fontFamily: '$body',
   variants: {
     unset: {
       false: inputStyle,

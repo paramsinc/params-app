@@ -18,7 +18,9 @@ import { Button, ButtonText } from 'app/ds/Button'
 import { useEffect, useState, useServerEffect } from 'app/react'
 import { platform } from 'app/ds/platform'
 import { useCurrentPath } from 'app/navigation/use-pathname'
-import { Lucide } from 'app/ds/Lucide'
+import { useDashboardLinks } from 'app/features/web-layout/useDashboardLinks'
+import { dark, neobrutalism } from '@clerk/themes'
+import { useThemeName } from 'app/ds/useThemeName'
 
 const clerk = new Clerk(env.CLERK_PUBLISHABLE_KEY!)
 
@@ -37,16 +39,20 @@ const getToken = async (): Promise<string | null> => {
 }
 
 function UserTrigger({ children }: { children?: React.ReactElement }) {
+  const links = useDashboardLinks()
   return (
     <Font>
       <UserButton>
         {children}
         <UserButton.MenuItems>
-          <UserButton.Link
-            label="Dashboard"
-            labelIcon={<Lucide.Home size={16} color="$color11" />}
-            href="/dashboard"
-          />
+          {links.map((link) => (
+            <UserButton.Link
+              key={link.href}
+              label={link.label}
+              href={link.href}
+              labelIcon={<link.icon size={16} color="var(--accent)" />}
+            />
+          ))}
         </UserButton.MenuItems>
       </UserButton>
     </Font>
@@ -74,25 +80,27 @@ function SignUp({
   children?: React.ReactElement
   action?: 'sign in' | 'sign up'
 }) {
-  const [redirectUrl, setRedirectUrl] = useState<string>()
   const path = useCurrentPath()
+  const [redirectUrl = path, setRedirectUrl] = useState<string>()
   useServerEffect(() => {
-    if (platform.OS === 'web') {
-      setRedirectUrl(window.location.href)
-    }
+    setRedirectUrl(window.location.pathname + window.location.search)
   }, [path])
-  const Comp = action === 'sign in' ? SignInButton : SignUpButton
-  return (
-    <Font>
-      <Comp
+  if (action === 'sign in') {
+    return (
+      <SignInButton
         mode="modal"
-        key={redirectUrl}
-        signInForceRedirectUrl={redirectUrl}
-        signUpForceRedirectUrl={redirectUrl}
+        key={redirectUrl + 'sign_in'}
+        forceRedirectUrl={redirectUrl}
+        fallbackRedirectUrl={redirectUrl}
       >
         {children}
-      </Comp>
-    </Font>
+      </SignInButton>
+    )
+  }
+  return (
+    <SignUpButton mode="modal" key={redirectUrl} forceRedirectUrl={redirectUrl}>
+      {children}
+    </SignUpButton>
   )
 }
 
@@ -130,12 +138,19 @@ export default makeAuth({
     })
   },
   Provider({ children }) {
+    const theme = useThemeName()
+    const isDark = theme === 'dark'
+    console.log('[clerk-auth][theme]', isDark)
+    const path = useCurrentPath()
     return (
       <ClerkProvider
         publishableKey={env.CLERK_PUBLISHABLE_KEY!}
         Clerk={clerk}
-        signInFallbackRedirectUrl="/dashboard"
-        signUpFallbackRedirectUrl="/dashboard"
+        signInFallbackRedirectUrl={path}
+        signUpFallbackRedirectUrl={path}
+        appearance={{
+          baseTheme: dark,
+        }}
       >
         {children}
       </ClerkProvider>

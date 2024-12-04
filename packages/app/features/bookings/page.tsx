@@ -56,19 +56,21 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
   const cancelMutation = api.bookings.cancel.useMutation()
 
   return (
-    <Card flexDirection="row" gap="$3" padding="$3">
-      {booking.profile.image_vendor_id && booking.profile.image_vendor && (
-        <Image
-          src={booking.profile.image_vendor_id}
-          alt={booking.profile.name}
-          loader={booking.profile.image_vendor}
-          width={50}
-          height={50}
-          contentFit="cover"
-        />
-      )}
+    <Card $gtSm={{ row: true }} gap="$3" padding="$3">
+      <View width={100} height={50} overflow="hidden" br="$2">
+        {booking.profile.image_vendor_id && booking.profile.image_vendor && (
+          <Image
+            src={booking.profile.image_vendor_id}
+            alt={booking.profile.name}
+            loader={booking.profile.image_vendor}
+            width={100}
+            height={50}
+            contentFit="cover"
+          />
+        )}
+      </View>
 
-      <View gap="$2" grow>
+      <View gap="$2" $gtSm={{ grow: true }}>
         {booking.canceled_at != null && (
           <Text color="$color11" theme="red">
             Canceled ({DateTime.fromISO(booking.canceled_at).toLocaleString()}
@@ -96,16 +98,17 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
         <Text color="$color10">Booked by {booking.organization.name}</Text>
       </View>
 
-      <View jc="flex-start">
+      <View ai="flex-start" jc="flex-start">
         <DropdownMenu>
           <DropdownMenu.Trigger>
             <Button
-              square
+              $gtSm={{ square: true }}
               alignSelf="center"
               theme={cancelMutation.isPending ? 'red' : undefined}
               loading={cancelMutation.isPending}
             >
               <Button.Icon icon={Lucide.MoreVertical} />
+              <Button.Text $gtSm={{ d: 'none' }}>Actions</Button.Text>
             </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>

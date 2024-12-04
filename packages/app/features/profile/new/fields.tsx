@@ -179,7 +179,7 @@ export const ProfileShortBioField = ({
   const length = shortBio?.trim().length ?? 0
   return (
     <Card theme={error ? 'red' : undefined}>
-      <Card.Label>Job Title / Mini Bio</Card.Label>
+      <Card.Label>Mini Bio / Job Title</Card.Label>
       <Input
         onChangeText={onChange}
         value={shortBio ?? ''}
@@ -271,7 +271,7 @@ export const ProfilePricePerHourField = ({
   onChange: (pricePerHourCents: number | null) => void
   error: boolean
 }) => {
-  let num = pricePerHourCents != null ? Number(pricePerHourCents) : null
+  let num = pricePerHourCents != null ? Number(pricePerHourCents) / 100 : null
   let str = num != null && !isNaN(num) ? Math.round(num).toString() : ''
   return (
     <Card theme={error ? 'red' : undefined}>
@@ -280,7 +280,7 @@ export const ProfilePricePerHourField = ({
         <Card.Description>$</Card.Description>
         <Input
           onChange={(e) => e.preventDefault()}
-          onChangeText={(next) => (next === '' ? onChange(null) : onChange(parseFloat(next)))}
+          onChangeText={(next) => (next === '' ? onChange(null) : onChange(parseFloat(next) * 100))}
           value={str}
           placeholder="200"
           keyboardType="numeric"

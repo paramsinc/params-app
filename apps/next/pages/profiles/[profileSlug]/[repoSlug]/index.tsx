@@ -20,10 +20,14 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   await Promise.all([
     ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
     ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
-    ssgApi.repo.bySlug.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
+    ssgApi.repo.bySlug_public.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.repo.paramsJson.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.repo.tree.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.repo.readme.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
+    ssgApi.repo.bookableProfiles_public.prefetch({
+      profile_slug: profileSlug,
+      repo_slug: repoSlug,
+    }),
   ])
 
   const trpcState = ssgApi.dehydrate()

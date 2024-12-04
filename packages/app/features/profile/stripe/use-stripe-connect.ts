@@ -25,6 +25,8 @@ export const useStripeConnectForProfile = (props: { profileSlug: string }) => {
         overlays: 'dialog',
         variables: {
           colorPrimary: '#635BFF',
+          fontFamily:
+            'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", sans-serif',
         },
       },
     })

@@ -1,0 +1,2 @@
+ALTER TABLE "google_calendar_integrations" DROP CONSTRAINT "google_calendar_integrations_google_user_id_unique";--> statement-breakpoint
+ALTER TABLE "google_calendar_integrations" DROP CONSTRAINT "google_calendar_integrations_email_unique";

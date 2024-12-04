@@ -20,6 +20,7 @@ import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 import * as googleCalendar from 'app/vendor/google/google-calendar'
 import { githubOauth } from 'app/vendor/github/github-oauth'
 import { env } from 'app/env'
+import { sendEmailHTML } from 'app/notifications/email/send'
 
 const [firstCdn, ...restCdns] = keys(cdn)
 
@@ -128,6 +129,7 @@ const profileInsert = inserts.profiles
     image_vendor: true,
     image_vendor_id: true,
     short_bio: true,
+    timezone: true,
   })
   .merge(
     z.object({
@@ -152,103 +154,139 @@ const profile = {
       return { slug, isAvailable: !existingProfileBySlug }
     }),
   createProfile: authedProcedure
-    .input(profileInsert)
-    .mutation(async ({ input: { disableCreateMember, pricePerHourCents, ...input }, ctx }) => {
-      const { profile, member } = await db.transaction(async (tx) => {
-        const existingProfileBySlug = await tx.query.profiles
-          .findFirst({
-            where: (profiles, { eq }) => eq(profiles.slug, input.slug),
+    .input(profileInsert.merge(z.object({ is_personal_profile: z.boolean().optional() })))
+    .mutation(
+      async ({
+        input: { disableCreateMember, pricePerHourCents, is_personal_profile = false, ...input },
+        ctx,
+      }) => {
+        const { profile, member } = await db.transaction(async (tx) => {
+          const existingProfileBySlug = await tx.query.profiles
+            .findFirst({
+              where: (profiles, { eq }) => eq(profiles.slug, input.slug),
+            })
+            .execute()
+
+          if (existingProfileBySlug) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
+            })
+          }
+
+          const me = await tx.query.users.findFirst({
+            where: (users, { eq }) => eq(users.id, ctx.auth.userId),
           })
-          .execute()
 
-        if (existingProfileBySlug) {
-          throw new TRPCError({
-            code: 'CONFLICT',
-            message: `A profile with slug "${input.slug}" already exists. Please try editing the slug and resubmitting.`,
-          })
-        }
+          if (!me) {
+            throw new TRPCError({
+              code: 'UNAUTHORIZED',
+              message: `Please complete creating your account.`,
+            })
+          }
 
-        const me = await tx.query.users.findFirst({
-          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-        })
-
-        if (!me) {
-          throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: `Please complete creating your account.`,
-          })
-        }
-
-        const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
-          first_name: me.first_name,
-          last_name: me.last_name,
-          email: me.email,
-          user_id: me.id,
-        }
-
-        const stripe_connect_account_id = await stripe.accounts
-          .create({
-            settings: {
-              payouts: {
-                schedule: {
-                  interval: 'manual',
+          if (is_personal_profile) {
+            const personalProfile = await tx.query.profiles
+              .findFirst({
+                where: (profiles, { eq }) => eq(profiles.personal_profile_user_id, ctx.auth.userId),
+                columns: {
+                  slug: true,
                 },
-              },
-            },
-          })
-          .then((account) => account.id)
-
-        const [profile] = await tx
-          .insert(schema.profiles)
-          .values({
-            ...input,
-            stripe_connect_account_id,
-          })
-          .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
-          .execute()
-
-        if (!profile) {
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: `Couldn't create profile.`,
-          })
-        }
-
-        // add this user as a member
-        const [member] = disableCreateMember
-          ? []
-          : await tx
-              .insert(schema.profileMembers)
-              .values({
-                ...memberInsert,
-                profile_id: profile.id,
               })
-              .returning(pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal))
               .execute()
 
-        if (pricePerHourCents) {
-          const minutesPerHour = 60
-          const minuteCalls = [30, 60]
+            if (personalProfile) {
+              throw new TRPCError({
+                code: 'CONFLICT',
+                message: `You already have a personal profile (@${personalProfile.slug}). Did you mean to create a team profile?`,
+              })
+            }
+          }
 
-          await tx.insert(schema.profileOnetimePlans).values(
-            minuteCalls.map((duration_mins) => {
-              const hours = duration_mins / minutesPerHour
-              const price = pricePerHourCents * hours
-              return {
-                currency: 'usd' as const,
-                duration_mins,
-                price,
-                profile_id: profile.id,
-              }
+          const memberInsert: Omit<Zod.infer<typeof inserts.profileMembers>, 'profile_id'> = {
+            first_name: me.first_name,
+            last_name: me.last_name,
+            email: me.email,
+            user_id: me.id,
+          }
+
+          const stripe_connect_account_id = await stripe.accounts
+            .create({
+              settings: {
+                payouts: {
+                  schedule: {
+                    interval: 'manual',
+                  },
+                },
+              },
             })
-          )
-        }
+            .then((account) => account.id)
+
+          const [profile] = await tx
+            .insert(schema.profiles)
+            .values({
+              availability_ranges: (
+                ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const
+              ).map((day_of_week) => ({
+                day_of_week,
+                start_time: { hour: 9, minute: 0 },
+                end_time: { hour: 17, minute: 0 },
+              })),
+              timezone: 'America/New_York',
+
+              ...input,
+              created_by_user_id: ctx.auth.userId,
+              stripe_connect_account_id,
+              personal_profile_user_id: is_personal_profile ? ctx.auth.userId : null,
+            })
+            .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
+            .execute()
+
+          if (!profile) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `Couldn't create profile.`,
+            })
+          }
+
+          // add this user as a member
+          const [member] = disableCreateMember
+            ? []
+            : await tx
+                .insert(schema.profileMembers)
+                .values({
+                  ...memberInsert,
+                  profile_id: profile.id,
+                })
+                .returning(
+                  pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal)
+                )
+                .execute()
+
+          if (pricePerHourCents) {
+            const minutesPerHour = 60
+            const minuteCalls = [30, 60]
+
+            await tx.insert(schema.profileOnetimePlans).values(
+              minuteCalls.map((duration_mins) => {
+                const hours = duration_mins / minutesPerHour
+                const price = pricePerHourCents * hours
+                return {
+                  currency: 'usd' as const,
+                  duration_mins,
+                  price,
+                  profile_id: profile.id,
+                }
+              })
+            )
+          }
+
+          return { profile, member }
+        })
 
         return { profile, member }
-      })
-
-      return { profile, member }
-    }),
+      }
+    ),
   updateProfile: authedProcedure
     .input(
       z.object({
@@ -262,6 +300,7 @@ const profile = {
             image_vendor_id: true,
             image_vendor: true,
             short_bio: true,
+            timezone: true,
           })
           .merge(
             z.object({
@@ -284,6 +323,7 @@ const profile = {
             name,
             slug,
             availability_ranges,
+            timezone,
           },
         },
       }) => {
@@ -310,6 +350,7 @@ const profile = {
             name,
             slug,
             availability_ranges,
+            timezone,
           })
           .where(d.eq(schema.profiles.id, id))
           .returning(pick('profiles', publicSchema.profiles.ProfileInternal))
@@ -433,6 +474,7 @@ const profile = {
       .from(schema.profiles)
       .innerJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
       .where(d.eq(schema.profileMembers.user_id, ctx.auth.userId))
+      .orderBy(d.desc(schema.profiles.created_at))
       .execute()
 
     return profiles
@@ -549,6 +591,19 @@ const profileMember = {
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const myMembership = await db.query.profileMembers.findFirst({
+        where: (profileMembers, { eq, and }) =>
+          and(
+            eq(profileMembers.profile_id, input.profile_id),
+            eq(profileMembers.user_id, ctx.auth.userId)
+          ),
+      })
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not authorized to create a member for this profile.`,
+        })
+      }
       const existentUser = await db.query.users.findFirst({
         where: (users, { eq }) => {
           if (input.user_id) {
@@ -559,6 +614,10 @@ const profileMember = {
         },
       })
       input.user_id = existentUser?.id
+      if (existentUser) {
+        input.first_name = existentUser.first_name
+        input.last_name = existentUser.last_name
+      }
 
       const [profileMember] = await db
         .insert(schema.profileMembers)
@@ -573,7 +632,54 @@ const profileMember = {
         })
       }
 
-      // TODO send an email to the new member
+      const [profile, me] = await Promise.all([
+        db.query.profiles.findFirst({
+          where: (profiles, { eq }) => eq(profiles.id, input.profile_id),
+          columns: { name: true, slug: true },
+        }),
+        db.query.users.findFirst({
+          where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+          columns: { first_name: true, last_name: true },
+        }),
+      ])
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      if (!me) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Please try signing in again (or refreshing).`,
+        })
+      }
+
+      if (existentUser) {
+        await sendEmailHTML({
+          to: [existentUser.email],
+          subject: `${me.first_name} added you to @${profile.slug} on ${env.APP_NAME}`,
+          html: [
+            `<p>Hi ${existentUser.first_name},</p>`,
+            `<p><strong>${me.first_name} ${me.last_name}</strong> added you to <a href="https://${env.APP_URL}/@${profile.slug}">@${profile.slug}</a> on <a href="https://${env.APP_URL}">${env.APP_NAME}</a></p>`,
+            `<p>You have been automatically added to the profile.</p>`,
+            `<p>To view & manage <strong>${profile.name}</strong>, click this URL: <a href="https://${env.APP_URL}/dashboard/profiles/${profile.slug}">${env.APP_URL}/dashboard/profiles/${profile.slug}</a></p>`,
+          ].join('\n'),
+        })
+      } else {
+        await sendEmailHTML({
+          to: [input.email],
+          subject: `${me.first_name} added you to @${profile.slug} on ${env.APP_NAME}`,
+          html: [
+            `<p>Hi ${input.first_name},</p>`,
+            `<p><strong>${me.first_name} ${me.last_name}</strong> added you to <a href="https://${env.APP_URL}/@${profile.slug}">@${profile.slug}</a> on <a href="https://${env.APP_URL}">${env.APP_NAME}</a>.</p>`,
+            `<p>Params lets you share your open source code and let people pay to book calls with you.</p>`,
+            `<p>To accept the invitation, you can sign up and view <strong>${profile.name}</strong> at <a href="https://${env.APP_URL}/dashboard/profiles">${env.APP_URL}/dashboard/profiles</a>.</p>`,
+          ].join('\n'),
+        })
+      }
 
       return profileMember
     }),
@@ -639,18 +745,42 @@ const profileMember = {
         })
       }
 
-      const [profileMember] = await db
-        .delete(schema.profileMembers)
-        .where(d.eq(schema.profileMembers.id, id))
-        .returning()
-        .execute()
-
-      if (!profileMember) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Profile member couldn't get deleted.`,
+      await db.transaction(async (tx) => {
+        const profile = await tx.query.profiles.findFirst({
+          where: (profiles, { eq }) => eq(profiles.id, id),
+          columns: {
+            personal_profile_user_id: true,
+            id: true,
+          },
         })
-      }
+        if (!profile) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Profile not found.`,
+          })
+        }
+        const [profileMember] = await tx
+          .delete(schema.profileMembers)
+          .where(d.eq(schema.profileMembers.id, id))
+          .returning()
+          .execute()
+        if (!profileMember) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Profile member couldn't get deleted.`,
+          })
+        }
+
+        if (profile?.personal_profile_user_id === profileMember.user_id) {
+          await tx
+            .update(schema.profiles)
+            .set({
+              personal_profile_user_id: null,
+            })
+            .where(d.eq(schema.profiles.id, profile.id))
+            .execute()
+        }
+      })
 
       return true
     }),
@@ -691,14 +821,22 @@ const profileMember = {
         })
       }
 
-      const profileMembers = await db.query.profileMembers
-        .findMany({
-          where: (profileMembers, { eq, and }) => and(eq(profileMembers.profile_id, profile.id)),
-          columns: publicSchema.profileMembers.ProfileMemberInternal,
+      const members = await db
+        .select({
+          user: pick('users', publicSchema.users.UserPublic),
+          ...pick('profileMembers', publicSchema.profileMembers.ProfileMemberInternal),
+          personal_profile: pick('profiles', { id: true, slug: true }),
         })
+        .from(schema.profileMembers)
+        .where(d.eq(schema.profileMembers.profile_id, profile.id))
+        .leftJoin(schema.users, d.eq(schema.profileMembers.user_id, schema.users.id))
+        .leftJoin(
+          schema.profiles,
+          d.eq(schema.profileMembers.user_id, schema.profiles.personal_profile_user_id)
+        )
         .execute()
 
-      const amIMember = profileMembers.find((member) => member.user_id === ctx.auth.userId)
+      const amIMember = members.find((member) => member.user_id === ctx.auth.userId)
 
       if (!amIMember) {
         throw new TRPCError({
@@ -706,6 +844,14 @@ const profileMember = {
           message: `You are not a member of this profile.`,
         })
       }
+
+      const profileMembers = members.map((member) => {
+        return {
+          ...member,
+          first_name: member.user?.first_name ?? member.first_name,
+          last_name: member.user?.last_name ?? member.last_name,
+        }
+      })
 
       return profileMembers
     }),
@@ -768,7 +914,7 @@ export async function repoBySlug({
 }
 
 const repository = router({
-  bySlug: publicProcedure
+  bySlug_public: publicProcedure
     .input(z.object({ repo_slug: z.string(), profile_slug: z.string() }))
     .query(async ({ input: { repo_slug, profile_slug } }) => {
       return repoBySlug({ repo_slug, profile_slug })
@@ -1310,6 +1456,110 @@ const repository = router({
       }
 
       return Buffer.from(readme.data.content, 'base64').toString('utf-8')
+    }),
+  bookableProfiles_public: publicProcedure
+    .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
+    .query(async ({ input: { profile_slug, repo_slug } }) => {
+      const profileSubQuery = db
+        .select({
+          profile_id: schema.profiles.id,
+        })
+        .from(schema.profiles)
+        .where(d.eq(schema.profiles.slug, profile_slug))
+        .as('profile_sub_query')
+
+      const cheapestPlanSubquery = db
+        .select({
+          profile_id: schema.profileOnetimePlans.profile_id,
+          price: d.min(schema.profileOnetimePlans.price),
+        })
+        .from(schema.profileOnetimePlans)
+        .groupBy(schema.profileOnetimePlans.profile_id) // Group by profile_id to get min price per profile
+        .as('cheapest_plan')
+
+      const [mainQuery, memberProfilesQuery] = await Promise.all([
+        db
+          .select({
+            profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+            // repo: pick('repositories', { ...publicSchema.repositories.RepositoryPublic }),
+            repoSettings: pick('repositories', {
+              allow_booking_for_main_profile: true,
+              allow_booking_for_member_personal_profiles: true,
+            }),
+          })
+          .from(schema.profiles)
+          .where(d.eq(schema.profiles.slug, profile_slug))
+          .innerJoin(
+            schema.repositories,
+            d.and(
+              d.eq(schema.repositories.profile_id, schema.profiles.id),
+              d.eq(schema.repositories.slug, repo_slug)
+            )
+          )
+          .limit(1)
+          .execute(),
+
+        // profileMembers for which there exists a profile.personal_profile_user_id matching the user_id
+        db
+          .selectDistinctOn([schema.profiles.id], {
+            profile: pick('profiles', publicSchema.profiles.ProfilePublic),
+            // cheapest_price: cheapestPlanSubquery,
+          })
+          .from(schema.profiles)
+          .innerJoin(
+            schema.profileMembers,
+            d.and(
+              d.isNotNull(schema.profileMembers.user_id),
+              d.eq(schema.profiles.personal_profile_user_id, schema.profileMembers.user_id)
+            )
+          )
+          .innerJoin(
+            profileSubQuery,
+            d.eq(schema.profileMembers.profile_id, profileSubQuery.profile_id)
+          )
+          .leftJoin(cheapestPlanSubquery, d.eq(schema.profiles.id, cheapestPlanSubquery.profile_id))
+          .execute(),
+      ])
+      const [first] = mainQuery
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `Profile not found.`,
+        })
+      }
+
+      const { profile, repoSettings } = first
+
+      let bookableProfiles: Array<
+        typeof profile & {
+          can_get_booked: boolean
+        }
+      > = [
+        {
+          ...profile,
+          can_get_booked: repoSettings.allow_booking_for_main_profile ?? true,
+        },
+      ]
+
+      const seenProfileIds = new Set<string>(bookableProfiles.map((p) => p.id))
+
+      console.log('[bookableProfiles]', memberProfilesQuery.length)
+
+      if (repoSettings.allow_booking_for_member_personal_profiles) {
+        for (const { profile } of memberProfilesQuery) {
+          if (seenProfileIds.has(profile.id)) {
+            continue
+          }
+          seenProfileIds.add(profile.id)
+          bookableProfiles.push({
+            ...profile,
+            can_get_booked: true,
+          })
+        }
+      }
+
+      return bookableProfiles
     }),
 })
 
@@ -1930,7 +2180,13 @@ const googleOauthRoutes = {
           }),
         })
         .from(schema.googleCalendarIntegrations)
-        .innerJoin(schema.profiles, d.eq(schema.profiles.slug, input.profile_slug))
+        .innerJoin(
+          schema.profiles,
+          d.and(
+            d.eq(schema.profiles.slug, input.profile_slug),
+            d.eq(schema.profiles.id, schema.googleCalendarIntegrations.profile_id)
+          )
+        )
         // ensure membership
         .where(
           d.exists(
@@ -2266,6 +2522,8 @@ export const appRouter = router({
             start_datetime: jsDate,
             duration_minutes: plan.duration_mins,
             timezone: input.timezone,
+            amount: plan.price,
+            currency: plan.currency,
           })
           .returning()
           .execute()
@@ -2348,6 +2606,9 @@ export const appRouter = router({
             profile_id: true,
             email: true,
           }),
+          organizationMember: pick('organizationMembers', {
+            email: true,
+          }),
         })
         .from(schema.offers)
         .where(d.eq(schema.offers.stripe_payment_intent_id, payment_intent_id))
@@ -2355,6 +2616,10 @@ export const appRouter = router({
         .innerJoin(
           schema.organizations,
           d.eq(schema.offers.organization_id, schema.organizations.id)
+        )
+        .leftJoin(
+          schema.organizationMembers,
+          d.eq(schema.organizations.id, schema.organizationMembers.organization_id)
         )
         .leftJoin(schema.profileMembers, d.eq(schema.profileMembers.profile_id, schema.profiles.id))
         .execute()
@@ -2388,7 +2653,9 @@ export const appRouter = router({
           next_action,
         },
         offer,
-        profileMemberEmails: results.map((result) => result.profileMember?.email).filter(Boolean),
+        organizationMemberEmails: results
+          .map((result) => result.organizationMember?.email)
+          .filter(Boolean),
       }
     }),
 
@@ -2492,7 +2759,7 @@ export const appRouter = router({
             )
           )
         )
-        .orderBy(d.desc(schema.bookings.created_at))
+        .orderBy(d.desc(schema.bookings.start_datetime))
 
       return bookings
     }),
@@ -2524,6 +2791,8 @@ export const appRouter = router({
               canceled_at: true,
               google_calendar_event_id: true,
               start_datetime: true,
+              stripe_payment_intent_id: true,
+              stripe_payout_id: true,
             }),
             profile_id: profileMembershipSubquery.profile_id,
             organization_id: organizationMembershipSubquery.organization_id,
@@ -2550,20 +2819,74 @@ export const appRouter = router({
         const bookingStart = DateTime.fromJSDate(booking.start_datetime)
 
         if (bookingStart < now) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Booking already started' })
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Booking already started.' })
+        }
+
+        await stripe.refunds.create(
+          {
+            payment_intent: booking.stripe_payment_intent_id,
+            metadata: {
+              booking_id: booking.id,
+            },
+          },
+          {
+            idempotencyKey: booking.stripe_payment_intent_id,
+          }
+        )
+
+        if (booking.google_calendar_event_id) {
+          await googleCalendar
+            .cancelCalendarEvent({
+              eventId: booking.google_calendar_event_id,
+            })
+            .catch((e) => console.error('[api][bookings][cancel][googleCalendar]', e))
         }
 
         const [updatedBooking] = await db
           .update(schema.bookings)
           .set({ canceled_at: new Date(), canceled_by_user_id: ctx.auth.userId })
           .where(d.eq(schema.bookings.id, input.id))
-          .returning()
-
-        if (booking.google_calendar_event_id) {
-          await googleCalendar.cancelCalendarEvent({
-            eventId: booking.google_calendar_event_id,
+          .returning({
+            canceled_at: schema.bookings.canceled_at,
+            start_datetime: schema.bookings.start_datetime,
+            timezone: schema.bookings.timezone,
           })
-        }
+
+        const all = await db
+          .select({
+            org_email: schema.organizationMembers.email,
+            profile_email: schema.profileMembers.email,
+          })
+          .from(schema.bookings)
+          .where(d.eq(schema.bookings.id, input.id))
+          .leftJoin(
+            schema.organizationMembers,
+            d.eq(schema.bookings.organization_id, schema.organizationMembers.organization_id)
+          )
+          .leftJoin(
+            schema.profileMembers,
+            d.eq(schema.bookings.profile_id, schema.profileMembers.profile_id)
+          )
+          .execute()
+
+        const emails = Array.from(
+          new Set(all.map((r) => r.org_email).concat(all.map((r) => r.profile_email)))
+        ).filter(Boolean)
+
+        const shortId = booking.id.slice(-6).toUpperCase()
+
+        await sendEmailHTML({
+          to: emails,
+          subject: `Booking #${shortId} canceled`,
+          html: [
+            `<p>Booking #${shortId} has been canceled.</p>`,
+            `<p>🗓️ <strike>${bookingStart.toLocaleString({ dateStyle: 'full' })}</strike></p>`,
+            `<p>🕒 <strike>${bookingStart.toLocaleString({
+              timeStyle: 'short',
+            })} (${bookingStart.toFormat('ZZZZ')})</strike></p>`,
+            `<p>A refund has been issued to the buyer. It will appear within 1-2 weeks on the original method of payment.</p>`,
+          ].join('\n'),
+        })
 
         return updatedBooking?.canceled_at != null
       }),
@@ -2863,6 +3186,19 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return getRepoFiles(input)
       }),
+  }),
+  email: router({
+    ping: publicProcedure.query(async () => {
+      if (process.env.NODE_ENV !== 'development') {
+        return 'pong'
+      }
+      const r = await sendEmailHTML({
+        to: 'fernando@params.com',
+        subject: 'Test email',
+        html: '<p>Test email</p>',
+      })
+      return r
+    }),
   }),
 })
 

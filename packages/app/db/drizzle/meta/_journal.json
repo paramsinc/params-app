@@ -239,6 +239,41 @@
       "when": 1733075772920,
       "tag": "0033_sloppy_venus",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1733242164177,
+      "tag": "0034_flippant_gertrude_yorkes",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1733331135597,
+      "tag": "0035_quick_brother_voodoo",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1733336143722,
+      "tag": "0036_unique_bloodstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1733339441751,
+      "tag": "0037_furry_supreme_intelligence",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1733341594338,
+      "tag": "0038_lyrical_santa_claus",
+      "breakpoints": true
     }
   ]
 }

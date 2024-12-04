@@ -1,7 +1,7 @@
 import { DateTime } from 'app/dates/date-time'
 import { Select } from 'app/db/client'
 import { PaymentIntentStatus } from 'app/db/enums'
-import { ButtonText } from 'app/ds/Button'
+import { ButtonIcon, ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Card } from 'app/ds/Form/layout'
@@ -42,7 +42,7 @@ export function OfferPaymentIntentPublicPage() {
     return <ErrorCard error={query.error} />
   }
 
-  const { paymentIntent, offer, profileMemberEmails } = query.data
+  const { paymentIntent, offer, organizationMemberEmails } = query.data
 
   const { title, theme } = dipslayPaymentIntentStatus[paymentIntent.status]
 
@@ -115,13 +115,24 @@ export function OfferPaymentIntentPublicPage() {
             <Card>
               <Card.Title>Next Steps</Card.Title>
               <Card.Description>
-                A calendar invite will be sent to {profileMemberEmails.join(', ')}.
+                A calendar invite will be sent to {organizationMemberEmails?.join(', ')}.
+              </Card.Description>
+
+              <Card.Description bold>
+                Make sure that you accept the invite and arrive on time to the call.
               </Card.Description>
             </Card>
 
-            <LinkButton href={`/@${offer.profile.slug}`} als="flex-start">
-              <ButtonText>Back to Profile</ButtonText>
-            </LinkButton>
+            <View gap="$2" row>
+              <LinkButton href={`/@${offer.profile.slug}`} als="flex-start">
+                <ButtonIcon icon={Lucide.ChevronLeft} />
+                <ButtonText>Back to Profile</ButtonText>
+              </LinkButton>
+              <LinkButton href="/dashboard/bookings">
+                <ButtonIcon icon={Lucide.Calendar} />
+                <ButtonText>View Bookings</ButtonText>
+              </LinkButton>
+            </View>
           </View>
         </Page.Content>
       </Page.Scroll>

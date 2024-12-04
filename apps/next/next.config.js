@@ -36,10 +36,11 @@ const plugins = [
       'ProgressBar',
       'Picker',
       'CheckBox',
-      'Touchable',
       'FlatList',
-      'Animated',
-      // 'Modal',
+
+      // these are used by @expo/react-native-action-sheet...ugh
+      // 'Touchable',
+      // 'Animated',
     ],
     useTamaguiSVG: false,
   }),
@@ -116,6 +117,7 @@ let config = {
     'expo-auth-session',
     'expo-crypto',
     'react-syntax-highlighter',
+    '@expo/react-native-action-sheet',
   ],
   experimental: {
     // https://blog.arcjet.com/structured-logging-in-json-for-next-js/

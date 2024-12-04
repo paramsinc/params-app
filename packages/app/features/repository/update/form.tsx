@@ -1,3 +1,4 @@
+import useAreYouSure from 'app/ds/AreYouSure/use-are-you-sure'
 import { Button, ButtonIcon, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Card } from 'app/ds/Form/layout'
@@ -68,6 +69,8 @@ export function UpdateRepositoryForm({
       gcTime: 0,
     }
   )
+
+  const areYouSure = useAreYouSure()
 
   if (!repoQuery.data) return null
 
@@ -223,7 +226,12 @@ export function UpdateRepositoryForm({
             >
               <Button
                 loading={deleteMutation.isPending}
-                onPress={() => deleteMutation.mutate({ repo_id: repoId })}
+                onPress={() =>
+                  areYouSure(() => deleteMutation.mutate({ repo_id: repoId }), {
+                    title: 'Are you sure you want to delete this repository?',
+                    message: `This is permanent! It will break any existing links to this repository.`,
+                  })
+                }
                 theme="red"
               >
                 <ButtonText>Delete Repository</ButtonText>

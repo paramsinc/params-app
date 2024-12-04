@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@expo/react-native-action-sheet": "^4.1.0",
     "@shopify/flash-list": "^1.7.1",
     "app": "*",
     "burnt": "0.12.2",

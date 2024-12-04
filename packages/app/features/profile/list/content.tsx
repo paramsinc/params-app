@@ -12,10 +12,17 @@ import {
   NewProfileModalContent,
   NewProfileModalTrigger,
 } from 'app/features/profile/new/modal'
+import {
+  ConnectAccountModal,
+  ConnectAccountModalContent,
+  ConnectAccountModalTrigger,
+} from 'app/features/profile/stripe/modal'
+import { useRouter } from 'app/navigation/use-router'
 import { api } from 'app/trpc/client'
 
 export function ProfilesListContent() {
   const myProfiles = api.myProfiles.useQuery()
+  const router = useRouter()
 
   return (
     <Page.Root>
@@ -33,36 +40,86 @@ export function ProfilesListContent() {
                       <ButtonText>New</ButtonText>
                     </Button>
                   </NewProfileModalTrigger>
-                  <NewProfileModalContent />
+                  <NewProfileModalContent
+                    onDidCreateProfile={({ profile }) => {
+                      router.push(`/dashboard/profiles/${profile.slug}`)
+                    }}
+                  />
                 </NewProfileModal>
               </Card>
 
               <View gap="$1">
-                {myProfiles.data?.map((profile) => (
-                  <Card key={profile.id} row gap="$3" ai="center">
-                    <View grow jc="center">
-                      <View gap="$2">
-                        <Link href={`/@${profile.slug}`}>
-                          <Card.Title fontFamily="$mono">@{profile.slug}</Card.Title>
-                        </Link>
-                        <Card.Description>
-                          {profile.personal_profile_user_id != null
-                            ? 'Personal Profile'
-                            : 'Team Profile'}
-                        </Card.Description>
-                      </View>
-                    </View>
+                {myProfiles.data?.map((profile) => {
+                  const isMissingAvailability = !profile.availability_ranges?.length
+                  const isMissingStripePayouts = profile.has_stripe_payouts_enabled !== true
+                  return (
+                    <Card key={profile.id} gap="$3">
+                      <View row ai="center" gap="$3">
+                        <View grow jc="center">
+                          <View gap="$2">
+                            <Link href={`/@${profile.slug}`}>
+                              <Card.Title fontFamily="$mono">@{profile.slug}</Card.Title>
+                            </Link>
+                            <Card.Description>
+                              {profile.short_bio ?? '(Missing mini bio)'}
+                            </Card.Description>
+                            <Card.Description color="$color11">
+                              {profile.personal_profile_user_id != null
+                                ? 'Personal Profile'
+                                : 'Team Profile'}
+                            </Card.Description>
+                          </View>
+                        </View>
 
-                    <View row gap="$1">
-                      <LinkButton href={`/@${profile.slug}`}>
-                        <ButtonText>View</ButtonText>
-                      </LinkButton>
-                      <LinkButton href={`/dashboard/profiles/${profile.slug}`}>
-                        <ButtonText>Edit</ButtonText>
-                      </LinkButton>
-                    </View>
-                  </Card>
-                ))}
+                        <View row gap="$1">
+                          <LinkButton href={`/@${profile.slug}`}>
+                            <ButtonText>View</ButtonText>
+                          </LinkButton>
+                          <LinkButton href={`/dashboard/profiles/${profile.slug}`}>
+                            <ButtonText>Manage</ButtonText>
+                          </LinkButton>
+                        </View>
+                      </View>
+
+                      {isMissingStripePayouts && (
+                        <Card theme="red">
+                          <Card.Title>Enable Payouts</Card.Title>
+                          <Card.Description color="$color11">
+                            Payouts are not enabled. Please complete your Stripe onboarding to start
+                            accepting payments.
+                          </Card.Description>
+
+                          <ConnectAccountModal>
+                            <ConnectAccountModalTrigger>
+                              <Button inverse als="flex-start">
+                                <ButtonText>Complete Stripe Onboarding</ButtonText>
+                              </Button>
+                            </ConnectAccountModalTrigger>
+                            <ConnectAccountModalContent profileSlug={profile.slug} />
+                          </ConnectAccountModal>
+                        </Card>
+                      )}
+
+                      {isMissingAvailability && (
+                        <Card theme="yellow">
+                          <Card.Title>Missing Availability</Card.Title>
+                          <Card.Description color="$color11">
+                            Please set your availability to start receiving bookings. Currently, you
+                            have no open time slots.
+                          </Card.Description>
+
+                          <LinkButton
+                            als="flex-start"
+                            inverse
+                            href={`/dashboard/availability?profileId=${profile.id}`}
+                          >
+                            <ButtonText>Set Availability</ButtonText>
+                          </LinkButton>
+                        </Card>
+                      )}
+                    </Card>
+                  )
+                })}
               </View>
             </>
           ) : (

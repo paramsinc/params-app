@@ -51,6 +51,7 @@ export const RepositoryDescriptionField = ({
         value={description}
         placeholder="Describe your project in 1-2 sentences."
         ref={inputRef}
+        styled
       />
       <Card.Description>
         Example: A scalable recommendation engine built with TensorFlow, featuring collaborative

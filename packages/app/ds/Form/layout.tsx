@@ -7,7 +7,7 @@ import { withStaticProperties } from 'app/ds/withStaticProperties'
 
 const CardFrame = styled(View, {
   p: '$3',
-  bw: 2,
+  bw: 1,
   boc: '$borderColor',
   gap: '$3',
   br: '$3',
@@ -36,7 +36,7 @@ export const Card = withStaticProperties(
     return (
       <CardFrame ov="hidden" {...props}>
         <Gradient
-          gradient={(f) => `linear-gradient(${f('color3')} 0%, ${f('color1')} 100%)`}
+          gradient={(f) => `linear-gradient(180deg, ${f('color3')} 0%, ${f('color1')} 100%)`}
           stretch
           zi={-1}
         />

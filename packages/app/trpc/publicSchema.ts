@@ -37,6 +37,7 @@ export const publicSchema = {
       availability_ranges: true,
       timezone: true,
       personal_profile_user_id: true,
+      has_stripe_payouts_enabled: true,
     },
     ProfilePublic: {
       id: true,

@@ -81,6 +81,11 @@ export function RepositoryListPage() {
                     </Card>
                   )
                 })}
+                {repos.data.length === 0 && (
+                  <Card>
+                    <Card.Title>Time to import your first repository!</Card.Title>
+                  </Card>
+                )}
               </View>
             </>
           ) : (

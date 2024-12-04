@@ -63,6 +63,12 @@ export const profiles = pgTable(
         onDelete: 'set null',
       }),
 
+    created_by_user_id: text('created_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+
+    has_stripe_payouts_enabled: boolean('has_stripe_payouts_enabled').default(false),
+
     ...timestampMixin(),
   },
   (table) => ({
@@ -132,17 +138,14 @@ export const profileMembers = pgTable(
     ...timestampMixin(),
   },
   (table) => ({
+    index_profile_id_and_user_id: index('index_profile_id_and_user_id').on(
+      table.profile_id,
+      table.user_id
+    ),
     uniqueUserIdForProfile: unique().on(table.profile_id, table.user_id),
+    uniqueEmailForProfile: unique().on(table.profile_id, table.email),
   })
 )
-
-export const calcomUsers = pgTable('calcom_users', {
-  id: integer('id').primaryKey(),
-  access_token: text('access_token').notNull(),
-  refresh_token: text('refresh_token').notNull(),
-  email: text('email').unique().notNull(),
-  ...timestampMixin(),
-})
 
 export const offers = pgTable('offers', {
   id: text('id')
@@ -166,6 +169,8 @@ export const offers = pgTable('offers', {
   start_datetime: timestamp('start_datetime', { mode: 'date', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),
   timezone: text('timezone').notNull(),
+  amount: integer('amount'),
+  currency: text('currency', { enum: ['usd'] }),
   ...timestampMixin(),
 })
 
@@ -199,6 +204,8 @@ export const bookings = pgTable('bookings', {
   canceled_by_user_id: text('canceled_by_user_id').references(() => users.id, {
     onDelete: 'set null',
   }),
+  amount: integer('amount'),
+  currency: text('currency', { enum: ['usd'] }),
 
   start_datetime: timestamp('start_datetime', { mode: 'date', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),
@@ -254,9 +261,9 @@ export const googleCalendarIntegrations = pgTable(
     calendars_for_avail_blocking: jsonb('calendars_for_avail_blocking')
       .$type<Zod.infer<typeof googleCalendarsToBlockForAvailsShape>>()
       .notNull(),
-    google_user_id: text('google_user_id').unique().notNull(),
+    google_user_id: text('google_user_id').notNull(),
     picture_url: text('picture_url'),
-    email: text('email').unique().notNull(),
+    email: text('email').notNull(),
     ...timestampMixin(),
   },
   (table) => ({

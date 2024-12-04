@@ -52,7 +52,12 @@ import { SignInWithGoogle } from 'app/features/oauth/google/sign-in-with-google'
 import { Link } from 'app/ds/Link'
 import { Lucide } from 'app/ds/Lucide'
 import { ProfileMembers } from 'app/features/profile/detail/ProfileMembers'
-
+import {
+  CreateProfileMemberModalContent,
+  CreateProfileMemberModalTrigger,
+} from 'app/features/profile/member/new/modal'
+import { CreateProfileMemberModal } from 'app/features/profile/member/new/modal'
+import { ProfileGoogleCalendarIntegrations } from './calendar-integrations'
 const { useParams } = createParam<{ profileSlug: string }>()
 
 export function ProfileDetailPage() {
@@ -113,6 +118,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
                 contentFit="cover"
                 fill
                 sizes="(min-width: 1200px) 80vw, 100vw"
+                alt={profile.name}
               />
             ) : null}
           </View>
@@ -150,6 +156,43 @@ function Content({ profileSlug }: { profileSlug: string }) {
       </View>
 
       <View h={2} bg="$borderColor" />
+      <View
+        gap="$3"
+        theme={
+          connectAccountQuery.data?.payouts_enabled === false
+            ? 'red'
+            : connectAccountQuery.data?.payouts_enabled === true
+            ? 'green'
+            : undefined
+        }
+      >
+        <View row ai="center" jbtwn>
+          <Text bold>Payouts</Text>
+
+          <ConnectAccountModal>
+            <ConnectAccountModalTrigger>
+              <Button
+                themeInverse={connectAccountQuery.data?.payouts_enabled === false}
+                loading={connectAccountQuery.isLoading}
+              >
+                <ButtonIcon icon={Lucide.Settings} />
+                <ButtonText>Configure</ButtonText>
+              </Button>
+            </ConnectAccountModalTrigger>
+            <ConnectAccountModalContent profileSlug={profileSlug} />
+          </ConnectAccountModal>
+        </View>
+
+        {connectAccountQuery.data?.payouts_enabled === false ? (
+          <Text color="$color11">
+            You cannot receive payouts. Please complete your payment onboarding.
+          </Text>
+        ) : connectAccountQuery.data?.payouts_enabled === true ? (
+          <Text color="$color11">Payouts configured successfully.</Text>
+        ) : null}
+      </View>
+
+      <View h={2} bg="$borderColor" />
       <View gap="$3">
         <View row ai="center" jbtwn>
           <Text bold>Repositories</Text>
@@ -157,7 +200,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <NewRepositoryModal>
             <NewRepositoryModalTrigger>
               <Button>
-                <ButtonText>Add Repository</ButtonText>
+                <ButtonIcon icon={Lucide.Plus} />
+                <ButtonText>Add Repo</ButtonText>
               </Button>
             </NewRepositoryModalTrigger>
 
@@ -201,46 +245,21 @@ function Content({ profileSlug }: { profileSlug: string }) {
       <View gap="$3">
         <View row ai="center" jbtwn>
           <Text bold>Members</Text>
+
+          <CreateProfileMemberModal>
+            <CreateProfileMemberModalTrigger>
+              <Button>
+                <ButtonIcon icon={Lucide.UserPlus} />
+                <ButtonText>Add Member</ButtonText>
+              </Button>
+            </CreateProfileMemberModalTrigger>
+            <CreateProfileMemberModalContent profileId={profile.id} />
+          </CreateProfileMemberModal>
         </View>
 
         <ProfileMembers profileSlug={profileSlug} />
       </View>
 
-      <View h={2} bg="$borderColor" />
-      <View
-        gap="$3"
-        theme={
-          connectAccountQuery.data?.payouts_enabled === false
-            ? 'red'
-            : connectAccountQuery.data?.payouts_enabled === true
-            ? 'green'
-            : undefined
-        }
-      >
-        <View row ai="center" jbtwn>
-          <Text bold>Payouts</Text>
-
-          <ConnectAccountModal>
-            <ConnectAccountModalTrigger>
-              <Button
-                themeInverse={connectAccountQuery.data?.payouts_enabled === false}
-                loading={connectAccountQuery.isLoading}
-              >
-                <ButtonText>Configure</ButtonText>
-              </Button>
-            </ConnectAccountModalTrigger>
-            <ConnectAccountModalContent profileSlug={profileSlug} />
-          </ConnectAccountModal>
-        </View>
-
-        {connectAccountQuery.data?.payouts_enabled === false ? (
-          <Text color="$color11">
-            You cannot receive payouts. Please complete your payment onboarding.
-          </Text>
-        ) : connectAccountQuery.data?.payouts_enabled === true ? (
-          <Text color="$color11">Payouts configured successfully.</Text>
-        ) : null}
-      </View>
       <View h={2} bg="$borderColor" />
       <View row ai="center" jbtwn>
         <Text bold>Plans</Text>
@@ -262,77 +281,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <ProfileAvailsForm.Submit />
         </View>
         <ProfileAvailsForm />
-        <Card>
-          <Card.Title>Sync Google Calendar</Card.Title>
-          <Card.Description>
-            Block off your availability based on your Google Calendar events.
-          </Card.Description>
-          <Card>
-            {calendarIntegrations.data?.length === 0 && (
-              <Text>
-                You don't have any Google Calendar integrations. Click below to connect your Google
-                Calendar.
-              </Text>
-            )}
-
-            {calendarIntegrations.data?.map((integration) => {
-              return (
-                <View key={integration.google_user_id} row>
-                  <View grow gap="$2">
-                    <Text>{integration.email}</Text>
-
-                    <View row gap="$1" flexWrap="wrap">
-                      {integration.calendars?.map((calendar) => {
-                        if (!calendar.id) {
-                          return null
-                        }
-                        const isSelected = integration.calendars_for_avail_blocking.includes(
-                          calendar.id
-                        )
-                        return (
-                          <Button
-                            br="$rounded"
-                            key={calendar.id}
-                            theme={isSelected ? 'green' : 'red'}
-                          >
-                            <ButtonText>{calendar.summary}</ButtonText>
-                          </Button>
-                        )
-                      })}
-                    </View>
-                  </View>
-                  <Button
-                    theme="red"
-                    onPress={() => {
-                      deleteGoogleIntegration.mutate({
-                        google_user_id: integration.google_user_id,
-                        profile_id: profile.id,
-                      })
-                    }}
-                    square
-                    loading={
-                      deleteGoogleIntegration.isPending &&
-                      deleteGoogleIntegration.variables.google_user_id ===
-                        integration.google_user_id
-                    }
-                  >
-                    <ButtonIcon icon={Lucide.Trash} />
-                  </Button>
-                </View>
-              )
-            })}
-          </Card>
-
-          <SignInWithGoogle profileSlug={profileSlug}>
-            <Button theme="blue" loading={calendarIntegrations.isPending} als="flex-start">
-              <ButtonText>Sign in with Google</ButtonText>
-            </Button>
-          </SignInWithGoogle>
-        </Card>
+        <ProfileGoogleCalendarIntegrations profileSlug={profileSlug} />
       </ProfileAvailsForm.Provider>
-      {/* <View h={2} bg="$borderColor" />
-      <Text>Slots</Text>
-      <AllPlanSlots profileSlug={profileSlug} /> */}
     </View>
   )
 }

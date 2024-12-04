@@ -85,17 +85,22 @@ export const Switch = ({
         // haptic?.selectionAsync()
         onCheckedChange(!checked)
       }}
+      tag="button"
+      aria-checked={checked}
+      role="switch"
       height={height}
     >
       <MotiView
         animate={{ translateX: checked ? xChecked : padding }}
-        transition={{
-          // decently quick spring meant for a switch toggle
-          type: 'spring',
-          damping: 10,
-          stiffness: 100,
-          mass: 0.5,
-        }}
+        transition={
+          {
+            // decently quick spring meant for a switch toggle
+            type: 'spring',
+            damping: 10,
+            stiffness: 100,
+            mass: 0.5,
+          } as any
+        }
       >
         <Thumb checked={checked} animation="quick" />
       </MotiView>

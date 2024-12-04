@@ -28,6 +28,16 @@ import { ProfileMembers } from 'app/features/profile/detail/ProfileMembers'
 import { Badge } from 'app/ds/Badge'
 import { env } from 'app/env'
 import { Switch } from 'app/ds/Switch'
+import {
+  RepoAllowBookingForMainProfileField,
+  RepoAllowBookingForMemberPersonalProfilesField,
+} from 'app/features/repository/new/fields/allow-booking'
+import { ProfilePicker } from 'app/features/profile/picker'
+import {
+  CreateProfileMemberModal,
+  CreateProfileMemberModalContent,
+  CreateProfileMemberModalTrigger,
+} from 'app/features/profile/member/new/modal'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -298,13 +308,18 @@ function ParamsJson() {
           language={'json'}
           content={JSON.stringify(
             {
+              $schema: 'https://params.com/params.json',
               docs: {
                 main: 'README.md',
                 sidebar: {
                   Introduction: 'README.md',
                   Installation: 'installation.md',
                 },
+                youtube: {
+                  video_id: '0lnbdRweJtA',
+                },
               },
+              notebook_url: '',
             } satisfies Zod.infer<typeof paramsJsonShape>,
             null,
             2
@@ -314,6 +329,12 @@ function ParamsJson() {
           The <Text fontFamily="$mono">docs.main</Text> field should point to your readme file. For
           any other markdown files you want to include in your docs, place them in the{' '}
           <Text fontFamily="$mono">docs.sidebar</Text>.
+        </Card.Description>
+        <Card.Description>
+          The Google Colab <Text fontFamily="$mono">notebook_url</Text> is optional.
+        </Card.Description>
+        <Card.Description>
+          The <Text fontFamily="$mono">docs.youtube</Text> field is optional as well.
         </Card.Description>
         <Card.Description>
           After you add the <Text fontFamily="$mono">params.json</Text> file and push it to your
@@ -453,7 +474,19 @@ function ProfileField() {
       {profile && (
         <>
           <View gap="$3" display={shouldShowMembers ? 'flex' : 'none'}>
-            <Text>Profile Members</Text>
+            <View row="wrap" ai="center" gap="$2" jbtwn>
+              <Text>Profile Members</Text>
+
+              <CreateProfileMemberModal>
+                <CreateProfileMemberModalTrigger>
+                  <Button>
+                    <Button.Text>Add Member</Button.Text>
+                  </Button>
+                </CreateProfileMemberModalTrigger>
+
+                <CreateProfileMemberModalContent profileId={profile.id} />
+              </CreateProfileMemberModal>
+            </View>
             <ProfileMembers profileSlug={profile.slug} />
           </View>
         </>
@@ -486,6 +519,7 @@ function Submit() {
       toast({
         preset: 'done',
         title: 'Repository added!',
+        message: 'Redirecting...',
       })
       router.push(`/@${profile.slug}/${repo.slug}`)
     },
@@ -503,7 +537,9 @@ function Submit() {
     <Card>
       <Number>{6}</Number>
       <Card.Title>Save</Card.Title>
-      <Card.Description>Your repository is ready to be added to Params.</Card.Description>
+      <Card.Description>
+        Your repository is ready to be added to Params once the params.json is verified.
+      </Card.Description>
 
       <ErrorCard error={mutation.error} />
       <ErrorCard error={myProfiles.error} />
@@ -522,82 +558,33 @@ function Submit() {
             als="flex-start"
             onPress={handleSubmit(
               async ({
-                input: { github_repo_owner, github_repo_name, path_to_code, profile_id },
-              }) =>
+                input: {
+                  github_repo_owner,
+                  github_repo_name,
+                  path_to_code,
+                  allow_booking_for_main_profile,
+                  allow_booking_for_member_personal_profiles,
+                },
+              }) => {
+                if (!profile_id) {
+                  return
+                }
                 await mutation.mutateAsync({
                   github_repo_owner,
                   github_repo_name,
                   path_to_code,
-                  profile_id: profile_id!,
+                  profile_id,
+                  allow_booking_for_main_profile,
+                  allow_booking_for_member_personal_profiles,
                 })
+              }
             )}
           >
-            <Button.Text>Save</Button.Text>
+            <Button.Text>Save Repo</Button.Text>
           </Button>
         )}
       </Form.Submit>
     </Card>
-  )
-}
-
-function ProfilePicker({
-  profileId,
-  onChangeProfileId,
-  children,
-}: {
-  profileId: string | null
-  onChangeProfileId: (profileId: string) => void
-  children: React.ReactElement
-}) {
-  const myProfiles = api.myProfiles.useQuery()
-
-  const [isCreatingProfile, setIsCreatingProfile] = useState(false)
-
-  return (
-    <DropdownMenu>
-      <DropdownMenu.Trigger>{children}</DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Label>Select a profile</DropdownMenu.Label>
-        {(myProfiles.data?.length ?? 0) > 0 && (
-          <>
-            <DropdownMenu.Separator />
-            <DropdownMenu.Group>
-              {myProfiles.data?.map((profile) => {
-                const loader = profile.image_vendor ? imageLoader[profile.image_vendor] : undefined
-                return (
-                  <DropdownMenu.CheckboxItem
-                    key={profile.id}
-                    value={profile.id === profileId}
-                    onValueChange={(value) => onChangeProfileId(profile.id)}
-                  >
-                    <DropdownMenu.ItemTitle>{`@${profile.slug}`}</DropdownMenu.ItemTitle>
-                    {/* {loader && !!profile.image_vendor_id && (
-                  <DropdownMenu.ItemImage
-                    source={loader({ src: profile.image_vendor_id, width: 100 })}
-                  />
-                )} */}
-                  </DropdownMenu.CheckboxItem>
-                )
-              })}
-            </DropdownMenu.Group>
-          </>
-        )}
-        <DropdownMenu.Separator />
-        <DropdownMenu.Item key="create-new-profile" onSelect={() => setIsCreatingProfile(true)}>
-          <DropdownMenu.ItemIcon icon={Lucide.Plus} />
-          <DropdownMenu.ItemTitle>Create new profile</DropdownMenu.ItemTitle>
-        </DropdownMenu.Item>
-      </DropdownMenu.Content>
-
-      <NewProfileModal open={isCreatingProfile} onOpenChange={setIsCreatingProfile}>
-        <NewProfileModalContent
-          onDidCreateProfile={({ profile }) => {
-            onChangeProfileId(profile.id)
-            setIsCreatingProfile(false)
-          }}
-        />
-      </NewProfileModal>
-    </DropdownMenu>
   )
 }
 
@@ -611,7 +598,7 @@ function useProfileMembers() {
 }
 
 function WhoCanGetBooked() {
-  const { profile_id, setProfileId, myProfiles } = useProfileId()
+  const { profile_id, myProfiles } = useProfileId()
 
   const profile = myProfiles?.find((profile) => profile.id === profile_id)
 
@@ -631,64 +618,18 @@ function WhoCanGetBooked() {
 
   return (
     <>
-      <Card row gap="$3">
-        <View flex={1} gap="$3">
-          <Card.Title>Enable bookings for main profile (recommended)</Card.Title>
-          <Card.Description>
-            When enabled, a button will appear on your repository that lets people book a call with{' '}
-            <Card.Description bold textDecorationLine="underline" textDecorationColor="$color12">
-              @{profile.slug}
-            </Card.Description>
-            .
-          </Card.Description>
-        </View>
-        <Switch
-          checked={allowBookingForMainProfile.field.value ?? false}
-          onCheckedChange={allowBookingForMainProfile.field.onChange}
-        />
-      </Card>
+      <RepoAllowBookingForMainProfileField
+        profileSlug={profile.slug}
+        value={allowBookingForMainProfile.field.value ?? false}
+        onChange={allowBookingForMainProfile.field.onChange}
+      />
 
       {profile.personal_profile_user_id == null && (
-        <Card row gap="$3">
-          <View flex={1} gap="$3">
-            <Card.Title>Allow bookings for individual team members</Card.Title>
-            <Card.Description>
-              When enabled, a button will appear on your repository that lets people book a call
-              with any of the individual team members of{' '}
-              <Card.Description bold textDecorationLine="underline" textDecorationColor="$color12">
-                @{profile.slug}
-              </Card.Description>
-              . This is recommended for team profiles with multiple members.
-            </Card.Description>
-
-            {allowBookingForMemberPersonalProfiles.field.value === true && (
-              <>
-                <View h={2} bg="$borderColor" />
-                <Text color="$color11">
-                  The following individual team{' '}
-                  {membersQuery.data?.length === 1 ? 'member' : 'members'} can get booked for a call
-                  from this repository, as long as they create a personal profile on {env.APP_NAME}:
-                </Text>
-                <View>
-                  {membersQuery.data?.map((member) => (
-                    <View key={member.id} gap="$2">
-                      <Text>
-                        → {member.first_name} {member.last_name}
-                        {!member.user_id && (
-                          <Text color="$red11">(Needs to sign up for {env.APP_NAME})</Text>
-                        )}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              </>
-            )}
-          </View>
-          <Switch
-            checked={allowBookingForMemberPersonalProfiles.field.value ?? false}
-            onCheckedChange={allowBookingForMemberPersonalProfiles.field.onChange}
-          />
-        </Card>
+        <RepoAllowBookingForMemberPersonalProfilesField
+          profileSlug={profile.slug}
+          value={allowBookingForMemberPersonalProfiles.field.value ?? false}
+          onChange={allowBookingForMemberPersonalProfiles.field.onChange}
+        />
       )}
     </>
   )

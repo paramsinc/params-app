@@ -80,11 +80,11 @@ export async function cancelCalendarEvent({ eventId }: { eventId: string }) {
     version: 'v3',
     auth,
   })
-  const res = await calendarClient.events.patch({
+
+  const res = await calendarClient.events.delete({
     eventId,
-    requestBody: {
-      status: 'cancelled',
-    },
+    sendUpdates: 'all',
+    calendarId: 'primary',
   })
 
   return res.data

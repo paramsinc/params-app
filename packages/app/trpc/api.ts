@@ -20,6 +20,7 @@ import { paramsJsonShape } from 'app/features/spec/params-json-shape'
 import * as googleCalendar from 'app/vendor/google/google-calendar'
 import { githubOauth } from 'app/vendor/github/github-oauth'
 import { env } from 'app/env'
+import { sendEmailHTML } from 'app/notifications/email/send'
 
 const [firstCdn, ...restCdns] = keys(cdn)
 
@@ -3033,6 +3034,19 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return getRepoFiles(input)
       }),
+  }),
+  email: router({
+    ping: publicProcedure.query(async () => {
+      if (process.env.NODE_ENV !== 'development') {
+        return 'pong'
+      }
+      const r = await sendEmailHTML({
+        to: 'fernando@params.com',
+        subject: 'Test email',
+        html: '<p>Test email</p>',
+      })
+      return r
+    }),
   }),
 })
 

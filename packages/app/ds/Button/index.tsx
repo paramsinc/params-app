@@ -118,7 +118,7 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
       {children}
       {props.loading && (
         <View stretch center key="loading">
-          <LoadingSpinner color="$color12" />
+          <LoadingSpinner color={props.inverse ? '$color1' : '$color12'} />
         </View>
       )}
     </Frame>

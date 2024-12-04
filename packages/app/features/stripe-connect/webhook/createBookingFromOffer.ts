@@ -51,6 +51,12 @@ export async function createBookingFromOffer({
 
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
 
+  if (paymentIntent.status !== 'succeeded') {
+    throw new Error(
+      `Cannot create booking from offer: payment intent status is ${paymentIntent.status}`
+    )
+  }
+
   const googleCalendarEvent = await createGoogleCalendarEventForOffer({
     offerId,
     attendeeEmails: allAttendeeEmails,
@@ -86,6 +92,7 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
       currency: paymentIntent.currency as 'usd',
     })
     .returning()
+    .execute()
 
   if (!booking) {
     throw new Error('Failed to create booking')
@@ -93,10 +100,10 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
 
   const dt = DateTime.fromJSDate(booking.start_datetime, { zone: booking.timezone })
 
-  const currencyFormatter = formatCurrencyInteger[booking.currency]
+  const currencyFormatter = formatCurrencyInteger[booking.currency ?? 'usd']
 
   const hourEmoji = timeEmojiByHour[dt.hour] ?? '🕖'
-  const moneyEmoji = currencyEmoji[booking.currency] ?? '💵'
+  const moneyEmoji = currencyEmoji[booking.currency ?? 'usd'] ?? '💵'
 
   await sendEmailHTML({
     to: allAttendeeEmails.join(','),
@@ -105,7 +112,8 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
       `<p><strong>${organization.name}</strong> just booked a call with <strong>${profile.name}</strong> on <a href="https://${env.APP_URL}">${env.APP_URL}</a></p>`,
       `<p>🗓️ ${dt.toLocaleString({ dateStyle: 'full' })}</p>`,
       `<p>${hourEmoji} ${dt.toLocaleString({ timeStyle: 'short' })} (${dt.toFormat('ZZZZ')})</p>`,
-      currencyFormatter && `<p>${moneyEmoji} ${currencyFormatter.format(booking.amount / 100)}</p>`,
+      currencyFormatter &&
+        `<p>${moneyEmoji} ${currencyFormatter.format((booking.amount || 0) / 100)}</p>`,
       `<p>To cancel, please visit <a href="https://${env.APP_URL}/dashboard/bookings">${env.APP_URL}/dashboard/bookings</a></p>`,
     ]
       .filter(Boolean)

@@ -247,24 +247,22 @@ function Booker({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: stri
                         )}
                       </View>
                     </View>
-                    {profile ? (
-                      <OfferCheckoutForm_ConfirmOnBackend
-                        profile_id={profile.id}
-                        organization_id={null}
-                        amount={plan.price}
-                        plan_id={plan.id}
-                        insert={{
-                          start_datetime: {
-                            year: dateTime.year,
-                            month: dateTime.month,
-                            day: dateTime.day,
-                            hour: dateTime.hour,
-                            minute: dateTime.minute,
-                          },
-                          timezone: profile.timezone,
-                        }}
-                      />
-                    ) : null}
+                    <OfferCheckoutForm_ConfirmOnBackend
+                      profile_id={profile.id}
+                      organization_id={null}
+                      amount={plan.price}
+                      plan_id={plan.id}
+                      insert={{
+                        start_datetime: {
+                          year: dateTime.year,
+                          month: dateTime.month,
+                          day: dateTime.day,
+                          hour: dateTime.hour,
+                          minute: dateTime.minute,
+                        },
+                        timezone: profile.timezone,
+                      }}
+                    />
                   </Card>
                 </StripeProvider_ConfirmOnBackend>
               )

@@ -115,7 +115,7 @@ export function OfferCheckoutForm_ConfirmOnBackend({
         />
         <ErrorCard error={mutation.error} />
         {ready && (
-          <Button loading={!stripe || mutation.isPending || !elements} themeInverse>
+          <Button loading={!stripe || mutation.isPending || !elements} inverse>
             <ButtonText>Pay {formatUSD.format(amount / 100)}</ButtonText>
           </Button>
         )}

@@ -172,8 +172,8 @@ export const offers = pgTable('offers', {
   start_datetime: timestamp('start_datetime', { mode: 'date', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),
   timezone: text('timezone').notNull(),
-  amount: integer('amount').notNull(),
-  currency: text('currency', { enum: ['usd'] }).notNull(),
+  amount: integer('amount'),
+  currency: text('currency', { enum: ['usd'] }),
   ...timestampMixin(),
 })
 
@@ -207,8 +207,8 @@ export const bookings = pgTable('bookings', {
   canceled_by_user_id: text('canceled_by_user_id').references(() => users.id, {
     onDelete: 'set null',
   }),
-  amount: integer('amount').notNull(),
-  currency: text('currency', { enum: ['usd'] }).notNull(),
+  amount: integer('amount'),
+  currency: text('currency', { enum: ['usd'] }),
 
   start_datetime: timestamp('start_datetime', { mode: 'date', withTimezone: true }).notNull(),
   duration_minutes: integer('duration_minutes').notNull(),

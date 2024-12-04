@@ -216,17 +216,20 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
           <Card>
             <View gap="$3" $lg={{ row: true, ai: 'center' }}>
               <View ai="center">
-                <View br="$rounded" als="center" ov="hidden" box={100}>
+                <View
+                  als="center"
+                  ov="hidden"
+                  width="100%"
+                  aspectRatio={16 / 9}
+                  br="$2"
+                  ov="hidden"
+                >
                   {!!profile.image_vendor_id && (
                     <Image
                       src={profile.image_vendor_id}
                       loader={profile.image_vendor || 'raw'}
-                      {...(profileSlug === 'francois' && {
-                        src: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg',
-                        loader: 'raw',
-                      })}
-                      width={100}
-                      height={100}
+                      sizes="300px"
+                      fill
                       alt={profile.name}
                       contentFit="cover"
                     />

@@ -2643,7 +2643,7 @@ export const appRouter = router({
             )
           )
         )
-        .orderBy(d.desc(schema.bookings.created_at))
+        .orderBy(d.desc(schema.bookings.start_datetime))
 
       return bookings
     }),
@@ -2723,7 +2723,7 @@ export const appRouter = router({
             .cancelCalendarEvent({
               eventId: booking.google_calendar_event_id,
             })
-            .catch(() => void 0)
+            .catch((e) => console.error('[api][bookings][cancel][googleCalendar]', e))
         }
 
         const [updatedBooking] = await db

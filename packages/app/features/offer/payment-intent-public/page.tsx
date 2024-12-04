@@ -117,11 +117,15 @@ export function OfferPaymentIntentPublicPage() {
               <Card.Description>
                 A calendar invite will be sent to {organizationMemberEmails?.join(', ')}.
               </Card.Description>
+
+              <Card.Description bold>
+                Make sure that you accept the invite and arrive on time to the call.
+              </Card.Description>
             </Card>
 
             <View gap="$2" row>
               <LinkButton href={`/@${offer.profile.slug}`} als="flex-start">
-                <ButtonIcon icon={Lucide.ArrowLeft} />
+                <ButtonIcon icon={Lucide.ChevronLeft} />
                 <ButtonText>Back to Profile</ButtonText>
               </LinkButton>
               <LinkButton href="/dashboard/bookings">

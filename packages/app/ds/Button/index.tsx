@@ -92,6 +92,8 @@ export const ButtonIcon = (props: {
       ai="center"
       width="auto"
       minWidth={iconSize}
+      aria-hidden
+      pointerEvents="none"
     >
       <View o={loading ? 0 : 1}>
         <props.icon

@@ -201,8 +201,11 @@ function FormDirty() {
 
   return (
     <Theme name="yellow">
-      <Card row gap="$3" ai="center">
+      <Card row gap="$1" ai="center">
         <Card.Title flex={1}>You have unsaved changes.</Card.Title>
+        <Button onPress={() => form.reset()}>
+          <ButtonText>Discard</ButtonText>
+        </Button>
         <Submit />
       </Card>
     </Theme>

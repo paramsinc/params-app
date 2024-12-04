@@ -10,7 +10,7 @@ export function ProfilePicker({
   onChangeProfileId,
   children,
 }: {
-  profileId: string | null
+  profileId: string | null | undefined
   onChangeProfileId: (profileId: string) => void
   children: React.ReactElement
 }) {

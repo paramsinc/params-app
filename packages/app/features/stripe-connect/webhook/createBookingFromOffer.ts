@@ -3,6 +3,7 @@ import { d, db, schema } from 'app/db/db'
 import { env } from 'app/env'
 import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
 import { stripe } from 'app/features/stripe-connect/server/stripe'
+import { sendEmailHTML } from 'app/notifications/email/send'
 import { createGoogleCalendarEventForOffer } from 'app/vendor/google/google-calendar'
 
 export async function createBookingFromOffer({
@@ -46,13 +47,13 @@ export async function createBookingFromOffer({
     results.map((result) => result.organizationMember?.email).filter(Boolean)
   )
 
-  const attendeeEmails = [...profileMemberEmails, ...organizationMemberEmails]
+  const allAttendeeEmails = [...profileMemberEmails, ...organizationMemberEmails]
 
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
 
   const googleCalendarEvent = await createGoogleCalendarEventForOffer({
     offerId,
-    attendeeEmails,
+    attendeeEmails: allAttendeeEmails,
     start: DateTime.fromJSDate(offer.start_datetime, { zone: offer.timezone }),
     durationMinutes: offer.duration_minutes,
     summary: `${organization.name} <> ${profile.name} (${env.APP_NAME})`,
@@ -70,7 +71,7 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
     throw new Error('Failed to create google calendar event')
   }
 
-  await db
+  const [booking] = await db
     .insert(schema.bookings)
     .values({
       offer_id: offer.id,
@@ -81,8 +82,68 @@ To reschedule or cancel, please visit https://${env.APP_URL}/bookings
       start_datetime: offer.start_datetime,
       duration_minutes: offer.duration_minutes,
       timezone: offer.timezone,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency as 'usd',
     })
     .returning()
 
-  // TODO notify
+  if (!booking) {
+    throw new Error('Failed to create booking')
+  }
+
+  const dt = DateTime.fromJSDate(booking.start_datetime, { zone: booking.timezone })
+
+  const currencyFormatter = formatCurrencyInteger[booking.currency]
+
+  const hourEmoji = timeEmojiByHour[dt.hour] ?? '🕖'
+  const moneyEmoji = currencyEmoji[booking.currency] ?? '💵'
+
+  await sendEmailHTML({
+    to: allAttendeeEmails.join(','),
+    subject: `New Booking: ${organization.name} <> ${profile.name} (${env.APP_NAME})`,
+    html: [
+      `<p><strong>${organization.name}</strong> just booked a call with <strong>${profile.name}</strong> on <a href="https://${env.APP_URL}">${env.APP_URL}</a></p>`,
+      `<p>🗓️ ${dt.toLocaleString({ dateStyle: 'full' })}</p>`,
+      `<p>${hourEmoji} ${dt.toLocaleString({ timeStyle: 'short' })} (${dt.toFormat('ZZZZ')})</p>`,
+      currencyFormatter && `<p>${moneyEmoji} ${currencyFormatter.format(booking.amount / 100)}</p>`,
+      `<p>To cancel, please visit <a href="https://${env.APP_URL}/dashboard/bookings">${env.APP_URL}/dashboard/bookings</a></p>`,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  })
 }
+
+const currencyEmoji = {
+  usd: '💵',
+  eur: '💶',
+  gbp: '💷',
+  cad: '🇨🇦',
+  aud: '🇦🇺',
+}
+
+const timeEmojiByHour = [
+  '🕛',
+  '🕐',
+  '🕑',
+  '🕒',
+  '🕓',
+  '🕔',
+  '🕕',
+  '🕖',
+  '🕗',
+  '🕘',
+  '🕙',
+  '🕚',
+  '🕛',
+  '🕐',
+  '🕑',
+  '🕒',
+  '🕓',
+  '🕔',
+  '🕕',
+  '🕖',
+  '🕗',
+  '🕘',
+  '🕙',
+  '🕚',
+]

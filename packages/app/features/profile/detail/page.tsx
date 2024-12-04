@@ -57,7 +57,7 @@ import {
   CreateProfileMemberModalTrigger,
 } from 'app/features/profile/member/new/modal'
 import { CreateProfileMemberModal } from 'app/features/profile/member/new/modal'
-
+import { ProfileGoogleCalendarIntegrations } from './calendar-integrations'
 const { useParams } = createParam<{ profileSlug: string }>()
 
 export function ProfileDetailPage() {
@@ -281,77 +281,8 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <ProfileAvailsForm.Submit />
         </View>
         <ProfileAvailsForm />
-        <Card>
-          <Card.Title>Sync Google Calendar</Card.Title>
-          <Card.Description>
-            Block off your availability based on your Google Calendar events.
-          </Card.Description>
-          <Card>
-            {calendarIntegrations.data?.length === 0 && (
-              <Text>
-                You don't have any Google Calendar integrations for this profile. Click below to
-                connect your Google Calendar.
-              </Text>
-            )}
-
-            {calendarIntegrations.data?.map((integration) => {
-              return (
-                <View key={integration.google_user_id} row>
-                  <View grow gap="$2">
-                    <Text>{integration.email}</Text>
-
-                    <View row gap="$1" flexWrap="wrap">
-                      {integration.calendars?.map((calendar) => {
-                        if (!calendar.id) {
-                          return null
-                        }
-                        const isSelected = integration.calendars_for_avail_blocking.includes(
-                          calendar.id
-                        )
-                        return (
-                          <Button
-                            br="$rounded"
-                            key={calendar.id}
-                            theme={isSelected ? 'green' : 'red'}
-                          >
-                            <ButtonText>{calendar.summary}</ButtonText>
-                          </Button>
-                        )
-                      })}
-                    </View>
-                  </View>
-                  <Button
-                    theme="red"
-                    onPress={() => {
-                      deleteGoogleIntegration.mutate({
-                        google_user_id: integration.google_user_id,
-                        profile_id: profile.id,
-                      })
-                    }}
-                    square
-                    loading={
-                      deleteGoogleIntegration.isPending &&
-                      deleteGoogleIntegration.variables.google_user_id ===
-                        integration.google_user_id
-                    }
-                  >
-                    <ButtonIcon icon={Lucide.Trash} />
-                  </Button>
-                </View>
-              )
-            })}
-          </Card>
-
-          <SignInWithGoogle profileSlug={profileSlug}>
-            <Button theme="blue" loading={calendarIntegrations.isPending} als="flex-start">
-              <ButtonText>Sign in with Google</ButtonText>
-            </Button>
-          </SignInWithGoogle>
-        </Card>
+        <ProfileGoogleCalendarIntegrations profileSlug={profileSlug} />
       </ProfileAvailsForm.Provider>
-      {/* <View h={2} bg="$borderColor" />
-      <Text>Slots</Text>
-      <AllPlanSlots profileSlug={profileSlug} /> */}
     </View>
   )
 }

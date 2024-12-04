@@ -2405,6 +2405,8 @@ export const appRouter = router({
             start_datetime: jsDate,
             duration_minutes: plan.duration_mins,
             timezone: input.timezone,
+            amount: plan.price,
+            currency: plan.currency,
           })
           .returning()
           .execute()

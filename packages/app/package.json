@@ -6,6 +6,7 @@
     "@clerk/clerk-js": "^5.22.2",
     "@clerk/nextjs": "^5.5.5",
     "@clerk/themes": "^2.1.50",
+    "@expo/react-native-action-sheet": "^4.1.0",
     "@google-cloud/local-auth": "2.1.0",
     "@hookform/devtools": "^4.3.1",
     "@nandorojo/anchor": "^0.4.3",

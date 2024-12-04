@@ -3189,6 +3189,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@expo/react-native-action-sheet@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@expo/react-native-action-sheet@npm:4.1.0"
+  dependencies:
+    "@types/hoist-non-react-statics": "npm:^3.3.1"
+    hoist-non-react-statics: "npm:^3.3.0"
+  peerDependencies:
+    react: ">=18.0.0"
+  checksum: 10/c082526d44e9699887ab4db62d0041abbdb78176ba679e23de5497a8976ae89a098fde71f278cbeee9af27439adc2dde987ad9a4dbf0b5382d6ed44e31c7b08c
+  languageName: node
+  linkType: hard
+
 "@expo/rudder-sdk-node@npm:1.1.1":
   version: 1.1.1
   resolution: "@expo/rudder-sdk-node@npm:1.1.1"
@@ -7062,6 +7074,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/hoist-non-react-statics@npm:^3.3.1":
+  version: 3.3.5
+  resolution: "@types/hoist-non-react-statics@npm:3.3.5"
+  dependencies:
+    "@types/react": "npm:*"
+    hoist-non-react-statics: "npm:^3.3.0"
+  checksum: 10/b645b062a20cce6ab1245ada8274051d8e2e0b2ee5c6bd58215281d0ec6dae2f26631af4e2e7c8abe238cdcee73fcaededc429eef569e70908f82d0cc0ea31d7
+  languageName: node
+  linkType: hard
+
 "@types/html-minifier-terser@npm:^6.0.0":
   version: 6.1.0
   resolution: "@types/html-minifier-terser@npm:6.1.0"
@@ -7951,6 +7973,7 @@ __metadata:
     "@clerk/clerk-js": "npm:^5.22.2"
     "@clerk/nextjs": "npm:^5.5.5"
     "@clerk/themes": "npm:^2.1.50"
+    "@expo/react-native-action-sheet": "npm:^4.1.0"
     "@google-cloud/local-auth": "npm:2.1.0"
     "@hookform/devtools": "npm:^4.3.1"
     "@nandorojo/anchor": "npm:^0.4.3"
@@ -11387,6 +11410,7 @@ __metadata:
   resolution: "expo-app@workspace:apps/expo"
   dependencies:
     "@babel/core": "npm:^7.24.0"
+    "@expo/react-native-action-sheet": "npm:^4.1.0"
     "@shopify/flash-list": "npm:^1.7.1"
     "@types/react": "npm:~18.2.79"
     app: "npm:*"

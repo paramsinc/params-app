@@ -19,7 +19,7 @@ import { env } from 'app/env'
 import { entries } from 'app/helpers/object'
 import fonts from 'app/ds/tamagui/font/fonts'
 import { fontVars } from 'app/ds/tamagui/font/font-vars'
-import { View } from 'app/ds/View'
+import { ActionSheetProvider } from '@expo/react-native-action-sheet'
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -64,7 +64,9 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
           <Provider>
             <GlobalWebLayout hideHeader={'hideHeader' in Component}>
               <Layout>
-                <Component {...pageProps} />
+                <ActionSheetProvider useNativeDriver>
+                  <Component {...pageProps} />
+                </ActionSheetProvider>
               </Layout>
             </GlobalWebLayout>
           </Provider>

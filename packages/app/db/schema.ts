@@ -257,9 +257,9 @@ export const googleCalendarIntegrations = pgTable(
     calendars_for_avail_blocking: jsonb('calendars_for_avail_blocking')
       .$type<Zod.infer<typeof googleCalendarsToBlockForAvailsShape>>()
       .notNull(),
-    google_user_id: text('google_user_id').unique().notNull(),
+    google_user_id: text('google_user_id').notNull(),
     picture_url: text('picture_url'),
-    email: text('email').unique().notNull(),
+    email: text('email').notNull(),
     ...timestampMixin(),
   },
   (table) => ({

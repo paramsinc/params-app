@@ -537,7 +537,9 @@ function Submit() {
     <Card>
       <Number>{6}</Number>
       <Card.Title>Save</Card.Title>
-      <Card.Description>Your repository is ready to be added to Params.</Card.Description>
+      <Card.Description>
+        Your repository is ready to be added to Params once the params.json is verified.
+      </Card.Description>
 
       <ErrorCard error={mutation.error} />
       <ErrorCard error={myProfiles.error} />

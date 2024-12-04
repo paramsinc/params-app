@@ -18,8 +18,9 @@ import { Button, ButtonText } from 'app/ds/Button'
 import { useEffect, useState, useServerEffect } from 'app/react'
 import { platform } from 'app/ds/platform'
 import { useCurrentPath } from 'app/navigation/use-pathname'
-import { Lucide } from 'app/ds/Lucide'
 import { useDashboardLinks } from 'app/features/web-layout/useDashboardLinks'
+import { dark, neobrutalism } from '@clerk/themes'
+import { useThemeName } from 'app/ds/useThemeName'
 
 const clerk = new Clerk(env.CLERK_PUBLISHABLE_KEY!)
 
@@ -87,6 +88,7 @@ function SignUp({
     }
   }, [path])
   const Comp = action === 'sign in' ? SignInButton : SignUpButton
+  console.log('[clerk-auth][redirect-url]', redirectUrl)
   return (
     <Font>
       <Comp
@@ -135,12 +137,18 @@ export default makeAuth({
     })
   },
   Provider({ children }) {
+    const theme = useThemeName()
+    const isDark = theme === 'dark'
+    console.log('[clerk-auth][theme]', isDark)
     return (
       <ClerkProvider
         publishableKey={env.CLERK_PUBLISHABLE_KEY!}
         Clerk={clerk}
         signInFallbackRedirectUrl="/dashboard"
         signUpFallbackRedirectUrl="/dashboard"
+        appearance={{
+          baseTheme: dark,
+        }}
       >
         {children}
       </ClerkProvider>

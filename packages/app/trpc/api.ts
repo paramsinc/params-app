@@ -797,7 +797,7 @@ export async function repoBySlug({
 }
 
 const repository = router({
-  bySlug: publicProcedure
+  bySlug_public: publicProcedure
     .input(z.object({ repo_slug: z.string(), profile_slug: z.string() }))
     .query(async ({ input: { repo_slug, profile_slug } }) => {
       return repoBySlug({ repo_slug, profile_slug })

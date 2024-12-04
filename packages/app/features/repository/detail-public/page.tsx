@@ -68,7 +68,10 @@ function RepositoryDetailPublicPageContent({
   repoSlug: string
   tab?: 'docs' | 'files'
 }) {
-  const repoQuery = api.repo.bySlug.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
+  const repoQuery = api.repo.bySlug_public.useQuery({
+    profile_slug: profileSlug,
+    repo_slug: repoSlug,
+  })
   let profileCard = <ProfileCards profileSlug={profileSlug} repoSlug={repoSlug} />
 
   const paramsJsonQuery = api.repo.paramsJson.useQuery({
@@ -82,60 +85,6 @@ function RepositoryDetailPublicPageContent({
   }
   const repo = repoQuery.data
   const paramsJson = paramsJsonQuery.data
-
-  // let profileCard = (
-  //   <Card>
-  //     <View gap="$3" $lg={{ row: true, ai: 'center' }}>
-  //       {!!repo.profile.image_vendor_id && (
-  //         <View ai="center">
-  //           <View br="$rounded" als="center" ov="hidden">
-  //             <Image
-  //               src={repo.profile.image_vendor_id}
-  //               loader={repo.profile.image_vendor || 'raw'}
-  //               {...(profileSlug === 'francois' && {
-  //                 src: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg',
-  //                 loader: 'raw',
-  //               })}
-  //               width={100}
-  //               height={100}
-  //               alt={repo.profile.name}
-  //               contentFit="cover"
-  //             />
-  //           </View>
-  //         </View>
-  //       )}
-
-  //       <View gap="$3" $lg={{ grow: true }}>
-  //         <Text bold $gtLg={{ center: true }}>
-  //           {repo.profile.name}
-  //         </Text>
-
-  //         <View gap="$1" row>
-  //           <LinkButton $gtLg={{ grow: true }} href={`/@${repo.profile.slug}`}>
-  //             <ButtonText>Profile</ButtonText>
-  //           </LinkButton>
-
-  //           <LinkButton $gtLg={{ grow: true }} href={`/@${repo.profile.slug}/book`} themeInverse>
-  //             <ButtonText>Book a Call</ButtonText>
-  //           </LinkButton>
-  //         </View>
-  //       </View>
-  //     </View>
-
-  //     {!!repo.profile.bio && (
-  //       <View gap="$3" $lg={{ dsp: 'none' }}>
-  //         <View h={2} bg="$borderColor" />
-  //         <View gap="$2">
-  //           <Text color="$color11" bold>
-  //             About {repo.profile.name}
-  //           </Text>
-
-  //           <Text>{repo.profile.bio}</Text>
-  //         </View>
-  //       </View>
-  //     )}
-  //   </Card>
-  // )
 
   return (
     <Page.Root>
@@ -295,7 +244,11 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                     <ButtonText>Profile</ButtonText>
                   </LinkButton>
 
-                  <LinkButton $gtLg={{ grow: true }} href={`/@${profile.slug}/book`} themeInverse>
+                  <LinkButton
+                    $gtLg={{ grow: true }}
+                    href={`/@${profile.slug}/book?repoSlug=${repoSlug}`}
+                    inverse
+                  >
                     <ButtonText>Book a Call</ButtonText>
                   </LinkButton>
                 </View>

@@ -9,8 +9,9 @@ import { createStyledContext } from 'tamagui'
 
 const height = 32
 
-const context = createStyledContext<{ loading?: boolean }>({
+const context = createStyledContext<{ loading?: boolean; inverse?: boolean }>({
   loading: false,
+  inverse: false,
 })
 
 const borderWidth = 0
@@ -29,7 +30,7 @@ const Frame = styled(View, {
     '--icon-color': 'var(--color11)',
   },
   hoverStyle: {
-    bg: '$color4',
+    // bg: '$color4',
     scale: 1.02,
     // @ts-ignore
     '--icon-color': 'var(--color12)',
@@ -57,6 +58,13 @@ const Frame = styled(View, {
     square: {
       true: {
         width: height,
+      },
+    },
+    inverse: {
+      true: {
+        bg: '$color12',
+        boc: '$color9',
+        '--icon-color': 'var(--color1)',
       },
     },
   } as const,
@@ -131,6 +139,11 @@ export const ButtonText = styled(Text, {
       },
       false: {
         opacity: 1,
+      },
+    },
+    inverse: {
+      true: {
+        color: '$color1',
       },
     },
   } as const,

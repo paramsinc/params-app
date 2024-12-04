@@ -1,6 +1,7 @@
 import { Auth } from 'app/auth'
 import { Button, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
+import { BackgroundGradient } from 'app/ds/Gradient/BackgroundGradient'
 import { Input } from 'app/ds/Input'
 import { Logo } from 'app/ds/Logo'
 import { Scroll } from 'app/ds/Scroll'
@@ -102,24 +103,34 @@ export function UserGate({
   if (auth.hasLoaded) {
     return (
       <View grow>
-        <Scroll centerContent>
+        <BackgroundGradient />
+        <Scroll centerContent p="$3">
           <View
             p="$4"
             py="$5"
-            bw={2}
+            bw={0.5}
             boc="$color7"
             w="100%"
             maw={700}
             gap="$3"
             als="center"
-            bg="$color4"
             br="$4"
+            $platform-web={{
+              backdropFilter: 'blur(50px)',
+              willChange: 'transform',
+              transform: 'translate3d(0, 0, 0)',
+            }}
           >
-            <Text center>Sign in to continue to {env.APP_NAME}.</Text>
+            <Text center>Log in or sign up to continue to {env.APP_NAME}.</Text>
             <View row gap="$2" center>
+              <Auth.AuthFlowTrigger action="sign in">
+                <Button inverse>
+                  <ButtonText>Log In</ButtonText>
+                </Button>
+              </Auth.AuthFlowTrigger>
               <Auth.AuthFlowTrigger>
-                <Button themeInverse>
-                  <ButtonText>Sign Up / Log In</ButtonText>
+                <Button inverse>
+                  <ButtonText>Sign Up</ButtonText>
                 </Button>
               </Auth.AuthFlowTrigger>
             </View>

@@ -7,7 +7,7 @@ import { View } from 'app/ds/View'
 import { Text } from 'app/ds/Text'
 import { Fragment } from 'react'
 import { Lucide } from 'app/ds/Lucide'
-import { Button, ButtonText } from 'app/ds/Button'
+import { Button, ButtonIcon, ButtonText } from 'app/ds/Button'
 import { OfferCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/checkout'
 import { StripeProvider_ConfirmOnBackend } from 'app/features/stripe-connect/checkout/confirm-on-backend/provider'
 import { useState } from 'app/react'
@@ -21,17 +21,19 @@ import { LinkButton } from 'app/ds/Button/link'
 import { Link } from 'app/ds/Link'
 import { AnimatePresence, MotiView } from 'moti'
 import { UserGate } from 'app/features/user/gate'
+import { usePrevious } from 'app/helpers/use-previous'
 
 const { useParams } = createParam<{
   profileSlug: string
   planId: string | undefined
   eventTypeSlug: string | undefined
   slotId: string | undefined
+  repoSlug: string | undefined
 }>()
 
 export function ProfileDetailBookPage() {
   const {
-    params: { profileSlug },
+    params: { profileSlug, repoSlug },
   } = useParams()
 
   return (
@@ -39,7 +41,7 @@ export function ProfileDetailBookPage() {
       <Page.Root>
         <Page.Scroll>
           <Page.Content>
-            <Booker profileSlug={profileSlug} />
+            <Booker profileSlug={profileSlug} repoSlug={repoSlug} />
           </Page.Content>
         </Page.Scroll>
       </Page.Root>
@@ -50,7 +52,7 @@ export function ProfileDetailBookPage() {
 const now = DateTime.now()
 const end = DateTime.now().plus({ days: 20 })
 
-function Booker({ profileSlug }: { profileSlug: string }) {
+function Booker({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string | undefined }) {
   const profileQuery = api.profileBySlug_public.useQuery({ profile_slug: profileSlug })
   const plansQuery = api.onetimePlansByProfileSlug_public.useQuery({ profile_slug: profileSlug })
 
@@ -60,8 +62,6 @@ function Booker({ profileSlug }: { profileSlug: string }) {
 
   let planId = params.planId
 
-  const slotsQuery = useSlots({ planId, profileSlug })
-
   const [slot, setSlot] = useState<
     NonNullable<ReturnType<typeof useSlots>['data']>['slots'][0] | null
   >(null)
@@ -69,7 +69,6 @@ function Booker({ profileSlug }: { profileSlug: string }) {
   const plan = plansQuery.data?.find((p) => p.id === planId)
 
   const renderPlanPicker = () => {
-    // TODO custom db event types
     return (
       <View bg="$color3" br="$3" overflow="hidden" gap="$3">
         {!plansQuery.data ? (
@@ -116,16 +115,22 @@ function Booker({ profileSlug }: { profileSlug: string }) {
 
   const profile = profileQuery.data
 
+  const step = !plan ? 0 : !slot ? 1 : 2
+  const previousStep = usePrevious(step)
+  const isBack = step < (previousStep ?? 0) ? true : false
+
   if (!profile) {
     return <ErrorCard error={profileQuery.error} />
   }
+
+  const backHref = `/@${[profile.slug, repoSlug].filter(Boolean).join('/')}`
 
   return (
     <View gap="$3">
       <ErrorCard error={error} />
 
-      <Link href={`/@${profile.slug}`}>
-        <View center gap="$3">
+      <View center gap="$3">
+        <Link href={backHref}>
           {profile.image_vendor && profile.image_vendor_id ? (
             <View w={250}>
               <View aspectRatio={16 / 9} bg="$color2">
@@ -140,27 +145,31 @@ function Booker({ profileSlug }: { profileSlug: string }) {
               </View>
             </View>
           ) : null}
-          <Text center bold>
-            {profile.name}
-          </Text>
-          <Text center color="$color11">
-            Book a meeting
-          </Text>
-        </View>
-      </Link>
-      <AnimatePresence exitBeforeEnter>
+        </Link>
+        <Text center bold>
+          {profile.name}
+        </Text>
+        <Text center color="$color11">
+          Book a meeting
+        </Text>
+      </View>
+      <AnimatePresence exitBeforeEnter custom={isBack}>
         <MotiView
           key={[plan?.id, slot?.duration_mins].join(',')}
-          from={{ opacity: 0, translateX: 10 }}
+          from={{ opacity: 0, translateX: 10 * (isBack ? -1 : 1) }}
           animate={{ opacity: 1, translateX: 0 }}
-          exit={{ opacity: 0, translateX: -10 }}
-          transition={{ type: 'timing' }}
+          exit={(isBack: boolean) => {
+            'worklet'
+            return { opacity: 0, translateX: -10 * (isBack ? -1 : 1) }
+          }}
+          transition={{ type: 'timing', duration: 200 } as any}
         >
           {!plan ? (
             <View maw={760} w="100%" als="center" gap="$3">
               <View row ai="center" gap="$3">
-                <LinkButton href={`/@${profile.slug}`}>
-                  <ButtonText>Back</ButtonText>
+                <LinkButton href={backHref} replace>
+                  <ButtonIcon icon={Lucide.ChevronLeft} />
+                  <ButtonText>Back to {repoSlug ? 'repo' : 'profile'}</ButtonText>
                 </LinkButton>
               </View>
               {renderPlanPicker()}
@@ -196,6 +205,7 @@ function Booker({ profileSlug }: { profileSlug: string }) {
                   >
                     <View p="$3" bg="$color1" gap="$3">
                       <Button onPress={() => setSlot(null)} als="flex-start">
+                        <ButtonIcon icon={Lucide.ChevronLeft} />
                         <ButtonText>Back</ButtonText>
                       </Button>
                       <View>
@@ -221,18 +231,20 @@ function Booker({ profileSlug }: { profileSlug: string }) {
                           ].join(' - ')}{' '}
                           ({dateTime.toFormat('ZZZZ')})
                         </Text>
-                        <Text mt="$2">
-                          (
-                          {dateTimeLocal.day !== dateTime.day &&
-                            dateTimeLocal.toLocaleString({
-                              month: 'long',
-                              day: 'numeric',
-                            }) + ' '}
-                          {dateTimeLocal.toLocaleString({
-                            timeStyle: 'short',
-                          })}{' '}
-                          {dateTimeLocal.toFormat('ZZZZ')})
-                        </Text>
+                        {dateTimeLocal.zoneName !== dateTime.zoneName && (
+                          <Text mt="$2">
+                            (
+                            {dateTimeLocal.day !== dateTime.day &&
+                              dateTimeLocal.toLocaleString({
+                                month: 'long',
+                                day: 'numeric',
+                              }) + ' '}
+                            {dateTimeLocal.toLocaleString({
+                              timeStyle: 'short',
+                            })}{' '}
+                            {dateTimeLocal.toFormat('ZZZZ')})
+                          </Text>
+                        )}
                       </View>
                     </View>
                     {profile ? (
@@ -266,6 +278,7 @@ function Booker({ profileSlug }: { profileSlug: string }) {
                       setParams({ planId: undefined })
                     }}
                   >
+                    <ButtonIcon icon={Lucide.ChevronLeft} />
                     <ButtonText>Back</ButtonText>
                   </Button>
                 )}

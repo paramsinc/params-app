@@ -1849,12 +1849,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@clerk/themes@npm:^2.1.50":
+  version: 2.1.50
+  resolution: "@clerk/themes@npm:2.1.50"
+  dependencies:
+    "@clerk/types": "npm:4.36.0"
+    tslib: "npm:2.4.1"
+  checksum: 10/1fbb6665a7677a55eaed67b9be9757e0ab8d46c6a803165af093dc05a9ce54847bfc3f999e278c5c64d0f8a488b92384b665d269592a1fc401009f2f1ec03b82
+  languageName: node
+  linkType: hard
+
 "@clerk/types@npm:4.21.0":
   version: 4.21.0
   resolution: "@clerk/types@npm:4.21.0"
   dependencies:
     csstype: "npm:3.1.1"
   checksum: 10/b7b0c2070c859448dbaa146c188d3b643f245ab3cfaac24e2edc52b6ae900f1524881f655efe7de5d1bb80599107d6b62fa633dddd529e8533c6ddd96c873d50
+  languageName: node
+  linkType: hard
+
+"@clerk/types@npm:4.36.0":
+  version: 4.36.0
+  resolution: "@clerk/types@npm:4.36.0"
+  dependencies:
+    csstype: "npm:3.1.1"
+  checksum: 10/83b3064ffcf0963a903b290b158751c1b541d7800ff274f6144ac15a75ae81ee569ff36e3f09733871f714db6a3a5c93717baa4dabbac913605c4dda355b0301
   languageName: node
   linkType: hard
 
@@ -8100,6 +8119,7 @@ __metadata:
     "@calcom/sdk": "npm:^1.0.1"
     "@clerk/clerk-js": "npm:^5.22.2"
     "@clerk/nextjs": "npm:^5.5.5"
+    "@clerk/themes": "npm:^2.1.50"
     "@google-cloud/local-auth": "npm:2.1.0"
     "@hookform/devtools": "npm:^4.3.1"
     "@nandorojo/anchor": "npm:^0.4.3"

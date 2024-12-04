@@ -222,7 +222,7 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                   width="100%"
                   aspectRatio={16 / 9}
                   br="$2"
-                  ov="hidden"
+                  overflow="hidden"
                 >
                   {!!profile.image_vendor_id && (
                     <Image

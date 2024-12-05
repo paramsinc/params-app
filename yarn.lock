@@ -9060,6 +9060,7 @@ __metadata:
     "@types/react-google-recaptcha": "npm:^2.1.9"
     "@types/react-syntax-highlighter": "npm:^15"
     "@types/ws": "npm:^8"
+    "@vercel/analytics": "npm:^1.4.1"
     "@vvo/tzdb": "npm:^6.151.0"
     bufferutil: "npm:^4.0.8"
     burnt: "npm:0.12.2"

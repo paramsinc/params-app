@@ -1,3 +1,4 @@
+import { analytics } from 'app/analytics'
 import { LoadingSpinner } from 'app/ds/LoadingSpinner'
 import { platform } from 'app/ds/platform'
 import { styled } from 'app/ds/styled'
@@ -108,7 +109,12 @@ export const ButtonIcon = (props: {
   )
 }
 
-const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
+const ButtonFrame = Frame.styleable<{
+  loading?: boolean
+  analytics?: Record<string, string> & {
+    via?: string
+  }
+}>((props) => {
   const { children, ...rest } = props
 
   return (
@@ -116,6 +122,23 @@ const ButtonFrame = Frame.styleable<{ loading?: boolean }>((props) => {
       {...rest}
       disabled={props.disabled || props.loading || false}
       loading={props.loading || false}
+      onPress={
+        props.onPress &&
+        ((e) => {
+          props.onPress?.(e)
+          if (!e.defaultPrevented) {
+            const label = props['aria-label'] ?? e.currentTarget.textContent
+            console.log('[analytics] label', label)
+
+            if (label) {
+              analytics.track(`Pressed ${label}`, {
+                via: 'button',
+                ...props.analytics,
+              })
+            }
+          }
+        })
+      }
     >
       {children}
       {props.loading && (

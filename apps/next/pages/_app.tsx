@@ -20,6 +20,7 @@ import { entries } from 'app/helpers/object'
 import fonts from 'app/ds/tamagui/font/fonts'
 import { fontVars } from 'app/ds/tamagui/font/font-vars'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet'
+import { Analytics } from '@vercel/analytics/next'
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -72,6 +73,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
           </Provider>
         </TamaguiProvider>
       </ThemeProvider>
+      <Analytics />
     </>
   )
 }

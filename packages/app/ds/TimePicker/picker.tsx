@@ -37,7 +37,12 @@ export default function Web(props: Props) {
       <input
         type="time"
         ref={inputRef}
-        style={{ width: 140, color: 'var(--color)', colorScheme: useThemeName() }}
+        style={{
+          width: 120,
+          color: 'var(--color)',
+          colorScheme: useThemeName(),
+          borderRadius: '6px',
+        }}
         defaultValue={
           dt
             ? `${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}`

@@ -136,14 +136,22 @@ export function ProfileAvailsForm() {
                             <TimePicker
                               time={avail.start_time}
                               onChangeTime={(time) => {
-                                console.log('time', time)
+                                onChange(
+                                  availability_ranges.map((item) =>
+                                    item === avail ? { ...item, start_time: time } : item
+                                  )
+                                )
                               }}
                             />
                             <Text>-</Text>
                             <TimePicker
                               time={avail.end_time}
                               onChangeTime={(time) => {
-                                console.log('time', time)
+                                onChange(
+                                  availability_ranges.map((item) =>
+                                    item === avail ? { ...item, end_time: time } : item
+                                  )
+                                )
                               }}
                             />
                             {index === 0 && (

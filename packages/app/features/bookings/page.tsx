@@ -39,6 +39,12 @@ export function BookingsPage() {
               {bookingsQuery.data?.map((booking) => (
                 <BookingRow key={booking.id} booking={booking} />
               ))}
+              {bookingsQuery.data?.length === 0 && (
+                <Card>
+                  <Card.Title>No bookings found (yet)</Card.Title>
+                  <Card.Description>Your first booking will show up here.</Card.Description>
+                </Card>
+              )}
             </View>
           </Page.Content>
         </Page.Scroll>

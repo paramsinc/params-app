@@ -191,7 +191,7 @@ const sentry = withSentryConfig(config, {
 
   // Automatically annotate React components to show their full name in breadcrumbs and session replay
   reactComponentAnnotation: {
-    enabled: true,
+    enabled: process.env.VERCEL_ENV === 'production',
   },
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.

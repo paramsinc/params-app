@@ -58,7 +58,7 @@ export function NewRepositoryFromGithubForm({
                   path_to_code: pathToCode,
                 })
               }}
-              themeInverse
+              inverse
             >
               <ButtonText>Create Repository</ButtonText>
             </Button>

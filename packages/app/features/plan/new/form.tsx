@@ -65,7 +65,7 @@ export function CreateOnetimePlanForm({
                   onPress={handleSubmit(async (data) => {
                     await mutation.mutateAsync({ ...data, profile_id: profileId })
                   })}
-                  themeInverse
+                  inverse
                 >
                   <ButtonText>Create Plan</ButtonText>
                 </Button>

@@ -188,7 +188,7 @@ export function NewRepositoryPage() {
                                   </>
                                 ) : (
                                   <Modal.Trigger>
-                                    <Button themeInverse als="flex-start">
+                                    <Button inverse als="flex-start">
                                       <Button.Text>Choose Github Repo</Button.Text>
                                     </Button>
                                   </Modal.Trigger>
@@ -401,7 +401,7 @@ function ParamsJson() {
           }
           disabled={!github_repo_owner || !github_repo_name}
           als="flex-start"
-          themeInverse={data?.paramsJson?.is_valid !== true}
+          inverse={data?.paramsJson?.is_valid !== true}
         >
           <Button.Text>Refresh params.json</Button.Text>
         </Button>
@@ -551,7 +551,7 @@ function Submit() {
       <Form.Submit>
         {({ handleSubmit }) => (
           <Button
-            themeInverse
+            inverse
             loading={mutation.isPending}
             disabled={
               !github_repo_owner ||

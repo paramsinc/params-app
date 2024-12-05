@@ -26,7 +26,7 @@ export function RepositoryListPage() {
               <Card row ai="center">
                 <Card.Title flex={1}>My Repos</Card.Title>
 
-                <LinkButton absolute right={0} m="$2" href="/new" themeInverse>
+                <LinkButton absolute right={0} m="$2" href="/new" inverse>
                   <ButtonIcon icon={Lucide.Plus} />
                   <ButtonText>New</ButtonText>
                 </LinkButton>
@@ -56,7 +56,7 @@ export function RepositoryListPage() {
 
                               <UpdateRepositoryModal>
                                 <UpdateRepositoryModalTrigger>
-                                  <Button als="flex-start" themeInverse>
+                                  <Button als="flex-start" inverse>
                                     <ButtonText>Connect GitHub</ButtonText>
                                   </Button>
                                 </UpdateRepositoryModalTrigger>

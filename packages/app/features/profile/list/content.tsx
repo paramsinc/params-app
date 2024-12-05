@@ -34,7 +34,7 @@ export function ProfilesListContent() {
 
                 <NewProfileModal>
                   <NewProfileModalTrigger>
-                    <Button absolute right={0} m="$2" themeInverse>
+                    <Button absolute right={0} m="$2" inverse>
                       <ButtonIcon icon={Lucide.Plus} />
                       <ButtonText>New</ButtonText>
                     </Button>

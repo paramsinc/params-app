@@ -239,7 +239,7 @@ export function UpdateRepositoryForm({
               <View grow>{isDirty && <Text>Unsaved changes</Text>}</View>
               <Button
                 loading={isSubmitting}
-                themeInverse
+                inverse
                 disabled={!isDirty}
                 onPress={handleDirtySubmit(async (data) => {
                   await mutation.mutateAsync({

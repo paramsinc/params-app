@@ -37,7 +37,7 @@ export function RepositoryListPage() {
                     <Card
                       key={repo.id}
                       row
-                      gap="$3"
+                      gap="$1"
                       ai="center"
                       theme={github_repo_integration ? undefined : 'red'}
                     >
@@ -69,6 +69,9 @@ export function RepositoryListPage() {
                           )}
                         </View>
                       </View>
+                      <LinkButton href={`/@${profile.slug}/${repo.slug}`}>
+                        <ButtonText>View</ButtonText>
+                      </LinkButton>
                       <UpdateRepositoryModal>
                         <UpdateRepositoryModalTrigger>
                           <Button>

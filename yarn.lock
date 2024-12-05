@@ -17114,6 +17114,7 @@ __metadata:
     lucide-react: "npm:^0.456.0"
     next: "npm:^14.2.11"
     next-logger: "npm:^5.0.1"
+    next-seo: "npm:^6.6.0"
     pino: "npm:^9.4.0"
     pino-pretty: "npm:^11.2.2"
     postcss: "npm:^8.4.47"
@@ -17142,6 +17143,17 @@ __metadata:
     winston:
       optional: true
   checksum: 10/972b348d29d93fc72129f1ae5094f8bd6965a012a1a284cdd8e08f0e7364338c441e03ae607a9667ceb683167d0c5f087f407491f4d3c4d11df6e16fc9ac4d19
+  languageName: node
+  linkType: hard
+
+"next-seo@npm:^6.6.0":
+  version: 6.6.0
+  resolution: "next-seo@npm:6.6.0"
+  peerDependencies:
+    next: ^8.1.1-canary.54 || >=9.0.0
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 10/c1998d90bcf11375c7c3d3c6877ce8b72f6a0252e41466c12b10f449ed60a5ebe2545bd423c5b0b1d7c11cb9b3a76b0435640510214149cad268296f52a8735c
   languageName: node
   linkType: hard
 

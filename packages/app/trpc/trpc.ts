@@ -4,6 +4,7 @@ import { db, schema, d } from 'app/db/db'
 import { ZodError } from 'zod'
 import { pick } from 'app/trpc/pick'
 import { publicSchema } from 'app/trpc/publicSchema'
+import * as Sentry from '@sentry/node'
 
 /**
  * Initialization of tRPC backend
@@ -48,7 +49,11 @@ const isAuthed = t.middleware(({ next, ctx }) => {
 
 export const router = t.router
 
-export const publicProcedure = t.procedure
+export const publicProcedure = t.procedure.use(
+  Sentry.trpcMiddleware({
+    attachRpcInput: true,
+  })
+)
 
 // export this procedure to be used anywhere in your application
 export const authedProcedure = t.procedure.use(isAuthed)

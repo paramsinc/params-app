@@ -1,10 +1,10 @@
 import { NextTamaguiProvider } from './styles-provider'
 import './globals.css'
 import { Provider } from 'app/provider'
-import { TamaguiProvider } from 'app/ds/tamagui/provider'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
-  title: '(params)',
+  title: 'Params',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,9 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" dir="ltr">
       <body>
         <NextTamaguiProvider>
-          <Provider>{children}</Provider>
+          <>{children}</>
         </NextTamaguiProvider>
       </body>
+      <Analytics />
     </html>
   )
 }

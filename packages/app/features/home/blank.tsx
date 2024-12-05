@@ -14,6 +14,7 @@ import { env } from 'app/env'
 import { useThemeName } from 'app/ds/useThemeName'
 import { api } from 'app/trpc/client'
 import { ErrorCard } from 'app/ds/Error/card'
+import { TextLink } from 'app/ds/TextLink'
 
 export function BlankHome() {
   const router = useRouter()
@@ -24,14 +25,21 @@ export function BlankHome() {
   //   })
   // )
   return (
-    <View grow center>
-      <View w="100%" p="$4" als="center" maw={800} gap="$4">
-        <Text bold tag="h1" fontSize={24}>
-          Open source, code-reviewed AI starter templates.
-        </Text>
-        <WaitlistForm />
+    <>
+      <View grow center>
+        <View w="100%" p="$4" als="center" maw={800} gap="$4">
+          <Text bold tag="h1" fontSize={24}>
+            Open source, code-reviewed AI starter templates.
+          </Text>
+          <WaitlistForm />
+        </View>
       </View>
-    </View>
+      <View p="$2">
+        <TextLink href="/privacy">
+          <Text color="$color11">Privacy Policy</Text>
+        </TextLink>
+      </View>
+    </>
   )
 }
 

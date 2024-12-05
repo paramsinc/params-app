@@ -4,7 +4,7 @@ import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import { appRouter } from 'app/trpc/api'
 import { createTrpcContext } from '../context'
 
-export const maxDuration = 30
+export const maxDuration = 45
 
 export default trpcNext.createNextApiHandler({
   router: appRouter,

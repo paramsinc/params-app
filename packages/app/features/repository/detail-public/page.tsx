@@ -310,7 +310,9 @@ function DocsPage({
   const filePath = path?.join('/')
 
   const file =
-    typeof filesQuery.data == 'string' || filesQuery.isPending ? filesQuery.data : readmeQuery.data
+    typeof filesQuery.data == 'string' || (filesQuery.isPending && path !== mainDocsFile)
+      ? filesQuery.data
+      : readmeQuery.data
 
   const fileKeys = Object.keys(paramsJsonQuery.data?.docs.sidebar ?? {})
 

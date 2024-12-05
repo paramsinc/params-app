@@ -54,7 +54,7 @@ const user = {
           message: `Please provide your first name, last name, and email.`,
         })
       }
-      const { user, profile } = await createUser({
+      const { user } = await createUser({
         first_name: firstName,
         last_name: lastName,
         email,

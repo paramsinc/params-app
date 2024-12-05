@@ -23,19 +23,9 @@ export async function createUser(
     })
   }
   let slug = baseSlug
-  const stripe_connect_account_id = await stripe.accounts
-    .create({
-      settings: {
-        payouts: {
-          schedule: {
-            interval: 'manual',
-          },
-        },
-      },
-    })
-    .then((account) => account.id)
+
   // should this throw and just say that the slug is taken?
-  const { user, profile } = await db.transaction(async (tx) => {
+  const { user } = await db.transaction(async (tx) => {
     while (await tx.query.users.findFirst({ where: (users, { eq }) => eq(users.slug, slug) })) {
       const maxSlugsCheck = 10
       if (slugSearchCount >= maxSlugsCheck) {
@@ -70,53 +60,53 @@ export async function createUser(
       })
     }
 
-    const [personalProfile] = await tx
-      .insert(schema.profiles)
-      .values({
-        name: [user.first_name, user.last_name].filter(Boolean).join(' '),
-        personal_profile_user_id: user.id,
-        stripe_connect_account_id,
-        slug,
-      })
-      .onConflictDoNothing({
-        target: schema.profiles.personal_profile_user_id,
-      })
-      .returning()
-      .execute()
+    // const [personalProfile] = await tx
+    //   .insert(schema.profiles)
+    //   .values({
+    //     name: [user.first_name, user.last_name].filter(Boolean).join(' '),
+    //     personal_profile_user_id: user.id,
+    //     stripe_connect_account_id,
+    //     slug,
+    //   })
+    //   .onConflictDoNothing({
+    //     target: schema.profiles.personal_profile_user_id,
+    //   })
+    //   .returning()
+    //   .execute()
 
-    if (personalProfile) {
-      // create personal profile member
-      await tx
-        .insert(schema.profileMembers)
-        .values({
-          profile_id: personalProfile.id,
-          user_id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email,
-        })
-        .execute()
-    }
+    // if (personalProfile) {
+    //   // create personal profile member
+    //   await tx
+    //     .insert(schema.profileMembers)
+    //     .values({
+    //       profile_id: personalProfile.id,
+    //       user_id: user.id,
+    //       first_name: user.first_name,
+    //       last_name: user.last_name,
+    //       email,
+    //     })
+    //     .execute()
+    // }
 
     // invited profiles
-    await tx
-      .update(schema.profileMembers)
-      .set({
-        user_id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-      })
-      .where(
-        d.and(
-          d.eq(schema.profileMembers.email, email),
-          d.not(d.eq(schema.profileMembers.user_id, user.id))
-        )
-      )
-      .returning()
-      .execute()
+    // await tx
+    //   .update(schema.profileMembers)
+    //   .set({
+    //     user_id: user.id,
+    //     first_name: user.first_name,
+    //     last_name: user.last_name,
+    //   })
+    //   .where(
+    //     d.and(
+    //       d.eq(schema.profileMembers.email, email),
+    //       d.not(d.eq(schema.profileMembers.user_id, user.id))
+    //     )
+    //   )
+    //   .returning()
+    //   .execute()
 
-    return { user, profile: personalProfile }
+    return { user }
   })
 
-  return { user, profile }
+  return { user }
 }

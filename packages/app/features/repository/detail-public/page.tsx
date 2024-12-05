@@ -635,6 +635,9 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   const selectedPage = path?.join('/') ?? paramsJson.docs.main
 
   const pages = Object.keys(paramsJson.docs.sidebar ?? {}) // TODO support nested pages
+  if (pages.length === 0) {
+    return null
+  }
   return (
     <Card p={0} gap={0} py="$2">
       <Text px="$3" bold py="$3" pt="$2" bbw={1} bbc="$borderColor">

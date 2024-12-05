@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sentry/nextjs": "^8",
     "@tamagui/font-inter": "1.116.14",
     "@tamagui/next-plugin": "1.116.14",
     "@tamagui/next-theme": "1.116.14",

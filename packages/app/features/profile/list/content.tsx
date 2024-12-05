@@ -131,7 +131,7 @@ function ConnectCard({ profileSlug }: { profileSlug: string }) {
               <ButtonText>Complete Stripe Onboarding</ButtonText>
             </Button>
           </ConnectAccountModalTrigger>
-          <ConnectAccountModalContent profileSlug={profile.slug} />
+          <ConnectAccountModalContent profileSlug={profileSlug} />
         </ConnectAccountModal>
       </Card>
     )

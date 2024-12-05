@@ -1358,7 +1358,7 @@ const repository = router({
       z.object({ profile_slug: z.string(), repo_slug: z.string(), path: z.string().optional() })
     )
     .query(async ({ input }) => {
-      if (process.env.NODE_ENV === 'development') {
+      if (true) {
         const {
           octokit,
           query: { github_repo },
@@ -1387,43 +1387,22 @@ const repository = router({
       }
       return []
     }),
-  files: publicProcedure
-    .input(z.object({ profileSlug: z.string(), repoSlug: z.string() }))
-    .output(z.record(z.string(), z.string()))
-    .query(async ({ input }) => {
-      if (process.env.NODE_ENV === 'development') {
-        const {
-          octokit,
-          query: { github_repo },
-        } = await getOctokitFromRepo({
-          profile_slug: input.profileSlug,
-          repo_slug: input.repoSlug,
-        })
-      }
-      return exampleRepoFiles
-    }),
   paramsJson: publicProcedure
     .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
     .output(paramsJsonShape.nullable())
     .query(async ({ input }) => {
-      const getFiles = async () => {
-        return exampleRepoFiles
-      }
-      const files = await getFiles()
-      let paramsJson = files['params.json'] as string | null
-      if (process.env.NODE_ENV === 'development') {
-        const files = await getRepoFiles({
-          profile_slug: input.profile_slug,
-          repo_slug: input.repo_slug,
-          path: 'params.json',
-        }).catch((e) => {
-          console.log('[getRepoFiles][error]', e.message)
-        })
-        if (typeof files === 'string') {
-          paramsJson = files
-        } else {
-          paramsJson = null
-        }
+      let paramsJson: string | null = null
+      const files = await getRepoFiles({
+        profile_slug: input.profile_slug,
+        repo_slug: input.repo_slug,
+        path: 'params.json',
+      }).catch((e) => {
+        console.log('[getRepoFiles][error]', e.message)
+      })
+      if (typeof files === 'string') {
+        paramsJson = files
+      } else {
+        paramsJson = null
       }
       if (typeof paramsJson !== 'string') {
         return null

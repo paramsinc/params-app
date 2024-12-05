@@ -22,6 +22,22 @@ import { fontVars } from 'app/ds/tamagui/font/font-vars'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet'
 import { Analytics } from '@vercel/analytics/next'
 
+// pages/_app.js
+import posthog from 'posthog-js'
+import { PostHogProvider } from 'posthog-js/react'
+import { Auth } from 'app/auth'
+import { useEffect } from 'app/react'
+
+if (typeof window !== 'undefined') {
+  // checks that we are client-side
+  posthog.init(env.PUBLIC_POSTHOG_KEY, {
+    api_host: env.PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
+    person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+    loaded: (posthog) => {
+      if (process.env.NODE_ENV === 'development') posthog.debug() // debug mode in development
+    },
+  })
+}
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
 }
@@ -60,22 +76,43 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
           }
         `}
       </style>
-      <ThemeProvider>
-        <TamaguiProvider>
-          <Provider>
-            <GlobalWebLayout hideHeader={'hideHeader' in Component}>
-              <Layout>
-                <ActionSheetProvider useNativeDriver>
-                  <Component {...pageProps} />
-                </ActionSheetProvider>
-              </Layout>
-            </GlobalWebLayout>
-          </Provider>
-        </TamaguiProvider>
-      </ThemeProvider>
+      <PostHogProvider client={posthog}>
+        <ThemeProvider>
+          <TamaguiProvider>
+            <Provider>
+              <GlobalWebLayout hideHeader={'hideHeader' in Component}>
+                <Layout>
+                  <ActionSheetProvider useNativeDriver>
+                    <Component {...pageProps} />
+                    <Identify />
+                  </ActionSheetProvider>
+                </Layout>
+              </GlobalWebLayout>
+            </Provider>
+          </TamaguiProvider>
+        </ThemeProvider>
+      </PostHogProvider>
       <Analytics />
     </>
   )
+}
+
+function Identify() {
+  const user = Auth.useUser()
+
+  useEffect(() => {
+    if (user.isSignedIn) {
+      posthog.identify(user.userId, {
+        email: user.userEmail,
+        name: user.userFirstName,
+        lastName: user.userLastName,
+      })
+    } else if (user.hasLoaded) {
+      posthog.identify(undefined)
+    }
+  }, [user])
+
+  return null
 }
 
 function ThemeProvider({ children }: { children: ReactNode }) {

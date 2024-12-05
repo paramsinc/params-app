@@ -10591,6 +10591,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"core-js@npm:^3.38.1":
+  version: 3.39.0
+  resolution: "core-js@npm:3.39.0"
+  checksum: 10/a3d34e669783dfc878e545f1983f60d9ff48a3867cd1d7ff8839b849e053002a208c7c14a5ca354b8e0b54982901e2f83dc87c3d9b95de0a94b4071d1c74e5f6
+  languageName: node
+  linkType: hard
+
 "core-util-is@npm:~1.0.0":
   version: 1.0.3
   resolution: "core-util-is@npm:1.0.3"
@@ -12964,6 +12971,13 @@ __metadata:
   version: 4.1.1
   resolution: "fetch-retry@npm:4.1.1"
   checksum: 10/c97006c2b604a817cbd4e35085965d07a8f1c51b475bf037f305b98d5748ee742ec98aba119b4df6bf727e61f2f0ee05c5fa714701c4234b91c4b43e0f119bd9
+  languageName: node
+  linkType: hard
+
+"fflate@npm:^0.4.8":
+  version: 0.4.8
+  resolution: "fflate@npm:0.4.8"
+  checksum: 10/c0c75029bcbefd0b47cede4ad2a3698f571e38d3d93dfbb96d744c655ec3bf5e31111044c2c01fa3965109874f5be8b5a6b3686b958392693689665cbabf3ece
   languageName: node
   linkType: hard
 
@@ -17114,9 +17128,11 @@ __metadata:
     lucide-react: "npm:^0.456.0"
     next: "npm:^14.2.11"
     next-logger: "npm:^5.0.1"
+    next-seo: "npm:^6.6.0"
     pino: "npm:^9.4.0"
     pino-pretty: "npm:^11.2.2"
     postcss: "npm:^8.4.47"
+    posthog-js: "npm:^1.194.4"
     raf: "npm:^3.4.1"
     react-dom: "npm:18.2.0"
     react-native-reanimated: "npm:3.10.1"
@@ -17142,6 +17158,17 @@ __metadata:
     winston:
       optional: true
   checksum: 10/972b348d29d93fc72129f1ae5094f8bd6965a012a1a284cdd8e08f0e7364338c441e03ae607a9667ceb683167d0c5f087f407491f4d3c4d11df6e16fc9ac4d19
+  languageName: node
+  linkType: hard
+
+"next-seo@npm:^6.6.0":
+  version: 6.6.0
+  resolution: "next-seo@npm:6.6.0"
+  peerDependencies:
+    next: ^8.1.1-canary.54 || >=9.0.0
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 10/c1998d90bcf11375c7c3d3c6877ce8b72f6a0252e41466c12b10f449ed60a5ebe2545bd423c5b0b1d7c11cb9b3a76b0435640510214149cad268296f52a8735c
   languageName: node
   linkType: hard
 
@@ -18522,10 +18549,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"posthog-js@npm:^1.194.4":
+  version: 1.194.4
+  resolution: "posthog-js@npm:1.194.4"
+  dependencies:
+    core-js: "npm:^3.38.1"
+    fflate: "npm:^0.4.8"
+    preact: "npm:^10.19.3"
+    web-vitals: "npm:^4.2.0"
+  checksum: 10/7943c52b60eb93e072d239dba5276184b3ee4b196090748bf78a15e0ee88de9a35ae5fe45111ad8d817ce28fdc4198131d2a53f6109891d13bcf3aac019fe186
+  languageName: node
+  linkType: hard
+
 "preact@npm:^10.16.0":
   version: 10.24.0
   resolution: "preact@npm:10.24.0"
   checksum: 10/855506eedfc6b348059fefc3573b061113f7dc52c6275cb3553835956a180d8f473b5fda1825dd1f1900b1ef08723b5c22f3edd17c4553a6da9e97e27ae84590
+  languageName: node
+  linkType: hard
+
+"preact@npm:^10.19.3":
+  version: 10.25.1
+  resolution: "preact@npm:10.25.1"
+  checksum: 10/f9a961b24eed35b52faf95d77f03405975a3a5a005841fb6873d82e47781be9e578c1f666a407c941a19da2efdf15f9c4d66a8df14abcc96e213636e230edecc
   languageName: node
   linkType: hard
 
@@ -22379,6 +22425,13 @@ __metadata:
   dependencies:
     defaults: "npm:^1.0.3"
   checksum: 10/182ebac8ca0b96845fae6ef44afd4619df6987fe5cf552fdee8396d3daa1fb9b8ec5c6c69855acb7b3c1231571393bd1f0a4cdc4028d421575348f64bb0a8817
+  languageName: node
+  linkType: hard
+
+"web-vitals@npm:^4.2.0":
+  version: 4.2.4
+  resolution: "web-vitals@npm:4.2.4"
+  checksum: 10/68cd1c2625a04b26e7eab67110623396afc6c9ef8c3a76f4e780aefe5b7d4ca1691737a0b99119e1d1ca9a463c4d468c0f0090b1875b6d784589d3a4a8503313
   languageName: node
   linkType: hard
 

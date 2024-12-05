@@ -169,7 +169,7 @@ if (process.env.IS_ELECTRON) {
 
 // Injected content via Sentry wizard below
 
-// const { withSentryConfig } = require('@sentry/nextjs')
+const { withSentryConfig } = require('@sentry/nextjs')
 
 const sentry = withSentryConfig(config, {
   // For all available options, see:
@@ -177,6 +177,8 @@ const sentry = withSentryConfig(config, {
 
   org: 'params-19',
   project: 'javascript-nextjs',
+
+  authToken: process.env.SENTRY_AUTH_TOKEN,
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,

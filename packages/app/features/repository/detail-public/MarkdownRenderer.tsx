@@ -1,4 +1,3 @@
-import { useCurrentPath } from 'app/navigation/use-pathname'
 import './github-markdown.css'
 import Markdown from 'react-markdown'
 import Link from 'next/link'

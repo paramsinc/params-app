@@ -636,38 +636,43 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   const paramsJson = paramsJsonQuery.data
   const selectedPage = path?.join('/') ?? paramsJson.docs.main
 
-  const pages = Object.keys(paramsJson.docs.sidebar ?? {}) // TODO support nested pages
-  if (pages.length === 0) {
-    return null
-  }
+  let pages = Object.keys(paramsJson.docs.sidebar ?? {}) // TODO support nested pages
+
   return (
-    <Card p={0} gap={0} py="$2">
-      <Text px="$3" bold py="$3" pt="$2" bbw={1} bbc="$borderColor">
+    <Card p={0} py="$2">
+      <Text px="$3" bold py="$2" pt="$2">
         Documentation
       </Text>
-      {pages.map((page) => {
-        const pagePath = paramsJson.docs.sidebar?.[page]
-        const isSelected = pagePath === selectedPage
-        return (
-          <Link href={`/@${profileSlug}/${repoSlug}/docs/${pagePath}`} key={page}>
-            <Text
-              py={'$2'}
-              px="$3"
-              bold={isSelected}
-              color={isSelected ? '$color12' : '$color11'}
-              als="flex-start"
-              hoverStyle={{
-                color: '$color12',
-              }}
-              lineHeight={18}
-              animation="200ms"
-              animateOnly={['color']}
-            >
-              {page}
-            </Text>
-          </Link>
-        )
-      })}
+      {pages.length > 0 && (
+        <>
+          <View bbw={1} bbc="$borderColor" />
+          <View>
+            {pages.map((page) => {
+              const pagePath = paramsJson.docs.sidebar?.[page]
+              const isSelected = pagePath === selectedPage
+              return (
+                <Link href={`/@${profileSlug}/${repoSlug}/docs/${pagePath}`} key={page}>
+                  <Text
+                    py={'$2'}
+                    px="$3"
+                    bold={isSelected}
+                    color={isSelected ? '$color12' : '$color11'}
+                    als="flex-start"
+                    hoverStyle={{
+                      color: '$color12',
+                    }}
+                    lineHeight={18}
+                    animation="200ms"
+                    animateOnly={['color']}
+                  >
+                    {page}
+                  </Text>
+                </Link>
+              )
+            })}
+          </View>
+        </>
+      )}
     </Card>
   )
 }

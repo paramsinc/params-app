@@ -99,8 +99,8 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
                 <Layout>
                   <ActionSheetProvider useNativeDriver>
                     <Component {...pageProps} />
-                    <Identify />
                   </ActionSheetProvider>
+                  <Identify />
                 </Layout>
               </GlobalWebLayout>
             </Provider>

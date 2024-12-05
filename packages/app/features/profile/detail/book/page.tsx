@@ -269,6 +269,12 @@ function Booker({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: stri
           ) : (
             <View w="100%" maw={760} als="center" gap="$3">
               <View row ai="center" gap="$3">
+                <Button onPress={() => setParams({ planId: undefined })}>
+                  <ButtonIcon icon={Lucide.ChevronLeft} />
+                  <ButtonText>Back</ButtonText>
+                </Button>
+              </View>
+              <View row ai="center" gap="$3">
                 {(plansQuery.data?.length ?? 0) > 1 && (
                   <Button
                     onPress={() => {

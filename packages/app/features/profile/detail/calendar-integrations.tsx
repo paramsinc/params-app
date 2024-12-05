@@ -34,6 +34,7 @@ export function ProfileGoogleCalendarIntegrations({ profileSlug }: { profileSlug
     return <ErrorCard error={profileQuery.error} />
   }
   const profile = profileQuery.data
+  return null // waiting on google approval
 
   return (
     <Card>

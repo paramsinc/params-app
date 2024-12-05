@@ -55,7 +55,7 @@ export function ProfilesListContent() {
                   return (
                     <Card key={profile.id} gap="$3">
                       <View row gap="$3">
-                        <View width={100} height={(100 * 9) / 16} bg="$backgroundStrong">
+                        <View width={100} height={(100 * 9) / 16}>
                           {profile.image_vendor && profile.image_vendor_id ? (
                             <Image
                               loader={profile.image_vendor}

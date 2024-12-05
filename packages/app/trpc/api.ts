@@ -1398,6 +1398,7 @@ const repository = router({
         path: 'params.json',
       }).catch((e) => {
         console.log('[getRepoFiles][error]', e.message)
+        return null
       })
       if (typeof files === 'string') {
         paramsJson = files
@@ -1417,33 +1418,37 @@ const repository = router({
     .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
     .output(z.string().nullable())
     .query(async ({ input }) => {
-      const {
-        octokit,
-        query: { github_repo },
-      } = await getOctokitFromRepo({
-        profile_slug: input.profile_slug,
-        repo_slug: input.repo_slug,
-      })
-      console.log('[api][readme]', github_repo)
-      let readme = await octokit.rest.repos.getReadmeInDirectory({
-        owner: github_repo.github_repo_owner,
-        repo: github_repo.github_repo_name,
-        dir: github_repo.path_to_code,
-      })
+      try {
+        const {
+          octokit,
+          query: { github_repo },
+        } = await getOctokitFromRepo({
+          profile_slug: input.profile_slug,
+          repo_slug: input.repo_slug,
+        })
+        console.log('[api][readme]', github_repo)
+        let readme = await octokit.rest.repos.getReadmeInDirectory({
+          owner: github_repo.github_repo_owner,
+          repo: github_repo.github_repo_name,
+          dir: github_repo.path_to_code,
+        })
 
-      if (!readme) {
+        if (!readme) {
+          return null
+        }
+
+        if (Array.isArray(readme.data)) {
+          return null
+        }
+
+        if (readme.data.type !== 'file') {
+          return null
+        }
+
+        return Buffer.from(readme.data.content, 'base64').toString('utf-8')
+      } catch {
         return null
       }
-
-      if (Array.isArray(readme.data)) {
-        return null
-      }
-
-      if (readme.data.type !== 'file') {
-        return null
-      }
-
-      return Buffer.from(readme.data.content, 'base64').toString('utf-8')
     }),
   bookableProfiles_public: publicProcedure
     .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
@@ -3268,7 +3273,7 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
     })
   }
 
-  const { github_repo, github_integration } = first
+  const { github_integration } = first
 
   return {
     query: first,

@@ -23,12 +23,6 @@ export function useDashboardLinks() {
       isActive: pathname.startsWith('/dashboard/bookings') || pathname.startsWith('/bookings'),
       icon: Lucide.PhoneCall,
     },
-    {
-      label: 'Availability',
-      href: '/dashboard/availability',
-      isActive: pathname.startsWith('/dashboard/availability'),
-      icon: Lucide.CalendarClock,
-    },
   ]
 
   return links

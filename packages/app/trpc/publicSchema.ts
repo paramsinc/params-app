@@ -77,6 +77,7 @@ export const publicSchema = {
       // last_updated_at: true,
       github_url: true,
       index: true,
+      description: true,
     },
   },
   offers: {

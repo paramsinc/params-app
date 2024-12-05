@@ -27,6 +27,8 @@ import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
 import { Auth } from 'app/auth'
 import { useEffect } from 'app/react'
+import { NextSeo, DefaultSeo } from 'next-seo'
+import { useDashboardLinks } from 'app/features/web-layout/useDashboardLinks'
 
 if (typeof window !== 'undefined') {
   // checks that we are client-side
@@ -52,14 +54,27 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
       ? DashboardLayout
       : Fragment
 
+  const metadata = (pageProps as any)?.metadata as React.ComponentProps<typeof NextSeo> | undefined
+
+  const links = useDashboardLinks()
+
   return (
     <>
+      <DefaultSeo
+        title={env.APP_NAME}
+        description={`Open source, code-reviewed AI starter templates.`}
+        openGraph={{
+          images: [{ url: `https://${env.APP_URL}/og.png` }],
+        }}
+      />
+      {metadata && <NextSeo {...metadata} />}
+      {Layout === DashboardLayout && !metadata && (
+        <NextSeo
+          title={`${links.find((link) => link.isActive)?.label ?? 'Dashboard'} | ${env.APP_NAME}`}
+        />
+      )}
       <Head>
-        <title>{APP_NAME}</title>
-        <meta name="description" content={`Open source, code-reviewed AI starter templates.`} />
         <link rel="icon" href="/paramsx1.png" />
-        {/* og image */}
-        <meta property="og:image" content={`https://${env.APP_URL}/og.png`} />
       </Head>
       <style jsx global>
         {`

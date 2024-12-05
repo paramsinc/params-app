@@ -1,12 +1,14 @@
 import { d, db, schema } from 'app/db/db'
 import { ProfileDetailPublicPage } from 'app/features/profile/detail-public/page'
 import { ssgApi } from 'app/trpc/ssg'
+import type { Metadata } from '../../../metadata'
 
 export default function ProfileDetailPublicPageWrapper() {
   return <ProfileDetailPublicPage />
 }
 
 import type { GetStaticPaths, GetStaticProps } from 'next'
+import { imageLoader } from 'app/image/loader'
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const profiles = await db
@@ -39,8 +41,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async (ctx) => {
   const profileSlug = ctx.params?.profileSlug as string
 
-  await Promise.all([
-    ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
+  const [profile] = await Promise.all([
+    ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
     ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
     ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
   ])
@@ -56,6 +58,28 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
     props: {
       trpcState,
       profileSlug,
+      metadata: {
+        titleTemplate: '%s | Params',
+        title: profile.name,
+        description: profile.short_bio ?? undefined,
+        openGraph: {
+          title: profile.name,
+          description: profile.short_bio ?? undefined,
+          images: [
+            ...(profile.image_vendor && profile.image_vendor_id
+              ? [
+                  {
+                    url: imageLoader[profile.image_vendor]({
+                      src: profile.image_vendor_id,
+                      width: 1500,
+                      quality: 100,
+                    }),
+                  },
+                ]
+              : []),
+          ],
+        },
+      } satisfies Metadata,
     },
     revalidate: 1,
   }

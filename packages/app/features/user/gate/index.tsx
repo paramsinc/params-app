@@ -81,7 +81,7 @@ export function UserGate({
                 {(form) => {
                   return (
                     <Button
-                      loading={createMe.isPending ?? me.isPending}
+                      loading={createMe.isPending ?? me.isPending ?? form.isSubmitting}
                       onPress={form.handleSubmit(async (data) => {
                         await createMe.mutateAsync(data)
                       })}

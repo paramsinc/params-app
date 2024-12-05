@@ -20,10 +20,12 @@ export const ProfileCoverImageField = ({
   image,
   onChange,
   onRemove,
+  error,
 }: {
   image: Image | undefined
   onChange: (image: Image) => void
   onRemove: () => void
+  error?: { message?: string }
 }) => {
   const uploadMutation = api.uploadImage.useMutation()
   return (
@@ -46,7 +48,7 @@ export const ProfileCoverImageField = ({
     >
       {(props) => {
         return (
-          <Card {...(props?.isDragAccept && { theme: 'green' })}>
+          <Card {...(props?.isDragAccept && { theme: 'green' })} {...(error && { theme: 'red' })}>
             <Card.Label>Cover Image</Card.Label>
 
             <View

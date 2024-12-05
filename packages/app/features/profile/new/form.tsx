@@ -59,6 +59,7 @@ export function NewProfileForm({
           >
             <Form.Controller
               name="image_vendor_id"
+              rules={{ required: 'Please upload an image' }}
               render={(imageVendorId) => {
                 return (
                   <Form.Controller
@@ -66,6 +67,7 @@ export function NewProfileForm({
                     render={(imageVendor) => {
                       return (
                         <ProfileCoverImageField
+                          error={imageVendorId.fieldState.error}
                           image={
                             imageVendor.field.value && imageVendorId.field.value
                               ? {

@@ -283,7 +283,7 @@ function Submit() {
                     })
                   })
               })}
-              themeInverse={isDirty}
+              inverse={isDirty}
             >
               <ButtonText>Save</ButtonText>
             </Button>

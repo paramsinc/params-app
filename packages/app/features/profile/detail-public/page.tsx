@@ -94,11 +94,6 @@ function Content({ profileSlug }: { profileSlug: string }) {
                 priority
               />
             )}
-            <View stretch center>
-              <View br="$rounded" box={75} bg="white" center pl={2}>
-                <Lucide.Play color="black" size={29} />
-              </View>
-            </View>
           </View>
         </View>
         <View
@@ -116,6 +111,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
               {profile.name}
             </Text>
           </View>
+          <Text>{profile.short_bio}</Text>
 
           <CreateBooking_Link profileSlug={profileSlug} />
           <View gap="$3">
@@ -186,7 +182,7 @@ const CreateBooking_Link = ({ profileSlug }: { profileSlug: string }) => {
   const plans = plansQuery.data
   const lastPlan = plans?.[plans.length - 1]
   return (
-    <LinkButton themeInverse href={`/book/${profileSlug}`}>
+    <LinkButton inverse href={`/book/${profileSlug}`}>
       <ButtonText>Book a Call</ButtonText>
     </LinkButton>
   )

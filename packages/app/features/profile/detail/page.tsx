@@ -172,7 +172,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <ConnectAccountModal>
             <ConnectAccountModalTrigger>
               <Button
-                themeInverse={connectAccountQuery.data?.payouts_enabled === false}
+                inverse={connectAccountQuery.data?.payouts_enabled === false}
                 loading={connectAccountQuery.isLoading}
               >
                 <ButtonIcon icon={Lucide.Settings} />

@@ -111,11 +111,10 @@ export function NewProfileForm({
                     <Form.Controller
                       name="slug"
                       rules={{ required: 'Please enter a slug' }}
-                      defaultValue={slugify(nameValue)}
                       disableScrollToError
                       render={({ field, fieldState }) => (
                         <ProfileSlugField
-                          slug={field.value}
+                          slug={field.value ?? slugify(nameValue)}
                           onChange={field.onChange}
                           error={fieldState.error}
                           inputRef={field.ref}
@@ -144,7 +143,7 @@ export function NewProfileForm({
                         { title: 'Team', value: false },
                       ].map(({ title, value }) => (
                         <Button
-                          themeInverse={field.value === value}
+                          inverse={field.value === value}
                           onPress={() => field.onChange(value)}
                           key={title}
                         >
@@ -217,7 +216,7 @@ export function NewProfileForm({
                     }) => {
                       mutation.mutate({
                         name,
-                        slug,
+                        slug: slug ?? slugify(name),
                         bio,
                         image_vendor_id,
                         image_vendor,
@@ -228,7 +227,7 @@ export function NewProfileForm({
                       })
                     }
                   )}
-                  themeInverse
+                  inverse
                 >
                   <ButtonText>Submit</ButtonText>
                 </Button>

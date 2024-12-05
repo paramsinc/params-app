@@ -99,7 +99,7 @@ export function UpdateOnetimePlanForm({
             >
               <Button
                 loading={isSubmitting}
-                themeInverse
+                inverse
                 disabled={!isDirty}
                 onPress={handleDirtySubmit(async (data) => {
                   await mutation.mutateAsync({ plan_id: planId, patch: data })

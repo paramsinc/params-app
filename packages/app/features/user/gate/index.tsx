@@ -86,7 +86,7 @@ export function UserGate({
                         await createMe.mutateAsync(data)
                       })}
                       als="flex-start"
-                      themeInverse
+                      inverse
                     >
                       <ButtonText>Save</ButtonText>
                     </Button>

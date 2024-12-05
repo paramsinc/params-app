@@ -242,6 +242,8 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                   {profile.name}
                 </Text>
 
+                <Text $gtLg={{ center: true }}>{profile.short_bio}</Text>
+
                 <View gap="$1" row>
                   <LinkButton $gtLg={{ grow: true }} href={`/@${profile.slug}`}>
                     <ButtonText>Profile</ButtonText>
@@ -336,17 +338,18 @@ function DocsPage({
           group
           cursor="pointer"
         >
-          {!!paramsJson.docs.youtube.thumbnail_url && (
-            <Image
-              fill
-              src={paramsJson.docs.youtube.thumbnail_url}
-              unoptimized
-              alt={profile.name}
-              contentFit="cover"
-              sizes="(max-width: 1200px) 100vw, 60vw"
-              priority
-            />
-          )}
+          <Image
+            fill
+            src={
+              paramsJson.docs.youtube.thumbnail_url ??
+              `https://img.youtube.com/vi/${paramsJson.docs.youtube.video_id}/0.jpg`
+            }
+            unoptimized
+            alt={profile.name}
+            contentFit="cover"
+            sizes="(max-width: 1200px) 100vw, 60vw"
+            priority
+          />
           <View
             stretch
             center

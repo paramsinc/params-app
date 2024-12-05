@@ -65,7 +65,7 @@ export function NewRepositoryForm({
                       github_url,
                     })
                   })}
-                  themeInverse
+                  inverse
                 >
                   <ButtonText>Submit</ButtonText>
                 </Button>

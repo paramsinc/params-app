@@ -105,7 +105,7 @@ export function CreateMeForm({
                   onPress={handleSubmit(async (data) => {
                     mutation.mutate(data)
                   })}
-                  themeInverse
+                  inverse
                 >
                   <ButtonText>Save & Continue</ButtonText>
                 </Button>

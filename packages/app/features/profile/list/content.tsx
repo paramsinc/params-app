@@ -2,6 +2,7 @@ import { Button, ButtonIcon, ButtonText } from 'app/ds/Button'
 import { LinkButton } from 'app/ds/Button/link'
 import { ErrorCard } from 'app/ds/Error/card'
 import { Card } from 'app/ds/Form/layout'
+import { Image } from 'app/ds/Image'
 import { Link } from 'app/ds/Link'
 import { Lucide } from 'app/ds/Lucide'
 import { Page } from 'app/ds/Page'
@@ -34,7 +35,7 @@ export function ProfilesListContent() {
 
                 <NewProfileModal>
                   <NewProfileModalTrigger>
-                    <Button absolute right={0} m="$2" themeInverse>
+                    <Button absolute right={0} m="$2" inverse>
                       <ButtonIcon icon={Lucide.Plus} />
                       <ButtonText>New</ButtonText>
                     </Button>
@@ -53,7 +54,18 @@ export function ProfilesListContent() {
                   const isMissingStripePayouts = profile.has_stripe_payouts_enabled !== true
                   return (
                     <Card key={profile.id} gap="$3">
-                      <View row ai="center" gap="$3">
+                      <View row gap="$3">
+                        <View width={100} height={(100 * 9) / 16}>
+                          {profile.image_vendor && profile.image_vendor_id ? (
+                            <Image
+                              loader={profile.image_vendor}
+                              src={profile.image_vendor_id}
+                              fill
+                              sizes="200px"
+                              alt={profile.name}
+                            />
+                          ) : null}
+                        </View>
                         <View grow jc="center">
                           <View gap="$2">
                             <Link href={`/@${profile.slug}`}>

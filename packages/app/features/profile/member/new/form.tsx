@@ -101,7 +101,7 @@ export function CreateProfileMemberForm({
                       profile_id: profileId,
                     })
                   })}
-                  themeInverse
+                  inverse
                 >
                   <ButtonText>Add Member</ButtonText>
                 </Button>

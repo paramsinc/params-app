@@ -57,7 +57,7 @@ export function GitHubRepoPicker({
       <>
         <Text>Sync your GitHub account to create a new repo</Text>
         <SignInWithGithub>
-          <Button themeInverse>
+          <Button inverse>
             <ButtonIcon icon={Lucide.Github} />
             <ButtonText>Sign in with GitHub</ButtonText>
           </Button>

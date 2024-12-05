@@ -99,7 +99,7 @@ const MeGate = ({ children }: { children: React.ReactNode }) => {
 
         <ErrorCard error={createMe.error} />
 
-        <Button themeInverse onPress={() => createMe.mutate({})} loading={createMe.isPending}>
+        <Button inverse onPress={() => createMe.mutate({})} loading={createMe.isPending}>
           <ButtonText>Continue</ButtonText>
         </Button>
       </EmptyCard>

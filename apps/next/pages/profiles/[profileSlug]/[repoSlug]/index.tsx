@@ -1,7 +1,10 @@
 export { RepositoryDetailPublicPage as default } from 'app/features/repository/detail-public/page'
 
 import { d, db, schema } from 'app/db/db'
+import { env } from 'app/env'
+import { imageLoader } from 'app/image/loader'
 import { ssgApi } from 'app/trpc/ssg'
+import type { Metadata } from '../../../../metadata'
 
 import type { GetStaticPaths, GetStaticProps } from 'next'
 
@@ -30,10 +33,10 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   console.log('[profiles/[profileSlug]/[repoSlug][getStaticProps]', { profileSlug, repoSlug })
 
-  await Promise.all([
-    ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
+  const [profile, repo] = await Promise.all([
+    ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
+    ssgApi.repo.bySlug_public.fetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
-    ssgApi.repo.bySlug_public.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.repo.paramsJson.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     // ssgApi.repo.tree.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
     ssgApi.repo.readme.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
@@ -55,6 +58,32 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       trpcState,
       profileSlug,
       repoSlug,
+      metadata: {
+        title: `@${profile.slug}/${repo.slug} on ${env.APP_NAME}`,
+        description: repo.description ?? undefined,
+        openGraph: {
+          title: `@${profile.slug}/${repo.slug} on ${env.APP_NAME}`,
+          description: repo.description ?? undefined,
+          images: [
+            ...(profile.image_vendor && profile.image_vendor_id
+              ? [
+                  {
+                    url: imageLoader[profile.image_vendor]({
+                      src: profile.image_vendor_id,
+                      width: 1500,
+                      quality: 100,
+                    }),
+                  },
+                ]
+              : []),
+          ],
+          siteName: env.APP_NAME,
+        },
+        twitter: {
+          cardType: 'summary_large_image',
+          site: `https://${env.APP_URL}`,
+        },
+      } satisfies Metadata,
     },
     revalidate: 30,
   }

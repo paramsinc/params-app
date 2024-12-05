@@ -402,7 +402,7 @@ function DocsPage({
       <View gap="$3" $gtLg={{ grow: true }}>
         {videoCard}
         <View>
-          {file ? (
+          {typeof file === 'string' ? (
             <MarkdownRenderer linkPrefix={`/@${profileSlug}/${repoSlug}/docs`}>
               {file}
             </MarkdownRenderer>
@@ -634,14 +634,17 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   const paramsJson = paramsJsonQuery.data
   const selectedPage = path?.join('/') ?? paramsJson.docs.main
 
-  const pages = Object.keys(paramsJson.docs.sidebar) // TODO support nested pages
+  const pages = Object.keys(paramsJson.docs.sidebar ?? {}) // TODO support nested pages
+  if (pages.length === 0) {
+    return null
+  }
   return (
     <Card p={0} gap={0} py="$2">
       <Text px="$3" bold py="$3" pt="$2" bbw={1} bbc="$borderColor">
         Documentation
       </Text>
       {pages.map((page) => {
-        const pagePath = paramsJson.docs.sidebar[page]! // TODO support nested pages
+        const pagePath = paramsJson.docs.sidebar?.[page]
         const isSelected = pagePath === selectedPage
         return (
           <Link href={`/@${profileSlug}/${repoSlug}/docs/${pagePath}`} key={page}>

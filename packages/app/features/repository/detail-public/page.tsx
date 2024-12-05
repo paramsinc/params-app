@@ -242,6 +242,8 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                   {profile.name}
                 </Text>
 
+                <Text $gtLg={{ center: true }}>{profile.short_bio}</Text>
+
                 <View gap="$1" row>
                   <LinkButton $gtLg={{ grow: true }} href={`/@${profile.slug}`}>
                     <ButtonText>Profile</ButtonText>

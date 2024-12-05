@@ -213,6 +213,8 @@ const sentry = withSentryConfig(config, {
   automaticVercelMonitors: true,
 
   autoInstrumentMiddleware: false,
+
+  autoInstrumentServerFunctions: false,
 })
 
 module.exports = sentry

@@ -29,6 +29,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     )
     .limit(20)
     .execute()
+  console.log('[static-paths][profiles]', profiles)
   return {
     paths: profiles.map((p) => ({ params: { profileSlug: p.profileSlug } })),
     fallback: true,

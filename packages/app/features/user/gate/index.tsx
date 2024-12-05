@@ -48,8 +48,8 @@ export function UserGate({
             <Text>Confirming your account details...</Text>
             <Form.RootProvider
               defaultValues={{
-                first_name: auth.userFirstName,
-                last_name: auth.userLastName,
+                first_name: auth.userFirstName ?? '',
+                last_name: auth.userLastName ?? '',
               }}
             >
               <View gap="$2">

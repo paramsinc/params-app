@@ -13,6 +13,7 @@ import { Button } from 'app/ds/Button'
 import { DropdownMenu } from 'app/ds/DropdownMenu'
 import { Lucide } from 'app/ds/Lucide'
 import { memo } from 'app/react'
+import useAreYouSure from 'app/ds/AreYouSure/use-are-you-sure'
 function useBookings() {
   const me = Auth.useUser()
   const bookingsQuery = api.bookings.list.useQuery(undefined, {
@@ -54,6 +55,7 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
   const startTime = DateTime.fromISO(booking.start_datetime)
   const endTime = startTime.plus({ minutes: booking.duration_minutes })
   const cancelMutation = api.bookings.cancel.useMutation()
+  const areYouSure = useAreYouSure()
 
   return (
     <Card $gtSm={{ row: true }} gap="$3" padding="$3">
@@ -115,7 +117,11 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
             <DropdownMenu.Item
               key="cancel booking"
               destructive
-              onSelect={() => cancelMutation.mutate({ id: booking.id })}
+              onSelect={() =>
+                areYouSure(() => cancelMutation.mutate({ id: booking.id }), {
+                  title: 'Are you sure you want to cancel this booking?',
+                })
+              }
             >
               <DropdownMenu.ItemIcon icon={Lucide.Trash} />
               <DropdownMenu.ItemTitle>Cancel</DropdownMenu.ItemTitle>

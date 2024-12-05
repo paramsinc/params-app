@@ -160,7 +160,7 @@ const profile = {
         input: { disableCreateMember, pricePerHourCents, is_personal_profile = false, ...input },
         ctx,
       }) => {
-        const { profile, member } = await db.transaction(async (tx) => {
+        const { profile, member, stripe_connect_account_id } = await db.transaction(async (tx) => {
           const existingProfileBySlug = await tx.query.profiles
             .findFirst({
               where: (profiles, { eq }) => eq(profiles.slug, input.slug),
@@ -219,6 +219,8 @@ const profile = {
                   },
                 },
               },
+              email: me.email,
+              metadata: {},
             })
             .then((account) => account.id)
 
@@ -281,7 +283,13 @@ const profile = {
             )
           }
 
-          return { profile, member }
+          return { profile, member, stripe_connect_account_id }
+        })
+
+        await stripe.accounts.update(stripe_connect_account_id, {
+          metadata: {
+            profile_id: profile.id,
+          },
         })
 
         return { profile, member }
@@ -972,6 +980,7 @@ const repository = router({
   createFromGithub: authedProcedure
     .input(
       z.object({
+        name: z.string().optional(),
         github_repo_owner: z.string(),
         github_repo_name: z.string(),
         profile_id: z.string().nullable(),
@@ -1051,7 +1060,7 @@ const repository = router({
         repo: input.github_repo_name,
       })
 
-      const baseSlug = input.path_to_code.split('/').pop() ?? input.github_repo_name
+      const baseSlug = input.name ?? input.github_repo_name
 
       let slug = baseSlug
 

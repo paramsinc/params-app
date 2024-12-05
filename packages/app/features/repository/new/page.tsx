@@ -110,6 +110,10 @@ export function NewRepositoryPage() {
                       This profile will be the owner of the repo. Any members of this profile will
                       have access to edit the repo's details on {env.APP_NAME}.
                     </Card.Description>
+
+                    <Card.Description>
+                      If this repository belongs to a team, select or create a team profile below.
+                    </Card.Description>
                     <ProfileField />
                   </Card>
                 </Transition>

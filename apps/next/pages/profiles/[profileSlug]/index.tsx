@@ -61,10 +61,10 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       metadata: {
         titleTemplate: '%s | Params',
         title: profile.name,
-        description: profile.short_bio ?? undefined,
+        description: profile.short_bio ?? '',
         openGraph: {
           title: profile.name,
-          description: profile.short_bio ?? undefined,
+          description: profile.short_bio ?? '',
           images: [
             ...(profile.image_vendor && profile.image_vendor_id
               ? [

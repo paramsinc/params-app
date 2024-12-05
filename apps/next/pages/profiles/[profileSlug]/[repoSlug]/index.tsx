@@ -60,10 +60,10 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       repoSlug,
       metadata: {
         title: `@${profile.slug}/${repo.slug} on ${env.APP_NAME}`,
-        description: repo.description ?? undefined,
+        description: repo.description ?? '',
         openGraph: {
           title: `@${profile.slug}/${repo.slug} on ${env.APP_NAME}`,
-          description: repo.description ?? undefined,
+          description: repo.description ?? '',
           images: [
             ...(profile.image_vendor && profile.image_vendor_id
               ? [

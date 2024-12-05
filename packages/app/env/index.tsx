@@ -13,6 +13,8 @@ export const env = z
     RECAPTCHA_SITE_KEY: z.string(),
     URL: z.string(),
     GITHUB_OAUTH_REDIRECT_URL: z.string(),
+    PUBLIC_POSTHOG_KEY: z.string(),
+    PUBLIC_POSTHOG_HOST: z.string(),
   })
   .parse({
     CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
@@ -25,4 +27,6 @@ export const env = z
     RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY,
     URL: process.env.NEXT_PUBLIC_URL ?? 'params.com',
     GITHUB_OAUTH_REDIRECT_URL: process.env.NEXT_PUBLIC_GITHUB_OAUTH_REDIRECT_URL,
+    PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   })

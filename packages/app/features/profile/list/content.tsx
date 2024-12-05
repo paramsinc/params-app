@@ -5,7 +5,6 @@ import { Card } from 'app/ds/Form/layout'
 import { Link } from 'app/ds/Link'
 import { Lucide } from 'app/ds/Lucide'
 import { Page } from 'app/ds/Page'
-import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
 import {
   NewProfileModal,
@@ -81,24 +80,7 @@ export function ProfilesListContent() {
                         </View>
                       </View>
 
-                      {isMissingStripePayouts && (
-                        <Card theme="red">
-                          <Card.Title>Enable Payouts</Card.Title>
-                          <Card.Description color="$color11">
-                            Payouts are not enabled. Please complete your Stripe onboarding to start
-                            accepting payments.
-                          </Card.Description>
-
-                          <ConnectAccountModal>
-                            <ConnectAccountModalTrigger>
-                              <Button inverse als="flex-start">
-                                <ButtonText>Complete Stripe Onboarding</ButtonText>
-                              </Button>
-                            </ConnectAccountModalTrigger>
-                            <ConnectAccountModalContent profileSlug={profile.slug} />
-                          </ConnectAccountModal>
-                        </Card>
-                      )}
+                      <ConnectCard profileSlug={profile.slug} />
 
                       {isMissingAvailability && (
                         <Card theme="yellow">
@@ -129,4 +111,29 @@ export function ProfilesListContent() {
       </Page.Scroll>
     </Page.Root>
   )
+}
+
+function ConnectCard({ profileSlug }: { profileSlug: string }) {
+  const query = api.profileConnectAccount.useQuery({ profile_slug: profileSlug })
+
+  if (query.data?.payouts_enabled === false) {
+    return (
+      <Card theme="red">
+        <Card.Title>Enable Payouts</Card.Title>
+        <Card.Description color="$color11">
+          Payouts are not enabled. Please complete your Stripe onboarding to start accepting
+          payments.
+        </Card.Description>
+
+        <ConnectAccountModal>
+          <ConnectAccountModalTrigger>
+            <Button inverse als="flex-start">
+              <ButtonText>Complete Stripe Onboarding</ButtonText>
+            </Button>
+          </ConnectAccountModalTrigger>
+          <ConnectAccountModalContent profileSlug={profile.slug} />
+        </ConnectAccountModal>
+      </Card>
+    )
+  }
 }

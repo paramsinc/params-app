@@ -221,11 +221,6 @@ const profile = {
               },
               email: me.email,
               metadata: {},
-              controller: {
-                stripe_dashboard: {
-                  type: 'express',
-                },
-              },
             })
             .then((account) => account.id)
 

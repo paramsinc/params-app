@@ -45,13 +45,7 @@ export function GlobalWebLayout({
               <Logo height={20} />
             </Link>
           </View>
-          <View
-            w={100}
-            ai="flex-end"
-            jc="center"
-            pointerEvents={pathname === '/' ? 'none' : 'auto'}
-            o={pathname === '/' ? 0 : 1}
-          >
+          <View w={100} ai="flex-end" jc="center">
             <Auth.UserButton />
           </View>
         </View>

@@ -914,7 +914,7 @@ export async function repoBySlug({
   if (!repository) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: `Repository not found.`,
+      message: `Repository not found with slug "${repo_slug}" and profile slug "${profile_slug}".`,
     })
   }
 
@@ -980,13 +980,14 @@ const repository = router({
   createFromGithub: authedProcedure
     .input(
       z.object({
-        name: z.string().optional(),
+        slug: z.string().optional(),
         github_repo_owner: z.string(),
         github_repo_name: z.string(),
         profile_id: z.string().nullable(),
         path_to_code: z.string().optional().default(''),
         allow_booking_for_main_profile: z.boolean().optional().default(true),
         allow_booking_for_member_personal_profiles: z.boolean().optional().default(false),
+        description: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -1060,7 +1061,14 @@ const repository = router({
         repo: input.github_repo_name,
       })
 
-      const baseSlug = input.name ?? input.github_repo_name
+      const baseSlug = input.slug?.trim() || input.github_repo_name
+
+      if (!baseSlug) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Please provide a slug for your repo.`,
+        })
+      }
 
       let slug = baseSlug
 
@@ -1091,6 +1099,7 @@ const repository = router({
             allow_booking_for_main_profile: input.allow_booking_for_main_profile,
             allow_booking_for_member_personal_profiles:
               input.allow_booking_for_member_personal_profiles,
+            description: input.description,
           })
           .returning(pick('repositories', publicSchema.repositories.RepositoryPublic))
           .execute()

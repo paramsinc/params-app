@@ -38,6 +38,7 @@ import {
   CreateProfileMemberModalContent,
   CreateProfileMemberModalTrigger,
 } from 'app/features/profile/member/new/modal'
+import { RepositoryDescriptionField, RepositorySlugField } from 'app/features/repository/new/fields'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -83,16 +84,17 @@ const MaybeReady = styled(View, {
 })
 
 export function NewRepositoryPage() {
+  const form = Form.useForm({
+    defaultValues: {
+      input: {
+        allow_booking_for_main_profile: true,
+        allow_booking_for_member_personal_profiles: true,
+      },
+    },
+  })
   return (
     <UserGate>
-      <Form.RootProvider
-        defaultValues={{
-          input: {
-            allow_booking_for_main_profile: true,
-            allow_booking_for_member_personal_profiles: true,
-          },
-        }}
-      >
+      <Form.FormProvider {...form}>
         <Page.Root grow>
           <Scroll>
             <Page.Content gap="$3">
@@ -185,6 +187,37 @@ export function NewRepositoryPage() {
                                         </Text>
                                       </View>
                                     )}
+                                    <View h={2} bg="$borderColor" />
+
+                                    <Form.Controller
+                                      name="input.slug"
+                                      rules={{ required: true }}
+                                      render={({ field, fieldState }) => {
+                                        return (
+                                          <RepositorySlugField
+                                            slug={field.value ?? ''}
+                                            onChange={field.onChange}
+                                            inputRef={field.ref}
+                                            error={fieldState.error}
+                                          />
+                                        )
+                                      }}
+                                    />
+
+                                    <Form.Controller
+                                      name="input.description"
+                                      rules={{ required: true }}
+                                      render={({ field, fieldState }) => {
+                                        return (
+                                          <RepositoryDescriptionField
+                                            description={field.value ?? ''}
+                                            onChange={field.onChange}
+                                            inputRef={field.ref}
+                                            error={fieldState.error}
+                                          />
+                                        )
+                                      }}
+                                    />
                                   </>
                                 ) : (
                                   <Modal.Trigger>
@@ -210,6 +243,9 @@ export function NewRepositoryPage() {
                                                   github_repo_owner: next.owner.login,
                                                   isPrivateRepo: next.private,
                                                 } satisfies typeof field.value)
+                                                if (form.getValues().input?.slug === undefined) {
+                                                  form.setValue('input.slug', next.name)
+                                                }
                                                 onOpenChange(false)
                                               }}
                                               selectedRepo={
@@ -273,7 +309,7 @@ export function NewRepositoryPage() {
             </Page.Content>
           </Scroll>
         </Page.Root>
-      </Form.RootProvider>
+      </Form.FormProvider>
     </UserGate>
   )
 }
@@ -533,6 +569,7 @@ function Submit() {
   })
   const { profile_id } = useProfileId()
 
+  const { input } = Form.useWatch()
   const { github_repo_owner = '', github_repo_name = '' } = field.value ?? {}
 
   const selectedProfile = myProfiles.data?.find((profile) => profile.id === profile_id)
@@ -544,6 +581,15 @@ function Submit() {
       <Card.Description>
         Your repository is ready to be added to Params once the params.json is verified.
       </Card.Description>
+
+      {!!input?.slug && selectedProfile && (
+        <Card theme="purple">
+          <Card.Description color="$color11">
+            Your URL will be{' '}
+            <Text fontFamily="$mono">{`https://${env.APP_URL}/@${selectedProfile?.slug}/${input?.slug}`}</Text>
+          </Card.Description>
+        </Card>
+      )}
 
       <ErrorCard error={mutation.error} />
       <ErrorCard error={myProfiles.error} />
@@ -568,6 +614,8 @@ function Submit() {
                   path_to_code,
                   allow_booking_for_main_profile,
                   allow_booking_for_member_personal_profiles,
+                  slug,
+                  description,
                 },
               }) => {
                 if (!profile_id) {
@@ -580,6 +628,8 @@ function Submit() {
                   profile_id,
                   allow_booking_for_main_profile,
                   allow_booking_for_member_personal_profiles,
+                  slug,
+                  description,
                 })
               }
             )}

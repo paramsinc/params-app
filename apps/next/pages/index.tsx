@@ -1,4 +1,4 @@
-export { default, getStaticProps } from './home-page'
+export { default, getStaticProps } from './home'
 
 // import { BlankHome } from 'app/features/home/blank'
 // import { HomeScreen } from 'app/features/home/screen'

@@ -44,8 +44,8 @@ const Sidebar = styled(View, {
   gap: '$3',
   $gtLg: {
     width: 400,
-    position: 'sticky' as any,
-    top: 48 + 16,
+    // position: 'sticky' as any,
+    // top: 48 + 16,
     alignSelf: 'flex-start',
   },
   variants: {
@@ -268,7 +268,11 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                     About {profile.name}
                   </Text>
 
-                  <Text>{profile.bio}</Text>
+                  {!!profile.bio && (
+                    <MarkdownRenderer linkPrefix={`/@${profileSlug}/${repoSlug}`}>
+                      {profile.bio}
+                    </MarkdownRenderer>
+                  )}
                 </View>
               </View>
             )}

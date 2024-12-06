@@ -1266,7 +1266,9 @@
 }
 
 .markdown-body li {
-  display: list-item;
+  display: list-item !important;
+  list-style-type: disc;
+  text-align: -webkit-match-parent;
 }
 
 .markdown-body li::marker {

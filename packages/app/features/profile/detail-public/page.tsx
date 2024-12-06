@@ -115,6 +115,9 @@ function Content({ profileSlug }: { profileSlug: string }) {
           <Text>{profile.short_bio}</Text>
 
           <CreateBooking_Link profileSlug={profileSlug} />
+
+          <View height={2} bg="$color7" />
+
           <View gap="$3">
             <Text color="$color11" bold>
               About

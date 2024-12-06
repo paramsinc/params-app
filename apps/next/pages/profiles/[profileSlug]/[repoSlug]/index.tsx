@@ -20,10 +20,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
     .execute()
 
   return {
-    // paths: repos.map((repo) => ({
-    //   params: { profileSlug: repo.profile_slug, repoSlug: repo.repo_slug },
-    // })),
-    paths: [],
+    paths: repos.map((repo) => ({
+      params: { profileSlug: repo.profile_slug, repoSlug: repo.repo_slug },
+    })),
+    // paths: [],
     fallback: true,
   }
 }

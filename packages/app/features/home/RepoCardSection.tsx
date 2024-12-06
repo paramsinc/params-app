@@ -33,11 +33,13 @@ interface RepoCardSectionProps {
   profileImage: string | null
   authorName: string
   authorBio: string
-  socialLinks: {
-    github: string
-    twitter: string
-    linkedin: string
-  }
+  socialLinks:
+    | {
+        github: string
+        twitter: string
+        linkedin: string
+      }
+    | undefined
   profileSlug: string
 }
 
@@ -133,17 +135,19 @@ export function RepoCardSection({
               <View flex={1} gap="$2">
                 <Text fontWeight="600">{authorName}</Text>
                 <Text>{authorBio}</Text>
-                <View row gap="$3">
-                  <Link href={socialLinks.github} target="_blank">
-                    <Lucide.Github size={16} />
-                  </Link>
-                  <Link href={socialLinks.twitter} target="_blank">
-                    <TwitterIcon width={16} height={16} stroke="var(--color)" />
-                  </Link>
-                  <Link href={socialLinks.linkedin} target="_blank">
-                    <Lucide.Linkedin size={16} />
-                  </Link>
-                </View>
+                {socialLinks && (
+                  <View row gap="$3">
+                    <Link href={socialLinks.github} target="_blank">
+                      <Lucide.Github size={16} />
+                    </Link>
+                    <Link href={socialLinks.twitter} target="_blank">
+                      <TwitterIcon width={16} height={16} stroke="var(--color)" />
+                    </Link>
+                    <Link href={socialLinks.linkedin} target="_blank">
+                      <Lucide.Linkedin size={16} />
+                    </Link>
+                  </View>
+                )}
               </View>
             </View>
 

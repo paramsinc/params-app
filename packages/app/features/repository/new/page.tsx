@@ -244,7 +244,10 @@ export function NewRepositoryPage() {
                                                   isPrivateRepo: next.private,
                                                 } satisfies typeof field.value)
                                                 if (form.getValues().input?.slug === undefined) {
-                                                  form.setValue('input.slug', next.name)
+                                                  form.setValue('input.slug', next.name, {
+                                                    shouldDirty: true,
+                                                    shouldValidate: true,
+                                                  })
                                                 }
                                                 onOpenChange(false)
                                               }}

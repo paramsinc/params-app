@@ -2913,7 +2913,9 @@ export const appRouter = router({
         }
 
         const now = DateTime.now()
-        const bookingStart = DateTime.fromJSDate(booking.start_datetime)
+        const bookingStart = DateTime.fromJSDate(booking.start_datetime, {
+          zone: booking.timezone,
+        })
 
         if (bookingStart < now) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Booking already started.' })

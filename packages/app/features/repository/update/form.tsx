@@ -79,7 +79,7 @@ export function UpdateRepositoryForm({
   return (
     <Form.RootProvider
       defaultValues={{
-        patch: { slug: repo.slug, github_url: repo.github_url },
+        patch: { slug: repo.slug, github_url: repo.github_url, description: repo.description },
         integration_patch: {
           path_to_code: repo.githubRepoIntegration?.path_to_code,
         },
@@ -161,7 +161,7 @@ export function UpdateRepositoryForm({
                       name="integration_patch.path_to_code"
                       render={({ field }) => (
                         <Input
-                          value={field.value ?? ''}
+                          value={field.value ?? repo.githubRepoIntegration?.path_to_code ?? ''}
                           onChangeText={(next) => {
                             field.onChange(next satisfies typeof field.value)
                           }}

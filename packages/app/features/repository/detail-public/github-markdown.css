@@ -1267,7 +1267,7 @@
 
 .markdown-body li {
   display: list-item !important;
-  list-style-type: disc;
+  list-style-type: square;
   text-align: -webkit-match-parent;
 }
 

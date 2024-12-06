@@ -161,10 +161,20 @@ function RepositoryDetailPublicPageContent({
                     <ButtonText>Clone</ButtonText>
                   </Button> */}
 
-                  <LinkButton href={repo.github_url} target="_blank" square>
-                    <ButtonIcon icon={Lucide.Github} />
-                    {/* <ButtonText>GitHub</ButtonText> */}
-                  </LinkButton>
+                  {repo.github_repo && (
+                    <LinkButton
+                      href={[
+                        `https://github.com/${repo.github_repo.github_repo_owner}/${repo.github_repo.github_repo_name}/tree/${repo.github_repo.default_branch}`,
+                        repo.github_repo.path_to_code,
+                      ]
+                        .filter(Boolean)
+                        .join('/')}
+                      target="_blank"
+                      square
+                    >
+                      <ButtonIcon icon={Lucide.Github} />
+                    </LinkButton>
+                  )}
                 </>
               )}
             </View>

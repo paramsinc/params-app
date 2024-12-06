@@ -895,6 +895,7 @@ export async function repoBySlug({
         github_repo_owner: true,
         github_repo_name: true,
         path_to_code: true,
+        default_branch: true,
       }),
     })
     .from(schema.repositories)

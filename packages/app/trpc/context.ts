@@ -5,7 +5,7 @@ export const createTrpcContext = async (opts: trpcNext.CreateNextContextOptions)
   console.log('[will-check-auth]', opts.req.headers.authorization)
   const auth = await BackendAuth.authenticateNextApiRequest(opts.req)
   console.log('auth', auth)
-  return { auth }
+  return { auth, revalidate: opts.res.revalidate }
 }
 
 export type TrpcContext = Awaited<ReturnType<typeof createTrpcContext>>

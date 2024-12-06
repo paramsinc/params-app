@@ -41,52 +41,46 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async (ctx) => {
   const profileSlug = ctx.params?.profileSlug as string
 
-  try {
-    const [profile] = await Promise.all([
-      ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
-      ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
-      ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
-    ])
+  const [profile] = await Promise.all([
+    ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
+    ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
+    ssgApi.profileBySlug_public.prefetch({ profile_slug: profileSlug }),
+  ])
 
-    const trpcState = ssgApi.dehydrate()
+  const trpcState = ssgApi.dehydrate()
 
-    console.log(
-      '[trpcState]',
-      trpcState.queries.map((q) => q.queryKey)
-    )
+  console.log(
+    '[trpcState]',
+    trpcState.queries.map((q) => q.queryKey)
+  )
 
-    return {
-      props: {
-        trpcState,
-        profileSlug,
-        metadata: {
-          titleTemplate: '%s | Params',
+  return {
+    props: {
+      trpcState,
+      profileSlug,
+      metadata: {
+        titleTemplate: '%s | Params',
+        title: profile.name,
+        description: profile.short_bio ?? '',
+        openGraph: {
           title: profile.name,
           description: profile.short_bio ?? '',
-          openGraph: {
-            title: profile.name,
-            description: profile.short_bio ?? '',
-            images: [
-              ...(profile.image_vendor && profile.image_vendor_id
-                ? [
-                    {
-                      url: imageLoader[profile.image_vendor]({
-                        src: profile.image_vendor_id,
-                        width: 1500,
-                        quality: 100,
-                      }),
-                    },
-                  ]
-                : []),
-            ],
-          },
-        } satisfies Metadata,
-      },
-      revalidate: 1,
-    }
-  } catch {
-    return {
-      notFound: true,
-    }
+          images: [
+            ...(profile.image_vendor && profile.image_vendor_id
+              ? [
+                  {
+                    url: imageLoader[profile.image_vendor]({
+                      src: profile.image_vendor_id,
+                      width: 1500,
+                      quality: 100,
+                    }),
+                  },
+                ]
+              : []),
+          ],
+        },
+      } satisfies Metadata,
+    },
+    revalidate: 1,
   }
 }

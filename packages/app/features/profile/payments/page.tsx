@@ -1,4 +1,6 @@
 import { Button } from 'app/ds/Button'
+import { LinkButton } from 'app/ds/Button/link'
+import { ErrorCard } from 'app/ds/Error/card'
 import { Card } from 'app/ds/Form/layout'
 import { Lucide } from 'app/ds/Lucide'
 import { Page } from 'app/ds/Page'
@@ -27,8 +29,17 @@ export function ProfilePaymentsPage() {
 
   const selectedProfile = myProfiles.data?.find((profile) => profile.id === profileId)
 
+  const loginLink = api.profileConnectAccountLoginLink.useQuery(
+    {
+      profile_slug: selectedProfile?.slug ?? '',
+    },
+    {
+      enabled: selectedProfile != null,
+    }
+  )
+
   return (
-    <Page.Root grow>
+    <Page.Root>
       <Page.Content gap="$3">
         <Card>
           <Card.Title>Payments</Card.Title>
@@ -48,12 +59,24 @@ export function ProfilePaymentsPage() {
             </ProfilePicker>
           </View>
         </Card>
+
+        <ErrorCard error={loginLink.error} />
+
+        <LinkButton
+          loading={!loginLink.data}
+          inverse
+          href={loginLink.data?.url ?? '#'}
+          target="_blank"
+          als="flex-start"
+        >
+          <Button.Text>Manage Payments with Stripe</Button.Text>
+        </LinkButton>
       </Page.Content>
-      <Page.ContentWidthComponent grow>
+      {/* <Page.ContentWidthComponent grow>
         {selectedProfile && (
           <ConnectAccountContent profileSlug={selectedProfile.slug} onComplete={() => {}} />
         )}
-      </Page.ContentWidthComponent>
+      </Page.ContentWidthComponent> */}
     </Page.Root>
   )
 }

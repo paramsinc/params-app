@@ -1,4 +1,4 @@
-import { loadConnectAndInitialize } from '@stripe/connect-js'
+import { loadConnectAndInitialize } from '@stripe/connect-js/pure'
 import { env } from 'app/env'
 import { useEffect, useMemo, useState } from 'app/react'
 import { api } from 'app/trpc/client'

@@ -221,6 +221,11 @@ const profile = {
               },
               email: me.email,
               metadata: {},
+              controller: {
+                stripe_dashboard: {
+                  type: 'express',
+                },
+              },
             })
             .then((account) => account.id)
 
@@ -549,31 +554,70 @@ const profile = {
       }
 
       const payments_enabled =
-        (await stripe.accounts.retrieve(profile.stripe_connect_account_id)).payouts_enabled ===
-        false
+        (await stripe.accounts.retrieve(profile.stripe_connect_account_id)).payouts_enabled === true
 
-      console.log('[payments_enabled]', payments_enabled)
-
+      console.log('[payments_enabled]!', payments_enabled)
       const accountSession = await stripe.accountSessions.create({
         account: profile.stripe_connect_account_id,
         components: {
-          ...(payments_enabled === false
-            ? {
-                account_onboarding: {
-                  enabled: true,
-                },
-              }
-            : { payouts_list: { enabled: true } }),
-          // account_management: { enabled: true },
-
-          // payouts_list: { enabled: true },
-          // balances: { enabled: true },
-          // tax_registrations: { enabled: true },
-          // payment_details: { enabled: true },
+          account_onboarding: {
+            enabled: true,
+          },
+          account_management: {
+            enabled: true,
+            features: {
+              external_account_collection: true,
+            },
+          },
+          payouts_list: { enabled: true },
+          payment_details: { enabled: true },
         },
       })
 
-      return accountSession
+      return { ...accountSession, payments_enabled }
+    }),
+
+  profileConnectAccountLoginLink: authedProcedure
+    .input(z.object({ profile_slug: z.string() }))
+    .query(async ({ ctx, input: { profile_slug } }) => {
+      const [first] = await db
+        .select({
+          profile: pick('profiles', { stripe_connect_account_id: true }),
+          myMembership: pick('profileMembers', { id: true }),
+        })
+        .from(schema.profiles)
+        .innerJoin(
+          schema.profileMembers,
+          d.eq(schema.profileMembers.profile_id, schema.profiles.id)
+        )
+        .where(
+          d.and(
+            d.eq(schema.profileMembers.user_id, ctx.auth.userId),
+            d.eq(schema.profiles.slug, profile_slug)
+          )
+        )
+        .limit(1)
+        .execute()
+
+      if (!first) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Profile not found.`,
+        })
+      }
+
+      const { myMembership, profile } = first
+
+      if (!myMembership) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: `You are not a member of this profile.`,
+        })
+      }
+
+      const loginLink = await stripe.accounts.createLoginLink(profile.stripe_connect_account_id)
+
+      return loginLink
     }),
 
   profileConnectAccount: authedProcedure

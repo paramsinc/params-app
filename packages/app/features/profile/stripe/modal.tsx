@@ -17,7 +17,7 @@ export const ConnectAccountModal = (props: React.ComponentProps<typeof Modal>) =
 }
 
 export const ConnectAccountModalContent = (
-  props: Pick<React.ComponentProps<typeof ConnectAccountContent>, 'profileSlug'>
+  props: Pick<React.ComponentProps<typeof ConnectAccountContent>, 'profileSlug' | 'element'>
 ) => {
   const { onOpenChange } = useModalState(id)
   const query = api.profileConnectAccount.useQuery(

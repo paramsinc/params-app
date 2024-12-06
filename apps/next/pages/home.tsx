@@ -18,6 +18,7 @@ import type { Metadata } from '../metadata'
 import { db } from 'app/db/db'
 import { repoBySlug } from 'app/trpc/api'
 import { imageLoader } from 'app/image/loader'
+import { TextLink } from 'app/ds/TextLink'
 
 const H1 = styled(Heading, {
   letterSpacing: '-0.035em',
@@ -198,6 +199,12 @@ export default function Home({ sections }: InferGetStaticPropsType<typeof getSta
             profileSlug="jeremy"
           /> */}
         </View>
+      </View>
+
+      <View p="$2">
+        <TextLink href="/privacy">
+          <Text color="$color11">Privacy Policy</Text>
+        </TextLink>
       </View>
     </Page.Root>
   )

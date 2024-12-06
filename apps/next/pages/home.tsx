@@ -58,8 +58,8 @@ export const getStaticProps = (async () => {
       title: 'Build a churn prediction model',
     },
     {
-      profile_slug: 'arc-prize-2024',
-      repo_slug: 'the-architects',
+      profile_slug: 'the-architects',
+      repo_slug: 'arc-prize-2024',
       socialLinks: undefined,
       title: 'Build a solution to ARC-AGI with Test-Time Training',
     },

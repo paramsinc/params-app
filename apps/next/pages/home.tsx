@@ -104,7 +104,7 @@ export const getStaticProps = (async () => {
       socialLinks: jeremySocials,
     }),
     makeSection(jeremyArc, {
-      title: 'Score 55% on ARC-AGI',
+      title: 'Build a solution to ARC-AGI',
       socialLinks: jeremySocials,
     }),
   ]

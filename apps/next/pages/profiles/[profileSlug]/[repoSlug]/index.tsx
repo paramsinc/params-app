@@ -33,74 +33,79 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   console.log('[profiles/[profileSlug]/[repoSlug][getStaticProps]', { profileSlug, repoSlug })
 
-  const repoPromise = ssgApi.repo.bySlug_public.fetch({
-    profile_slug: profileSlug,
-    repo_slug: repoSlug,
-  })
-
-  const [profile, repo] = await Promise.all([
-    ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
-    repoPromise,
-    ssgApi.repo.paramsJson
-      .fetch({ profile_slug: profileSlug, repo_slug: repoSlug })
-      .then(async (paramsJson) => {
-        const mainDocsFile = paramsJson?.docs.main
-        if (mainDocsFile && mainDocsFile.toLowerCase() !== 'readme.md') {
-          const repo = await repoPromise
-          await ssgApi.github.repoFiles.prefetch({
-            profile_slug: profileSlug,
-            repo_slug: repoSlug,
-            path: [repo.github_repo?.path_to_code, mainDocsFile].filter(Boolean).join('/'),
-          })
-        }
-      }),
-    ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
-    ssgApi.repo.readme.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
-    ssgApi.repo.bookableProfiles_public.prefetch({
+  try {
+    const repoPromise = ssgApi.repo.bySlug_public.fetch({
       profile_slug: profileSlug,
       repo_slug: repoSlug,
-    }),
-  ])
+    })
+    const [profile, repo] = await Promise.all([
+      ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
+      repoPromise,
+      ssgApi.repo.paramsJson
+        .fetch({ profile_slug: profileSlug, repo_slug: repoSlug })
+        .then(async (paramsJson) => {
+          const mainDocsFile = paramsJson?.docs.main
+          if (mainDocsFile && !mainDocsFile.toLowerCase().endsWith('readme.md')) {
+            const repo = await repoPromise
+            await ssgApi.github.repoFiles.prefetch({
+              profile_slug: profileSlug,
+              repo_slug: repoSlug,
+              path: [repo.github_repo?.path_to_code, mainDocsFile].filter(Boolean).join('/'),
+            })
+          }
+        }),
+      ssgApi.onetimePlansByProfileSlug_public.prefetch({ profile_slug: profileSlug }),
+      ssgApi.repo.readme.prefetch({ profile_slug: profileSlug, repo_slug: repoSlug }),
+      ssgApi.repo.bookableProfiles_public.prefetch({
+        profile_slug: profileSlug,
+        repo_slug: repoSlug,
+      }),
+    ])
 
-  const trpcState = ssgApi.dehydrate()
+    const trpcState = ssgApi.dehydrate()
 
-  console.log(
-    '[trpcState]',
-    trpcState.queries.map((q) => q.queryKey)
-  )
+    console.log(
+      '[trpcState]',
+      trpcState.queries.map((q) => q.queryKey)
+    )
 
-  return {
-    props: {
-      trpcState,
-      profileSlug,
-      repoSlug,
-      metadata: {
-        title: `@${profile.slug}/${repo.slug} on ${env.APP_NAME}`,
-        description: repo.description ?? '',
-        openGraph: {
+    return {
+      props: {
+        trpcState,
+        profileSlug,
+        repoSlug,
+        metadata: {
           title: `@${profile.slug}/${repo.slug} on ${env.APP_NAME}`,
           description: repo.description ?? '',
-          images: [
-            ...(profile.image_vendor && profile.image_vendor_id
-              ? [
-                  {
-                    url: imageLoader[profile.image_vendor]({
-                      src: profile.image_vendor_id,
-                      width: 1500,
-                      quality: 100,
-                    }),
-                  },
-                ]
-              : []),
-          ],
-          siteName: env.APP_NAME,
-        },
-        twitter: {
-          cardType: 'summary_large_image',
-          site: `https://${env.APP_URL}`,
-        },
-      } satisfies Metadata,
-    },
-    revalidate: 30,
+          openGraph: {
+            title: `@${profile.slug}/${repo.slug} on ${env.APP_NAME}`,
+            description: repo.description ?? '',
+            images: [
+              ...(profile.image_vendor && profile.image_vendor_id
+                ? [
+                    {
+                      url: imageLoader[profile.image_vendor]({
+                        src: profile.image_vendor_id,
+                        width: 1500,
+                        quality: 100,
+                      }),
+                    },
+                  ]
+                : []),
+            ],
+            siteName: env.APP_NAME,
+          },
+          twitter: {
+            cardType: 'summary_large_image',
+            site: `https://${env.APP_URL}`,
+          },
+        } satisfies Metadata,
+      },
+      revalidate: 30,
+    }
+  } catch {
+    return {
+      notFound: true,
+    }
   }
 }

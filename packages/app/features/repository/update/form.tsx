@@ -79,7 +79,7 @@ export function UpdateRepositoryForm({
   return (
     <Form.RootProvider
       defaultValues={{
-        patch: { slug: repo.slug, github_url: repo.github_url },
+        patch: { slug: repo.slug, github_url: repo.github_url, description: repo.description },
         integration_patch: {
           path_to_code: repo.githubRepoIntegration?.path_to_code,
         },

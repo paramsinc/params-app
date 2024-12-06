@@ -1362,6 +1362,7 @@ const repository = router({
             id: true,
             slug: true,
             github_url: true,
+            description: true,
           }),
           profile: pick('profiles', publicSchema.profiles.ProfilePublic),
           githubRepoIntegration: pick('githubRepoIntegrations', {

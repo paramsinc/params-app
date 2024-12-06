@@ -199,12 +199,11 @@ export default function Home({ sections }: InferGetStaticPropsType<typeof getSta
             profileSlug="jeremy"
           /> */}
         </View>
-      </View>
-
-      <View p="$2">
-        <TextLink href="/privacy">
-          <Text color="$color11">Privacy Policy</Text>
-        </TextLink>
+        <View p="$2">
+          <TextLink href="/privacy">
+            <Text color="$color11">Privacy Policy</Text>
+          </TextLink>
+        </View>
       </View>
     </Page.Root>
   )

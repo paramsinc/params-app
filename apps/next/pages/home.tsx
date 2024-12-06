@@ -50,12 +50,6 @@ export const getStaticProps = (async () => {
     title: string
   }> = [
     {
-      repo_slug: 'churn',
-      profile_slug: 'jeremy-berman',
-      socialLinks: jeremySocials,
-      title: 'Build a churn prediction model',
-    },
-    {
       profile_slug: 'the-architects',
       repo_slug: 'arc-prize-2024',
       title: 'Achieve SoTA on ARC-AGI with Test-Time Training',
@@ -65,6 +59,12 @@ export const getStaticProps = (async () => {
       profile_slug: 'jeremy-berman',
       socialLinks: jeremySocials,
       title: 'Build a solution to ARC-AGI with Evolutionary Test-Time Compute',
+    },
+    {
+      repo_slug: 'churn',
+      profile_slug: 'jeremy-berman',
+      socialLinks: jeremySocials,
+      title: 'Build a churn prediction model',
     },
   ]
   if (process.env.VERCEL_ENV !== 'production') {

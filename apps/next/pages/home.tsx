@@ -42,21 +42,41 @@ const H1 = styled(Heading, {
 })
 
 export const getStaticProps = (async () => {
-  const [jeremyArc, jeremyChurn] = await Promise.all([
-    repoBySlug({
-      repo_slug: 'arc-agi',
-      profile_slug: 'jeremy-berman',
-    }),
-    // repoBySlug({ repo_slug: 'recommendation-system', profile_slug: 'francois' }),
-    repoBySlug({ repo_slug: 'churn', profile_slug: 'jeremy-berman' }),
-  ])
   const jeremySocials = {
     github: 'https://github.com/jerber',
     twitter: 'https://x.com/jerber888',
     linkedin: 'https://linkedin.com/in/jeremyberman1',
   }
 
-  function getImage(repo: typeof jeremyArc | typeof jeremyChurn) {
+  let cards: Array<{
+    repo_slug: string
+    profile_slug: string
+    socialLinks: {
+      github: string
+      twitter: string
+      linkedin: string
+    }
+    title: string
+  }> = [
+    {
+      repo_slug: 'churn',
+      profile_slug: 'jeremy-berman',
+      socialLinks: jeremySocials,
+      title: 'Build a churn prediction model',
+    },
+    {
+      repo_slug: 'arc-agi',
+      profile_slug: 'jeremy-berman',
+      socialLinks: jeremySocials,
+      title: 'Build a solution to ARC-AGI',
+    },
+  ]
+  if (process.env.VERCEL_ENV !== 'production') {
+    cards = []
+  }
+  const repos = await Promise.all(cards.map((card) => repoBySlug(card)))
+
+  function getImage(repo: (typeof repos)[number]) {
     return repo.profile.image_vendor_id && repo.profile.image_vendor
       ? imageLoader[repo.profile.image_vendor]({
           src: repo.profile.image_vendor_id,
@@ -66,7 +86,7 @@ export const getStaticProps = (async () => {
   }
 
   function makeSection(
-    repo: typeof jeremyArc | typeof jeremyChurn,
+    repo: (typeof repos)[number],
     props: Pick<React.ComponentProps<typeof RepoCardSection>, 'socialLinks' | 'title'>
   ) {
     return {
@@ -80,34 +100,9 @@ export const getStaticProps = (async () => {
     }
   }
 
-  const sections: Array<React.ComponentProps<typeof RepoCardSection>> = [
-    // makeSection(francoisRecommendation, {
-    //   title: 'Build a recommendation system',
-    //   socialLinks: {
-    //     github: 'https://github.com/fchollet',
-    //     twitter: 'https://x.com/fchollet',
-    //     linkedin: 'https://linkedin.com/in/fchollet',
-    //   },
-    // }),
-    // {
-    //   title: 'Build a churn prediction model',
-    //   repoSlug: jeremyChurn.slug,
-    //   description: jeremyChurn.description ?? '',
-    //   profileImage: jeremyChurn.profile.image_vendor_id,
-    //   authorName: jeremyChurn.profile.name,
-    //   authorBio: jeremyChurn.profile.short_bio ?? '',
-    //   socialLinks: jeremySocials,
-    //   profileSlug: jeremyChurn.profile.slug,
-    // },
-    makeSection(jeremyChurn, {
-      title: 'Build a churn prediction model',
-      socialLinks: jeremySocials,
-    }),
-    makeSection(jeremyArc, {
-      title: 'Build a solution to ARC-AGI',
-      socialLinks: jeremySocials,
-    }),
-  ]
+  const sections: Array<React.ComponentProps<typeof RepoCardSection>> = repos.map((repo) =>
+    makeSection(repo)
+  )
   return {
     props: {
       metadata: {} satisfies Metadata,

@@ -548,21 +548,26 @@ const profile = {
         })
       }
 
+      const payments_enabled =
+        (await stripe.accounts.retrieve(profile.stripe_connect_account_id)).payouts_enabled ===
+        false
+
       const accountSession = await stripe.accountSessions.create({
         account: profile.stripe_connect_account_id,
         components: {
-          account_onboarding: {
-            enabled:
-              (
-                await stripe.accounts.retrieve(profile.stripe_connect_account_id)
-              ).payouts_enabled === false,
-          },
-          account_management: { enabled: true },
-          payouts: { enabled: true },
-          payouts_list: { enabled: true },
-          balances: { enabled: true },
-          tax_registrations: { enabled: true },
-          payment_details: { enabled: true },
+          ...(payments_enabled === false
+            ? {
+                account_onboarding: {
+                  enabled: true,
+                },
+              }
+            : { payouts_list: { enabled: true } }),
+          // account_management: { enabled: true },
+
+          // payouts_list: { enabled: true },
+          // balances: { enabled: true },
+          // tax_registrations: { enabled: true },
+          // payment_details: { enabled: true },
         },
       })
 

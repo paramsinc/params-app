@@ -32,6 +32,7 @@ export function ProfilePaymentsPage() {
       <Page.Content gap="$3">
         <Card>
           <Card.Title>Payments</Card.Title>
+          <Card.Description>View your payments and payouts.</Card.Description>
         </Card>
         <Card>
           <Card.Label>Select a profile</Card.Label>

@@ -51,10 +51,9 @@ export function ProfilesListContent() {
               <View gap="$1">
                 {myProfiles.data?.map((profile) => {
                   const isMissingAvailability = !profile.availability_ranges?.length
-                  const isMissingStripePayouts = profile.has_stripe_payouts_enabled !== true
                   return (
                     <Card key={profile.id} gap="$3">
-                      <View row gap="$3">
+                      <View $gtSm={{ row: true }} gap="$3">
                         <View width={100} height={(100 * 9) / 16}>
                           {profile.image_vendor && profile.image_vendor_id ? (
                             <Image
@@ -66,7 +65,7 @@ export function ProfilesListContent() {
                             />
                           ) : null}
                         </View>
-                        <View grow jc="center">
+                        <View $gtSm={{ grow: true }} jc="center">
                           <View gap="$2">
                             <Link href={`/@${profile.slug}`}>
                               <Card.Title fontFamily="$mono">@{profile.slug}</Card.Title>

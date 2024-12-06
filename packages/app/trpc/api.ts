@@ -552,6 +552,8 @@ const profile = {
         (await stripe.accounts.retrieve(profile.stripe_connect_account_id)).payouts_enabled ===
         false
 
+      console.log('[payments_enabled]', payments_enabled)
+
       const accountSession = await stripe.accountSessions.create({
         account: profile.stripe_connect_account_id,
         components: {

@@ -332,6 +332,7 @@ const profile = {
             slug,
             availability_ranges,
             timezone,
+            short_bio,
           },
         },
       }) => {
@@ -359,6 +360,7 @@ const profile = {
             slug,
             availability_ranges,
             timezone,
+            short_bio,
           })
           .where(d.eq(schema.profiles.id, id))
           .returning(pick('profiles', publicSchema.profiles.ProfileInternal))

@@ -43,7 +43,10 @@ const H1 = styled(Heading, {
 
 export const getStaticProps = (async () => {
   const [jeremyArc, jeremyChurn] = await Promise.all([
-    repoBySlug({ repo_slug: 'arc-agi', profile_slug: 'jeremy-berman' }),
+    repoBySlug({
+      repo_slug: 'arc-agi',
+      profile_slug: 'jeremy-berman',
+    }),
     // repoBySlug({ repo_slug: 'recommendation-system', profile_slug: 'francois' }),
     repoBySlug({ repo_slug: 'churn', profile_slug: 'jeremy-berman' }),
   ])

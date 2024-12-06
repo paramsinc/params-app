@@ -2853,6 +2853,7 @@ export const appRouter = router({
               booking_id: booking.id,
             },
             reverse_transfer: true,
+            refund_application_fee: true,
           },
           {
             idempotencyKey: booking.stripe_payment_intent_id,

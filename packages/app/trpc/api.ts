@@ -2550,7 +2550,8 @@ export const appRouter = router({
 
       const amount = plan.price
       const currency = plan.currency
-      const application_fee_amount = plan.price * 0 // TODO calculate
+      const appliation_fee_out_of_one = 0
+      const application_fee_amount = plan.price * Math.min(1, appliation_fee_out_of_one)
 
       let receiptEmail = ctx.auth.userEmail
 
@@ -2818,6 +2819,7 @@ export const appRouter = router({
             organization_id: organizationMembershipSubquery.organization_id,
             profile_name: schema.profiles.name,
             organization_name: schema.organizations.name,
+            stripe_connect_account_id: schema.profiles.stripe_connect_account_id,
           })
           .from(schema.bookings)
           .where(d.and(d.eq(schema.bookings.id, input.id)))
@@ -2850,6 +2852,7 @@ export const appRouter = router({
             metadata: {
               booking_id: booking.id,
             },
+            reverse_transfer: true,
           },
           {
             idempotencyKey: booking.stripe_payment_intent_id,

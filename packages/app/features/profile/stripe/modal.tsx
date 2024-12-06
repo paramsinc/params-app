@@ -48,6 +48,11 @@ export const ConnectAccountModalContent = (
                   preset: 'done',
                   title: 'You can now receive payments!',
                 })
+              } else {
+                toast({
+                  title: 'Payouts are still not fully enabled.',
+                  message: 'You may have to finalize details (or refresh a few times).',
+                })
               }
             })
             props.onComplete?.()

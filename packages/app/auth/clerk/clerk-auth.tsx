@@ -21,6 +21,7 @@ import { useCurrentPath } from 'app/navigation/use-pathname'
 import { useDashboardLinks } from 'app/features/web-layout/useDashboardLinks'
 import { dark, neobrutalism } from '@clerk/themes'
 import { useThemeName } from 'app/ds/useThemeName'
+import { Lucide } from 'app/ds/Lucide'
 
 const clerk = new Clerk(env.CLERK_PUBLISHABLE_KEY!)
 
@@ -45,6 +46,11 @@ function UserTrigger({ children }: { children?: React.ReactElement }) {
       <UserButton>
         {children}
         <UserButton.MenuItems>
+          <UserButton.Link
+            label="Home"
+            href="/"
+            labelIcon={<Lucide.Home size={16} color="var(--accent)" />}
+          />
           {links.map((link) => (
             <UserButton.Link
               key={link.href}

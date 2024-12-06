@@ -74,7 +74,9 @@ export const getStaticProps = (async () => {
   if (process.env.VERCEL_ENV !== 'production') {
     cards = []
   }
-  const repos = await Promise.all(cards.map((card) => repoBySlug(card)))
+  const repos = await Promise.all(
+    cards.map(async (card) => ({ ...card, ...(await repoBySlug(card)) }))
+  )
 
   function getImage(repo: (typeof repos)[number]) {
     return repo.profile.image_vendor_id && repo.profile.image_vendor
@@ -85,12 +87,8 @@ export const getStaticProps = (async () => {
       : null
   }
 
-  function makeSection(
-    repo: (typeof repos)[number],
-    props: Pick<React.ComponentProps<typeof RepoCardSection>, 'socialLinks' | 'title'>
-  ) {
+  function makeSection(repo: (typeof repos)[number]) {
     return {
-      ...props,
       repoSlug: repo.slug,
       description: repo.description ?? '',
       profileImage: getImage(repo),
@@ -100,9 +98,16 @@ export const getStaticProps = (async () => {
     }
   }
 
-  const sections: Array<React.ComponentProps<typeof RepoCardSection>> = repos.map((repo) =>
-    makeSection(repo)
-  )
+  const sections: Array<React.ComponentProps<typeof RepoCardSection>> = repos.map((repo) => ({
+    repoSlug: repo.slug,
+    description: repo.description ?? '',
+    profileImage: getImage(repo),
+    authorName: repo.profile.name,
+    authorBio: repo.profile.short_bio ?? '',
+    profileSlug: repo.profile.slug,
+    title: repo.title,
+    socialLinks: repo.socialLinks,
+  }))
   return {
     props: {
       metadata: {} satisfies Metadata,

@@ -2565,7 +2565,7 @@ export const appRouter = router({
 
       const amount = plan.price
       const currency = plan.currency
-      const appliation_fee_out_of_one = 0
+      const appliation_fee_out_of_one = 0.1
       const application_fee_amount = plan.price * Math.min(1, appliation_fee_out_of_one)
 
       let receiptEmail = ctx.auth.userEmail

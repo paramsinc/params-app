@@ -11,8 +11,6 @@ const auth = new google.auth.JWT({
   subject: serverEnv.GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR,
 })
 
-console.log('[google][email]', serverEnv.GOOGLE_EMAIL_ACCOUNT_FOR_CALENDAR)
-
 export async function createGoogleCalendarEventForOffer({
   offerId,
   attendeeEmails,

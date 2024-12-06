@@ -20,9 +20,7 @@ import { slugify } from 'app/trpc/slugify'
 
 const { useMutation } = api.createProfile
 
-const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>({
-  scrollToError: false,
-})
+const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
 
 export function NewProfileForm({
   onDidCreateProfile,

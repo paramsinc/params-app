@@ -39,7 +39,7 @@ export const LinkButton = forwardRef(function LinkButton(
           if (props.target === '_blank' && platform.OS === 'web' && !e.defaultPrevented) {
             e.preventDefault()
             window.open(link.href, '_blank')
-          } else {
+          } else if (!e.defaultPrevented) {
             link.onPress(e)
           }
         } else if (platform.OS !== 'web') {
@@ -51,7 +51,7 @@ export const LinkButton = forwardRef(function LinkButton(
       tag="a"
       hrefAttrs={{
         target: props.target,
-        rel: 'noreferrer',
+        rel: props.target === '_blank' ? 'noreferrer noopener' : undefined,
       }}
       href={link.href}
       target={props.target}

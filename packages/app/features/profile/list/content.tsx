@@ -136,6 +136,10 @@ function ConnectCard({ profileSlug }: { profileSlug: string }) {
           payments.
         </Card.Description>
 
+        <Card.Description>
+          Please note, Stripe can take up to 5 minutes to process form submissions. You may have to keep pressing the complete button a few times until your account is verified.
+        </Card.Description>
+
         <ConnectAccountModal>
           <ConnectAccountModalTrigger>
             <Button inverse als="flex-start">

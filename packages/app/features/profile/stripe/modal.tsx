@@ -50,8 +50,10 @@ export const ConnectAccountModalContent = (
                 })
               } else {
                 toast({
-                  title: 'Payouts are still not fully enabled.',
-                  message: 'You may have to finalize details (or refresh a few times).',
+                  title: 'Payouts might not be fully enabled.',
+                  message:
+                    'Please refresh or try a few more times. Stripe takes 1-5 minutes to process.',
+                  duration: 10000,
                 })
               }
             })

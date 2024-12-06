@@ -39,6 +39,7 @@ import {
   CreateProfileMemberModalTrigger,
 } from 'app/features/profile/member/new/modal'
 import { RepositoryDescriptionField, RepositorySlugField } from 'app/features/repository/new/fields'
+import { ApplyGatePage } from 'app/features/user/apply/page'
 
 const { useMutation } = api.repo.createFromGithub
 
@@ -94,229 +95,237 @@ export function NewRepositoryPage() {
   })
   return (
     <UserGate>
-      <Form.FormProvider {...form}>
-        <Page.Root grow>
-          <Scroll>
-            <Page.Content gap="$3">
-              <ProfilesGate>
-                <Card.Title>Time to set up your Params repo</Card.Title>
-                <Card.Description>
-                  Create a repository, share the link, and {env.APP_NAME} lets people pay you for a
-                  call to ask about your code.
-                </Card.Description>
-                <Transition>
-                  <Card>
-                    <Number>{1}</Number>
-                    <Card.Title>Select your developer profile</Card.Title>
-                    <Card.Description>
-                      This profile will be the owner of the repo. Any members of this profile will
-                      have access to edit the repo's details on {env.APP_NAME}.
-                    </Card.Description>
+      <ApplyGatePage>
+        <Form.FormProvider {...form}>
+          <Page.Root grow>
+            <Scroll>
+              <Page.Content gap="$3">
+                <ProfilesGate>
+                  <Card.Title>Time to set up your Params repo</Card.Title>
+                  <Card.Description>
+                    Create a repository, share the link, and {env.APP_NAME} lets people pay you for
+                    a call to ask about your code.
+                  </Card.Description>
+                  <Transition>
+                    <Card>
+                      <Number>{1}</Number>
+                      <Card.Title>Select your developer profile</Card.Title>
+                      <Card.Description>
+                        This profile will be the owner of the repo. Any members of this profile will
+                        have access to edit the repo's details on {env.APP_NAME}.
+                      </Card.Description>
 
-                    <Card.Description>
-                      If this repository belongs to a team, select or create a team profile below.
-                    </Card.Description>
-                    <ProfileField />
-                  </Card>
-                </Transition>
-                <SelectedProfileGate>
-                  <ReadyWithProfile>
-                    <Transition>
-                      <Card>
-                        <Number>{2}</Number>
-                        <Card.Title>Configure who can get booked for a call</Card.Title>
-                        <WhoCanGetBooked />
-                      </Card>
-                    </Transition>
-                  </ReadyWithProfile>
-                  <ReadyWithProfile>
-                    <Transition>
-                      <Card>
-                        <Number>{3}</Number>
-                        <Card.Title>Pick the repo you want to use from GitHub.</Card.Title>
-                        <Form.Controller
-                          disableScrollToError
-                          name="input"
-                          render={({ field }) => {
-                            const { github_repo_name, github_repo_owner, isPrivateRepo } =
-                              field.value ?? {}
-                            return (
-                              <Modal>
-                                {github_repo_name && github_repo_owner ? (
-                                  <>
-                                    <View
-                                      row
-                                      jbtwn
-                                      ai="center"
-                                      p="$2"
-                                      br="$3"
-                                      bg="$color2"
-                                      bw={1}
-                                      boc="$borderColor"
-                                      theme="green"
-                                      gap="$3"
-                                    >
-                                      <Lucide.CheckCircle size={16} color="$color10" />
-                                      <View flex={1}>
-                                        <Text color="$color11">{`${github_repo_owner}/${github_repo_name}`}</Text>
-                                        <Text>Repo selected</Text>
-                                      </View>
-                                      <Modal.Trigger>
-                                        <Button>
-                                          <Button.Text>Change</Button.Text>
-                                        </Button>
-                                      </Modal.Trigger>
-                                    </View>
-                                    {isPrivateRepo && (
+                      <Card.Description>
+                        If this repository belongs to a team, select or create a team profile below.
+                      </Card.Description>
+                      <ProfileField />
+                    </Card>
+                  </Transition>
+                  <SelectedProfileGate>
+                    <ReadyWithProfile>
+                      <Transition>
+                        <Card>
+                          <Number>{2}</Number>
+                          <Card.Title>Configure who can get booked for a call</Card.Title>
+                          <WhoCanGetBooked />
+                        </Card>
+                      </Transition>
+                    </ReadyWithProfile>
+                    <ReadyWithProfile>
+                      <Transition>
+                        <Card>
+                          <Number>{3}</Number>
+                          <Card.Title>Pick the repo you want to use from GitHub.</Card.Title>
+                          <Form.Controller
+                            disableScrollToError
+                            name="input"
+                            render={({ field }) => {
+                              const { github_repo_name, github_repo_owner, isPrivateRepo } =
+                                field.value ?? {}
+                              return (
+                                <Modal>
+                                  {github_repo_name && github_repo_owner ? (
+                                    <>
                                       <View
+                                        row
+                                        jbtwn
+                                        ai="center"
                                         p="$2"
-                                        theme="yellow"
+                                        br="$3"
                                         bg="$color2"
                                         bw={1}
                                         boc="$borderColor"
-                                        row
+                                        theme="green"
                                         gap="$3"
-                                        ai="center"
-                                        br="$3"
                                       >
-                                        <Lucide.AlertTriangle color="$color10" size={16} />
-                                        <Text flex={1} color="$color11">
-                                          You selected a private GitHub repo. Adding it to Params
-                                          will make the code publicly accessible. Please proceed
-                                          with caution.
-                                        </Text>
-                                      </View>
-                                    )}
-                                    <View h={2} bg="$borderColor" />
-                                  </>
-                                ) : (
-                                  <Modal.Trigger>
-                                    <Button inverse als="flex-start">
-                                      <Button.Text>Choose Github Repo</Button.Text>
-                                    </Button>
-                                  </Modal.Trigger>
-                                )}
-
-                                <View
-                                  gap="$3"
-                                  // for mounting the values
-                                  display={github_repo_name && github_repo_owner ? 'flex' : 'none'}
-                                >
-                                  <Form.Controller
-                                    name="input.slug"
-                                    render={({ field, fieldState }) => {
-                                      return (
-                                        <RepositorySlugField
-                                          slug={field.value ?? ''}
-                                          onChange={field.onChange}
-                                          inputRef={field.ref}
-                                          error={fieldState.error}
-                                        />
-                                      )
-                                    }}
-                                  />
-
-                                  <Form.Controller
-                                    name="input.description"
-                                    render={({ field, fieldState }) => {
-                                      return (
-                                        <RepositoryDescriptionField
-                                          description={field.value ?? ''}
-                                          onChange={field.onChange}
-                                          inputRef={field.ref}
-                                          error={fieldState.error}
-                                        />
-                                      )
-                                    }}
-                                  />
-                                </View>
-
-                                <Modal.Content>
-                                  <Modal.Backdrop />
-                                  <Modal.Dialog>
-                                    <Modal.Dialog.HeaderSmart title="Github Repo" />
-                                    <Scroll p="$3">
-                                      <View gap="$3">
+                                        <Lucide.CheckCircle size={16} color="$color10" />
+                                        <View flex={1}>
+                                          <Text color="$color11">{`${github_repo_owner}/${github_repo_name}`}</Text>
+                                          <Text>Repo selected</Text>
+                                        </View>
                                         <Modal.Trigger>
-                                          {({ onOpenChange }) => (
-                                            <GitHubRepoPicker
-                                              onSelectRepo={(next) => {
-                                                field.onChange({
-                                                  ...field.value,
-                                                  github_repo_name: next.name,
-                                                  github_repo_owner: next.owner.login,
-                                                  isPrivateRepo: next.private,
-                                                } satisfies typeof field.value)
-                                                if (form.getValues().input?.slug === undefined) {
-                                                  form.setValue('input.slug', next.name, {
-                                                    shouldDirty: true,
-                                                    shouldValidate: true,
-                                                  })
-                                                }
-                                                onOpenChange(false)
-                                              }}
-                                              selectedRepo={
-                                                (github_repo_name &&
-                                                  github_repo_owner && {
-                                                    name: github_repo_name,
-                                                    owner: { login: github_repo_owner },
-                                                  }) ||
-                                                null
-                                              }
-                                            />
-                                          )}
+                                          <Button>
+                                            <Button.Text>Change</Button.Text>
+                                          </Button>
                                         </Modal.Trigger>
                                       </View>
-                                    </Scroll>
-                                  </Modal.Dialog>
-                                </Modal.Content>
-                              </Modal>
-                            )
-                          }}
-                        />
-                      </Card>
-                    </Transition>
-                  </ReadyWithProfile>
-                  <Form.Controller
-                    name="input"
-                    render={({ field }) => {
-                      const { github_repo_name, github_repo_owner } = field.value ?? {}
-                      return (
-                        <MaybeReady ready={Boolean(github_repo_name && github_repo_owner)} gap="$3">
-                          <Transition delay={50}>
-                            <Card>
-                              <Number>{4}</Number>
-                              <Card.Title>Root Directory (optional)</Card.Title>
-                              <Card.Description>
-                                The directory within your project where your code is located. Leave
-                                this field empty if your code is not located in a subdirectory.
-                              </Card.Description>
+                                      {isPrivateRepo && (
+                                        <View
+                                          p="$2"
+                                          theme="yellow"
+                                          bg="$color2"
+                                          bw={1}
+                                          boc="$borderColor"
+                                          row
+                                          gap="$3"
+                                          ai="center"
+                                          br="$3"
+                                        >
+                                          <Lucide.AlertTriangle color="$color10" size={16} />
+                                          <Text flex={1} color="$color11">
+                                            You selected a private GitHub repo. Adding it to Params
+                                            will make the code publicly accessible. Please proceed
+                                            with caution.
+                                          </Text>
+                                        </View>
+                                      )}
+                                      <View h={2} bg="$borderColor" />
+                                    </>
+                                  ) : (
+                                    <Modal.Trigger>
+                                      <Button inverse als="flex-start">
+                                        <Button.Text>Choose Github Repo</Button.Text>
+                                      </Button>
+                                    </Modal.Trigger>
+                                  )}
 
-                              <Input
-                                value={field.value?.path_to_code ?? ''}
-                                onChangeText={(next) => {
-                                  field.onChange({
-                                    ...field.value,
-                                    path_to_code: next,
-                                  } satisfies typeof field.value)
-                                }}
-                              />
-                            </Card>
-                          </Transition>
+                                  <View
+                                    gap="$3"
+                                    // for mounting the values
+                                    display={
+                                      github_repo_name && github_repo_owner ? 'flex' : 'none'
+                                    }
+                                  >
+                                    <Form.Controller
+                                      name="input.slug"
+                                      render={({ field, fieldState }) => {
+                                        return (
+                                          <RepositorySlugField
+                                            slug={field.value ?? ''}
+                                            onChange={field.onChange}
+                                            inputRef={field.ref}
+                                            error={fieldState.error}
+                                          />
+                                        )
+                                      }}
+                                    />
 
-                          <Transition delay={100}>
-                            <ParamsJson />
-                          </Transition>
-                        </MaybeReady>
-                      )
-                    }}
-                  />
-                </SelectedProfileGate>
-              </ProfilesGate>
-            </Page.Content>
-          </Scroll>
-        </Page.Root>
-      </Form.FormProvider>
+                                    <Form.Controller
+                                      name="input.description"
+                                      render={({ field, fieldState }) => {
+                                        return (
+                                          <RepositoryDescriptionField
+                                            description={field.value ?? ''}
+                                            onChange={field.onChange}
+                                            inputRef={field.ref}
+                                            error={fieldState.error}
+                                          />
+                                        )
+                                      }}
+                                    />
+                                  </View>
+
+                                  <Modal.Content>
+                                    <Modal.Backdrop />
+                                    <Modal.Dialog>
+                                      <Modal.Dialog.HeaderSmart title="Github Repo" />
+                                      <Scroll p="$3">
+                                        <View gap="$3">
+                                          <Modal.Trigger>
+                                            {({ onOpenChange }) => (
+                                              <GitHubRepoPicker
+                                                onSelectRepo={(next) => {
+                                                  field.onChange({
+                                                    ...field.value,
+                                                    github_repo_name: next.name,
+                                                    github_repo_owner: next.owner.login,
+                                                    isPrivateRepo: next.private,
+                                                  } satisfies typeof field.value)
+                                                  if (form.getValues().input?.slug === undefined) {
+                                                    form.setValue('input.slug', next.name, {
+                                                      shouldDirty: true,
+                                                      shouldValidate: true,
+                                                    })
+                                                  }
+                                                  onOpenChange(false)
+                                                }}
+                                                selectedRepo={
+                                                  (github_repo_name &&
+                                                    github_repo_owner && {
+                                                      name: github_repo_name,
+                                                      owner: { login: github_repo_owner },
+                                                    }) ||
+                                                  null
+                                                }
+                                              />
+                                            )}
+                                          </Modal.Trigger>
+                                        </View>
+                                      </Scroll>
+                                    </Modal.Dialog>
+                                  </Modal.Content>
+                                </Modal>
+                              )
+                            }}
+                          />
+                        </Card>
+                      </Transition>
+                    </ReadyWithProfile>
+                    <Form.Controller
+                      name="input"
+                      render={({ field }) => {
+                        const { github_repo_name, github_repo_owner } = field.value ?? {}
+                        return (
+                          <MaybeReady
+                            ready={Boolean(github_repo_name && github_repo_owner)}
+                            gap="$3"
+                          >
+                            <Transition delay={50}>
+                              <Card>
+                                <Number>{4}</Number>
+                                <Card.Title>Root Directory (optional)</Card.Title>
+                                <Card.Description>
+                                  The directory within your project where your code is located.
+                                  Leave this field empty if your code is not located in a
+                                  subdirectory.
+                                </Card.Description>
+
+                                <Input
+                                  value={field.value?.path_to_code ?? ''}
+                                  onChangeText={(next) => {
+                                    field.onChange({
+                                      ...field.value,
+                                      path_to_code: next,
+                                    } satisfies typeof field.value)
+                                  }}
+                                />
+                              </Card>
+                            </Transition>
+
+                            <Transition delay={100}>
+                              <ParamsJson />
+                            </Transition>
+                          </MaybeReady>
+                        )
+                      }}
+                    />
+                  </SelectedProfileGate>
+                </ProfilesGate>
+              </Page.Content>
+            </Scroll>
+          </Page.Root>
+        </Form.FormProvider>
+      </ApplyGatePage>
     </UserGate>
   )
 }

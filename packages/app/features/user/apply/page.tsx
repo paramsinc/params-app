@@ -61,3 +61,8 @@ export function UserApplyPage() {
     </View>
   )
 }
+
+export function ApplyGatePage({ children }: { children: React.ReactNode }) {
+  const me = useMe()
+  return <>{me.data?.can_create_profiles ? children : <UserApplyPage />}</>
+}

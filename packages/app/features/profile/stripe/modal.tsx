@@ -17,7 +17,9 @@ export const ConnectAccountModal = (props: React.ComponentProps<typeof Modal>) =
 }
 
 export const ConnectAccountModalContent = (
-  props: Pick<React.ComponentProps<typeof ConnectAccountContent>, 'profileSlug' | 'element'>
+  props: Pick<React.ComponentProps<typeof ConnectAccountContent>, 'profileSlug'> & {
+    onComplete?: () => void
+  }
 ) => {
   const { onOpenChange } = useModalState(id)
   const query = api.profileConnectAccount.useQuery(
@@ -46,8 +48,14 @@ export const ConnectAccountModalContent = (
                   preset: 'done',
                   title: 'You can now receive payments!',
                 })
+              } else {
+                toast({
+                  title: 'Payouts are still not fully enabled.',
+                  message: 'You may have to finalize details (or refresh a few times).',
+                })
               }
             })
+            props.onComplete?.()
           }}
         />
       </ModalDialog>

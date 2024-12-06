@@ -37,6 +37,7 @@ export const PlanDurationField = ({
         }}
         ref={inputRef}
       />
+      {error && <Text color="$red11">{error.message}</Text>}
     </Card>
   )
 }

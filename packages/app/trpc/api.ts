@@ -2882,6 +2882,7 @@ export const appRouter = router({
               start_datetime: true,
               stripe_payment_intent_id: true,
               stripe_payout_id: true,
+              timezone: true,
             }),
             profile_id: profileMembershipSubquery.profile_id,
             organization_id: organizationMembershipSubquery.organization_id,
@@ -2913,7 +2914,9 @@ export const appRouter = router({
         }
 
         const now = DateTime.now()
-        const bookingStart = DateTime.fromJSDate(booking.start_datetime)
+        const bookingStart = DateTime.fromJSDate(booking.start_datetime, {
+          zone: booking.timezone,
+        })
 
         if (bookingStart < now) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Booking already started.' })

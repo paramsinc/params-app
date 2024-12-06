@@ -142,7 +142,12 @@ function ConnectCard({ profileSlug }: { profileSlug: string }) {
               <ButtonText>Complete Stripe Onboarding</ButtonText>
             </Button>
           </ConnectAccountModalTrigger>
-          <ConnectAccountModalContent profileSlug={profileSlug} />
+          <ConnectAccountModalContent
+            profileSlug={profileSlug}
+            onComplete={() => {
+              query.refetch()
+            }}
+          />
         </ConnectAccountModal>
       </Card>
     )

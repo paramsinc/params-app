@@ -39,6 +39,7 @@ export async function createGoogleCalendarEventForOffer({
     conferenceDataVersion: 1,
     requestBody: {
       summary,
+
       location,
       description,
       start: {
@@ -57,6 +58,7 @@ export async function createGoogleCalendarEventForOffer({
           { method: 'popup', minutes: 10 },
         ],
       },
+
       conferenceData: {
         createRequest: {
           requestId: offerId,

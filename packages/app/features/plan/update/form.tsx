@@ -69,7 +69,18 @@ export function UpdateOnetimePlanForm({
 
             <Form.Controller
               name="duration_mins"
-              rules={{ required: 'Duration is required' }}
+              rules={{
+                required: 'Duration is required',
+                validate(value) {
+                  const number = Number(value)
+
+                  if (isNaN(number)) {
+                    return 'Duration must be a number'
+                  }
+
+                  return number >= 10 || 'Duration must be at least 10 minutes'
+                },
+              }}
               render={({ field, fieldState }) => (
                 <PlanDurationField
                   minutes={field.value === null ? null : field.value ?? plan.duration_mins}

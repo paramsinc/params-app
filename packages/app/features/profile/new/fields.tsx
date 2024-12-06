@@ -49,7 +49,7 @@ export const ProfileCoverImageField = ({
       {(props) => {
         return (
           <Card {...(props?.isDragAccept && { theme: 'green' })} {...(error && { theme: 'red' })}>
-            <Card.Label>Cover Image</Card.Label>
+            <Card.Label>Profile Image</Card.Label>
 
             <View
               aspectRatio={16 / 9}

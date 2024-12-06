@@ -52,11 +52,13 @@ export const getStaticProps = (async () => {
   let cards: Array<{
     repo_slug: string
     profile_slug: string
-    socialLinks: {
-      github: string
-      twitter: string
-      linkedin: string
-    }
+    socialLinks:
+      | {
+          github: string
+          twitter: string
+          linkedin: string
+        }
+      | undefined
     title: string
   }> = [
     {
@@ -66,10 +68,16 @@ export const getStaticProps = (async () => {
       title: 'Build a churn prediction model',
     },
     {
+      repo_slug: 'the-architects',
+      profile_slug: 'arc-prize-2024',
+      socialLinks: undefined,
+      title: 'Build a solution to ARC-AGI with Test-Time Training',
+    },
+    {
       repo_slug: 'arc-agi',
       profile_slug: 'jeremy-berman',
       socialLinks: jeremySocials,
-      title: 'Build a solution to ARC-AGI',
+      title: 'Build a solution to ARC-AGI with Evolutionary Test-Time Compute',
     },
   ]
   if (process.env.VERCEL_ENV !== 'production') {

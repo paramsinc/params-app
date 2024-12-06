@@ -188,35 +188,6 @@ export function NewRepositoryPage() {
                                       </View>
                                     )}
                                     <View h={2} bg="$borderColor" />
-
-                                    <Form.Controller
-                                      name="input.slug"
-                                      render={({ field, fieldState }) => {
-                                        return (
-                                          <RepositorySlugField
-                                            slug={field.value ?? ''}
-                                            onChange={field.onChange}
-                                            inputRef={field.ref}
-                                            error={fieldState.error}
-                                          />
-                                        )
-                                      }}
-                                    />
-
-                                    <Form.Controller
-                                      name="input.description"
-                                      rules={{ required: true }}
-                                      render={({ field, fieldState }) => {
-                                        return (
-                                          <RepositoryDescriptionField
-                                            description={field.value ?? ''}
-                                            onChange={field.onChange}
-                                            inputRef={field.ref}
-                                            error={fieldState.error}
-                                          />
-                                        )
-                                      }}
-                                    />
                                   </>
                                 ) : (
                                   <Modal.Trigger>
@@ -225,6 +196,40 @@ export function NewRepositoryPage() {
                                     </Button>
                                   </Modal.Trigger>
                                 )}
+
+                                <View
+                                  gap="$3"
+                                  // for mounting the values
+                                  display={github_repo_name && github_repo_owner ? 'flex' : 'none'}
+                                >
+                                  <Form.Controller
+                                    name="input.slug"
+                                    render={({ field, fieldState }) => {
+                                      return (
+                                        <RepositorySlugField
+                                          slug={field.value ?? ''}
+                                          onChange={field.onChange}
+                                          inputRef={field.ref}
+                                          error={fieldState.error}
+                                        />
+                                      )
+                                    }}
+                                  />
+
+                                  <Form.Controller
+                                    name="input.description"
+                                    render={({ field, fieldState }) => {
+                                      return (
+                                        <RepositoryDescriptionField
+                                          description={field.value ?? ''}
+                                          onChange={field.onChange}
+                                          inputRef={field.ref}
+                                          error={fieldState.error}
+                                        />
+                                      )
+                                    }}
+                                  />
+                                </View>
 
                                 <Modal.Content>
                                   <Modal.Backdrop />

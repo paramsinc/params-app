@@ -113,6 +113,7 @@ export const getStaticProps = (async () => {
       metadata: {} satisfies Metadata,
       sections,
     },
+    revalidate: 1,
   }
 }) satisfies GetStaticProps
 

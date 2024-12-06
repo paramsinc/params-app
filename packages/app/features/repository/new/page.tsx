@@ -191,7 +191,6 @@ export function NewRepositoryPage() {
 
                                     <Form.Controller
                                       name="input.slug"
-                                      rules={{ required: true }}
                                       render={({ field, fieldState }) => {
                                         return (
                                           <RepositorySlugField

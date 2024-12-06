@@ -31,9 +31,7 @@ export function ConnectAccountContent(props: { profileSlug: string; onComplete: 
 
   return (
     <View grow style={{ overflowY: 'auto', backgroundColor: 'white', padding: 16 }}>
-      {/* <Scroll> */}
       {s}
-      {/* </Scroll> */}
     </View>
   )
 }

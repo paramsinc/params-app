@@ -539,7 +539,12 @@ const profile = {
       const accountSession = await stripe.accountSessions.create({
         account: profile.stripe_connect_account_id,
         components: {
-          account_onboarding: { enabled: true },
+          account_onboarding: {
+            enabled:
+              (
+                await stripe.accounts.retrieve(profile.stripe_connect_account_id)
+              ).payouts_enabled === false,
+          },
           account_management: { enabled: true },
           payouts: { enabled: true },
           payouts_list: { enabled: true },

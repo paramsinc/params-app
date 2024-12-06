@@ -102,7 +102,7 @@ export const getStaticProps = (async () => {
     authorBio: repo.profile.short_bio ?? '',
     profileSlug: repo.profile.slug,
     title: repo.title,
-    socialLinks: repo.socialLinks,
+    socialLinks: repo.socialLinks ?? null,
   }))
   return {
     props: {

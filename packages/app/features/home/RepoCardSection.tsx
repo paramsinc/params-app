@@ -33,13 +33,11 @@ interface RepoCardSectionProps {
   profileImage: string | null
   authorName: string
   authorBio: string
-  socialLinks:
-    | {
-        github: string
-        twitter: string
-        linkedin: string
-      }
-    | undefined
+  socialLinks?: {
+    github: string
+    twitter: string
+    linkedin: string
+  } | null
   profileSlug: string
 }
 

@@ -12,7 +12,7 @@ export function ConnectAccountContent(props: { profileSlug: string; onComplete: 
   const s = (
     <ConnectComponentsProvider connectInstance={stripe}>
       <ConnectAccountOnboarding
-        onExit={props.onComplete}
+        onExit={() => props.onComplete()}
         collectionOptions={{
           fields: 'eventually_due',
           futureRequirements: 'include',

@@ -42,10 +42,10 @@ const H1 = styled(Heading, {
 })
 
 export const getStaticProps = (async () => {
-  const [jeremyArc, francoisRecommendation] = await Promise.all([
-    repoBySlug({ repo_slug: 'arc_agi', profile_slug: 'jeremy-berman' }),
-    repoBySlug({ repo_slug: 'recommendation-system', profile_slug: 'francois' }),
-    // repoBySlug({ repo_slug: 'churn', profile_slug: 'jeremy-berman' }),
+  const [jeremyArc, jeremyChurn] = await Promise.all([
+    repoBySlug({ repo_slug: 'arc-agi', profile_slug: 'jeremy-berman' }),
+    // repoBySlug({ repo_slug: 'recommendation-system', profile_slug: 'francois' }),
+    repoBySlug({ repo_slug: 'churn', profile_slug: 'jeremy-berman' }),
   ])
   const jeremySocials = {
     github: 'https://github.com/jerber',
@@ -53,7 +53,7 @@ export const getStaticProps = (async () => {
     linkedin: 'https://linkedin.com/in/jeremyberman1',
   }
 
-  function getImage(repo: typeof jeremyArc | typeof francoisRecommendation) {
+  function getImage(repo: typeof jeremyArc | typeof jeremyChurn) {
     return repo.profile.image_vendor_id && repo.profile.image_vendor
       ? imageLoader[repo.profile.image_vendor]({
           src: repo.profile.image_vendor_id,
@@ -63,7 +63,7 @@ export const getStaticProps = (async () => {
   }
 
   function makeSection(
-    repo: typeof jeremyArc | typeof francoisRecommendation,
+    repo: typeof jeremyArc | typeof jeremyChurn,
     props: Pick<React.ComponentProps<typeof RepoCardSection>, 'socialLinks' | 'title'>
   ) {
     return {
@@ -96,10 +96,10 @@ export const getStaticProps = (async () => {
     //   socialLinks: jeremySocials,
     //   profileSlug: jeremyChurn.profile.slug,
     // },
-    // makeSection(jeremyChurn, {
-    //   title: 'Build a churn prediction model',
-    //   socialLinks: jeremySocials,
-    // }),
+    makeSection(jeremyChurn, {
+      title: 'Build a churn prediction model',
+      socialLinks: jeremySocials,
+    }),
     makeSection(jeremyArc, {
       title: 'Score 55% on ARC-AGI',
       socialLinks: jeremySocials,

@@ -3,7 +3,6 @@ import { useStripeConnectForProfile } from 'app/features/profile/stripe/use-stri
 import { ConnectAccountOnboarding, ConnectComponentsProvider } from '@stripe/react-connect-js'
 import useToast from 'app/ds/Toast'
 import { View } from 'app/ds/View'
-import { Scroll } from 'app/ds/Scroll'
 
 export function ConnectAccountContent(props: { profileSlug: string; onComplete: () => void }) {
   const { stripe } = useStripeConnectForProfile(props)

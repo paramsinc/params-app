@@ -2832,6 +2832,11 @@ export const appRouter = router({
             profileMembershipSubquery,
             d.eq(schema.bookings.profile_id, profileMembershipSubquery.profile_id)
           )
+          .innerJoin(schema.profiles, d.eq(schema.bookings.profile_id, schema.profiles.id))
+          .innerJoin(
+            schema.organizations,
+            d.eq(schema.bookings.organization_id, schema.organizations.id)
+          )
           .leftJoin(
             organizationMembershipSubquery,
             d.eq(schema.bookings.organization_id, organizationMembershipSubquery.organization_id)

@@ -15,6 +15,7 @@ export const env = z
     GITHUB_OAUTH_REDIRECT_URL: z.string(),
     PUBLIC_POSTHOG_KEY: z.string(),
     PUBLIC_POSTHOG_HOST: z.string(),
+    TWITTER_HANDLE: z.string(),
   })
   .parse({
     CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
@@ -29,4 +30,5 @@ export const env = z
     GITHUB_OAUTH_REDIRECT_URL: process.env.NEXT_PUBLIC_GITHUB_OAUTH_REDIRECT_URL,
     PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    TWITTER_HANDLE: process.env.NEXT_PUBLIC_TWITTER_HANDLE ?? 'paramsinc',
   })

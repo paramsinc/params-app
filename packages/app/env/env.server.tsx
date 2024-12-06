@@ -57,5 +57,3 @@ export const serverEnv = z
     GITHUB_OAUTH_CLIENT_SECRET: process.env.GITHUB_OAUTH_CLIENT_SECRET,
     RESEND_KEY: process.env.RESEND_KEY,
   })
-
-console.log('[serverEnv]', serverEnv)

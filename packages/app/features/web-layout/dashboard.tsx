@@ -27,7 +27,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <Header group bbw={StyleSheet.hairlineWidth} bbc="$borderColor">
         <Page.ContentWidthComponent row>
           {links.map((link, i) => (
-            <View key={link.href} zi={1}>
+            <View key={link.href} zi={1} opacity={links.isPending ? 0 : 1}>
               <Link href={link.href}>
                 <View py="$2" px="$2" containerType="normal" group={`link` as any}>
                   {link.isActive && (

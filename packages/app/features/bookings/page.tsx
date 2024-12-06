@@ -65,14 +65,14 @@ const BookingRow = memo(function BookingRow({ booking }: BookingRowProps) {
 
   return (
     <Card $gtSm={{ row: true }} gap="$3" padding="$3">
-      <View width={100} height={50} overflow="hidden" br="$2">
+      <View width={100} height={100} overflow="hidden" br="$rounded">
         {booking.profile.image_vendor_id && booking.profile.image_vendor && (
           <Image
             src={booking.profile.image_vendor_id}
             alt={booking.profile.name}
             loader={booking.profile.image_vendor}
             width={100}
-            height={50}
+            height={100}
             contentFit="cover"
           />
         )}

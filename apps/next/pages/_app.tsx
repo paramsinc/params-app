@@ -56,8 +56,6 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
 
   const metadata = (pageProps as any)?.metadata as React.ComponentProps<typeof NextSeo> | undefined
 
-  const links = useDashboardLinks()
-
   return (
     <>
       <DefaultSeo
@@ -68,11 +66,6 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
         }}
       />
       {metadata && <NextSeo {...metadata} />}
-      {Layout === DashboardLayout && !metadata && (
-        <NextSeo
-          title={`${links.find((link) => link.isActive)?.label ?? 'Dashboard'} | ${env.APP_NAME}`}
-        />
-      )}
       <Head>
         <link rel="icon" href="/paramsx1.png" />
       </Head>
@@ -95,6 +88,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
         <ThemeProvider>
           <TamaguiProvider>
             <Provider>
+              {Layout === DashboardLayout && !metadata && <DashboardSeo />}
               <GlobalWebLayout hideHeader={'hideHeader' in Component}>
                 <Layout>
                   <ActionSheetProvider useNativeDriver>
@@ -109,6 +103,15 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
       </PostHogProvider>
       <Analytics />
     </>
+  )
+}
+
+function DashboardSeo() {
+  const links = useDashboardLinks()
+  return (
+    <NextSeo
+      title={`${links.find((link) => link.isActive)?.label ?? 'Dashboard'} | ${env.APP_NAME}`}
+    />
   )
 }
 

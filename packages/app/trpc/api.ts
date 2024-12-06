@@ -29,14 +29,35 @@ const imageVendor = z.enum([firstCdn!, ...restCdns])
 const user = {
   // me
   me: authedProcedure.query(async ({ ctx }) => {
-    const user = await db.query.users
-      .findFirst({
-        where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-        columns: publicSchema.users.UserPublic,
+    // const user = await db.query.users
+    //   .findFirst({
+    //     where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+    //     columns: publicSchema.users.UserPublic,
+    //   })
+    //   .execute()
+    const [first] = await db
+      .select({
+        user: pick('users', publicSchema.users.UserPublic),
+        can_create_profiles: schema.users.can_create_profiles,
+        is_banned: schema.users.is_banned,
+        membership_id: schema.profileMembers.id,
       })
+      .from(schema.users)
+      .where(d.eq(schema.users.id, ctx.auth.userId))
+      .leftJoin(schema.profileMembers, d.eq(schema.profileMembers.user_id, schema.users.id))
+      .limit(1)
       .execute()
 
-    return user ?? null
+    if (first) {
+      const { user, can_create_profiles, is_banned, membership_id } = first
+      return {
+        ...user,
+        can_create_profiles: !is_banned && (can_create_profiles || membership_id !== null),
+        is_banned,
+      }
+    }
+
+    return null
   }),
   createMe: authedProcedure
     .input(

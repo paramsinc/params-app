@@ -20,6 +20,7 @@ import { OfferCheckoutForm_ConfirmOnBackend } from 'app/features/stripe-connect/
 import { formatCurrencyInteger } from 'app/features/stripe-connect/checkout/success/formatUSD'
 import { Link } from 'app/ds/Link'
 import { Card } from 'app/ds/Form/layout'
+import { MarkdownRenderer } from 'app/features/repository/detail-public/MarkdownRenderer'
 
 const { useParams } = createParam<{ profileSlug: string }>()
 
@@ -118,7 +119,7 @@ function Content({ profileSlug }: { profileSlug: string }) {
             <Text color="$color11" bold>
               About
             </Text>
-            <Text>{profile.bio}</Text>
+            {!!profile.bio && <MarkdownRenderer linkPrefix={``}>{profile.bio}</MarkdownRenderer>}
           </View>
         </View>
       </View>

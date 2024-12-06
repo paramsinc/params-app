@@ -117,6 +117,10 @@ export function GitHubRepoPicker({
           zi={1}
         />
       </View>
+      <Text>
+        If you don't see the repo you're looking for, you might need to grant GitHub access to your
+        organization by signing out and back in below.
+      </Text>
       <SignOutOfGithub />
     </>
   )

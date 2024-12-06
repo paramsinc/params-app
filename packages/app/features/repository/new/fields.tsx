@@ -22,11 +22,11 @@ export const RepositorySlugField = ({
         onChangeText={(next) => onChange(slugify(next))}
         onChange={(e) => e.preventDefault()}
         value={slug}
-        placeholder="repo-name"
+        placeholder="claude-3-5-sonnet"
         ref={inputRef}
       />
       <Card.Description>
-        Lowercase letters, numbers, and dashes. Shown publicly on {env.APP_NAME}.
+        Lowercase letters, numbers, and dashes. Used as the public URL for your {env.APP_NAME} repo.
       </Card.Description>
     </Card>
   )

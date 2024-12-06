@@ -30,7 +30,7 @@ interface RepoCardSectionProps {
   title: string
   repoSlug: string
   description: string
-  profileImage: string
+  profileImage: string | null
   authorName: string
   authorBio: string
   socialLinks: {
@@ -53,8 +53,10 @@ export function RepoCardSection({
 }: RepoCardSectionProps) {
   const fullRepoName = `@${profileSlug}/${repoSlug}`
 
+  console.log('[authorBio]', authorBio)
+
   return (
-    <>
+    <View gap="$3" $gtSm={{ gap: '$4' }}>
       <H2>{title}</H2>
       <View zi={2}>
         <View
@@ -117,14 +119,17 @@ export function RepoCardSection({
           >
             <View o={0.15} stretch zi={0} bg="$gray2Light" $theme-light={{ bg: '$gray1Light' }} />
             <View row ai="center" gap="$3">
-              <Image
-                src={profileImage}
-                unoptimized
-                width={96}
-                height={96}
-                alt={authorName}
-                style={{ borderRadius: 999 }}
-              />
+              {!!profileImage && (
+                <Image
+                  src={profileImage}
+                  unoptimized
+                  width={150}
+                  height={96}
+                  alt={authorName}
+                  style={{ borderRadius: 6 }}
+                  contentFit="cover"
+                />
+              )}
               <View flex={1} gap="$2">
                 <Text fontWeight="600">{authorName}</Text>
                 <Text>{authorBio}</Text>
@@ -154,6 +159,6 @@ export function RepoCardSection({
           </View>
         </View>
       </View>
-    </>
+    </View>
   )
 }

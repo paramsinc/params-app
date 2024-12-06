@@ -44,8 +44,8 @@ const Sidebar = styled(View, {
   gap: '$3',
   $gtLg: {
     width: 400,
-    position: 'sticky' as any,
-    top: 48 + 16,
+    // position: 'sticky' as any,
+    // top: 48 + 16,
     alignSelf: 'flex-start',
   },
   variants: {
@@ -78,7 +78,6 @@ function RepositoryDetailPublicPageContent({
     profile_slug: profileSlug,
     repo_slug: repoSlug,
   })
-  const readmeQuery = api.repo.readme.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
 
   if (!repoQuery.data) {
     return null
@@ -268,7 +267,11 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                     About {profile.name}
                   </Text>
 
-                  <Text>{profile.bio}</Text>
+                  {!!profile.bio && (
+                    <MarkdownRenderer linkPrefix={`/@${profileSlug}/${repoSlug}`}>
+                      {profile.bio}
+                    </MarkdownRenderer>
+                  )}
                 </View>
               </View>
             )}
@@ -295,11 +298,14 @@ function DocsPage({
     repo_slug: repoSlug,
   })
 
-  const mainDocsFile = paramsJsonQuery.data?.docs.main.split('/')
+  const mainDocsFilePath = paramsJsonQuery.data?.docs.main.split('/')
 
-  const {
-    params: { path = mainDocsFile },
-  } = useParams()
+  const { params } = useParams()
+
+  let path = params.path
+  if (!path?.length) {
+    path = mainDocsFilePath
+  }
 
   const filesQuery = api.github.repoFiles.useQuery({
     profile_slug: profileSlug,
@@ -310,9 +316,7 @@ function DocsPage({
   const filePath = path?.join('/')
 
   const file =
-    typeof filesQuery.data == 'string' || (filesQuery.isPending && path !== mainDocsFile)
-      ? filesQuery.data
-      : readmeQuery.data
+    typeof filesQuery.data == 'string' || filesQuery.isPending ? filesQuery.data : readmeQuery.data
 
   const fileKeys = Object.keys(paramsJsonQuery.data?.docs.sidebar ?? {})
 
@@ -329,7 +333,7 @@ function DocsPage({
   }
   const paramsJson = paramsJsonQuery.data
   const profile = profileQuery.data
-  const videoCard = path?.join('/') === mainDocsFile?.join('/') && paramsJson?.docs.youtube && (
+  const videoCard = path?.join('/') === mainDocsFilePath?.join('/') && paramsJson?.docs.youtube && (
     <Modal>
       <Modal.Trigger>
         <View
@@ -639,14 +643,13 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   let pages = Object.keys(paramsJson.docs.sidebar ?? {}) // TODO support nested pages
 
   return (
-    <Card p={0} py="$2">
-      <Text px="$3" bold py="$2" pt="$2">
+    <Card p={0} gap={0}>
+      <Text px="$3" bold py="$3">
         Documentation
       </Text>
       {pages.length > 0 && (
         <>
-          <View bbw={1} bbc="$borderColor" />
-          <View>
+          <View btw={1} boc="$borderColor" py="$2">
             {pages.map((page) => {
               const pagePath = paramsJson.docs.sidebar?.[page]
               const isSelected = pagePath === selectedPage
@@ -664,8 +667,9 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
                     lineHeight={18}
                     animation="200ms"
                     animateOnly={['color']}
+                    textTransform="capitalize"
                   >
-                    {page}
+                    {page.replace(/_/g, ' ')}
                   </Text>
                 </Link>
               )

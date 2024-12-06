@@ -13,6 +13,11 @@ import { styled } from 'app/ds/styled'
 import { Page } from 'app/ds/Page'
 import { RepoCardSection } from 'app/features/home/RepoCardSection'
 import { Heading } from 'app/features/home/Heading'
+import type { GetStaticProps, InferGetStaticPropsType } from 'next'
+import type { Metadata } from '../metadata'
+import { db } from 'app/db/db'
+import { repoBySlug } from 'app/trpc/api'
+import { imageLoader } from 'app/image/loader'
 
 const H1 = styled(Heading, {
   letterSpacing: '-0.035em',
@@ -36,7 +41,82 @@ const H1 = styled(Heading, {
   },
 })
 
-export default function Home() {
+export const getStaticProps = (async () => {
+  const [jeremyArc, jeremyChurn] = await Promise.all([
+    repoBySlug({
+      repo_slug: 'arc-agi',
+      profile_slug: 'jeremy-berman',
+    }),
+    // repoBySlug({ repo_slug: 'recommendation-system', profile_slug: 'francois' }),
+    repoBySlug({ repo_slug: 'churn', profile_slug: 'jeremy-berman' }),
+  ])
+  const jeremySocials = {
+    github: 'https://github.com/jerber',
+    twitter: 'https://x.com/jerber888',
+    linkedin: 'https://linkedin.com/in/jeremyberman1',
+  }
+
+  function getImage(repo: typeof jeremyArc | typeof jeremyChurn) {
+    return repo.profile.image_vendor_id && repo.profile.image_vendor
+      ? imageLoader[repo.profile.image_vendor]({
+          src: repo.profile.image_vendor_id,
+          width: 1000,
+        })
+      : null
+  }
+
+  function makeSection(
+    repo: typeof jeremyArc | typeof jeremyChurn,
+    props: Pick<React.ComponentProps<typeof RepoCardSection>, 'socialLinks' | 'title'>
+  ) {
+    return {
+      ...props,
+      repoSlug: repo.slug,
+      description: repo.description ?? '',
+      profileImage: getImage(repo),
+      authorName: repo.profile.name,
+      authorBio: repo.profile.short_bio ?? '',
+      profileSlug: repo.profile.slug,
+    }
+  }
+
+  const sections: Array<React.ComponentProps<typeof RepoCardSection>> = [
+    // makeSection(francoisRecommendation, {
+    //   title: 'Build a recommendation system',
+    //   socialLinks: {
+    //     github: 'https://github.com/fchollet',
+    //     twitter: 'https://x.com/fchollet',
+    //     linkedin: 'https://linkedin.com/in/fchollet',
+    //   },
+    // }),
+    // {
+    //   title: 'Build a churn prediction model',
+    //   repoSlug: jeremyChurn.slug,
+    //   description: jeremyChurn.description ?? '',
+    //   profileImage: jeremyChurn.profile.image_vendor_id,
+    //   authorName: jeremyChurn.profile.name,
+    //   authorBio: jeremyChurn.profile.short_bio ?? '',
+    //   socialLinks: jeremySocials,
+    //   profileSlug: jeremyChurn.profile.slug,
+    // },
+    makeSection(jeremyChurn, {
+      title: 'Build a churn prediction model',
+      socialLinks: jeremySocials,
+    }),
+    makeSection(jeremyArc, {
+      title: 'Score 55% on ARC-AGI',
+      socialLinks: jeremySocials,
+    }),
+  ]
+  return {
+    props: {
+      metadata: {} satisfies Metadata,
+      sections,
+    },
+  }
+}) satisfies GetStaticProps
+
+export default function Home({ sections }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <Page.Root>
       {/* Background gradient */}
@@ -73,15 +153,21 @@ export default function Home() {
           p: '$3',
         }}
       >
-        <View>
+        <View gap="$3">
           <H1>
             Find curated ML templates
             {'\n'}& book a call with the creators
           </H1>
+          <LinkButton href="/new" als="flex-start">
+            <ButtonText>Submit your repo</ButtonText>
+          </LinkButton>
         </View>
 
-        <View gap="$3" $gtSm={{ gap: '$4' }}>
-          <RepoCardSection
+        <View gap="$4" $gtSm={{ gap: '$5' }}>
+          {sections.map((section) => (
+            <RepoCardSection key={section.repoSlug} {...section} />
+          ))}
+          {/* <RepoCardSection
             title="Build a recommendation system"
             repoSlug="recommendation-system"
             description="A scalable recommendation engine built with TensorFlow, featuring collaborative filtering, content-based filtering, and hybrid approaches. Includes pre-trained models and example datasets."
@@ -96,8 +182,6 @@ export default function Home() {
             profileSlug="francois"
           />
 
-          <View />
-
           <RepoCardSection
             title="Build a churn prediction model"
             repoSlug="churn"
@@ -111,7 +195,7 @@ export default function Home() {
               linkedin: 'https://linkedin.com/in/jeremyberman1',
             }}
             profileSlug="jeremy"
-          />
+          /> */}
         </View>
       </View>
     </Page.Root>

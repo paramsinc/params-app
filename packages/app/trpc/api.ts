@@ -3176,7 +3176,7 @@ export const appRouter = router({
         return integration != null
       }),
 
-    repoFiles: authedProcedure
+    repoFiles: publicProcedure
       .input(
         z.object({
           profile_slug: z.string(),

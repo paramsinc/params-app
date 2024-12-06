@@ -53,6 +53,8 @@ export function RepoCardSection({
 }: RepoCardSectionProps) {
   const fullRepoName = `@${profileSlug}/${repoSlug}`
 
+  console.log('[authorBio]', authorBio)
+
   return (
     <View gap="$3" $gtSm={{ gap: '$4' }}>
       <H2>{title}</H2>

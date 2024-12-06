@@ -78,7 +78,6 @@ function RepositoryDetailPublicPageContent({
     profile_slug: profileSlug,
     repo_slug: repoSlug,
   })
-  const readmeQuery = api.repo.readme.useQuery({ profile_slug: profileSlug, repo_slug: repoSlug })
 
   if (!repoQuery.data) {
     return null
@@ -299,11 +298,14 @@ function DocsPage({
     repo_slug: repoSlug,
   })
 
-  const mainDocsFile = paramsJsonQuery.data?.docs.main.split('/')
+  const mainDocsFilePath = paramsJsonQuery.data?.docs.main.split('/')
 
-  const {
-    params: { path = mainDocsFile },
-  } = useParams()
+  const { params } = useParams()
+
+  let path = params.path
+  if (!path?.length) {
+    path = mainDocsFilePath
+  }
 
   const filesQuery = api.github.repoFiles.useQuery({
     profile_slug: profileSlug,
@@ -314,7 +316,7 @@ function DocsPage({
   const filePath = path?.join('/')
 
   const file =
-    typeof filesQuery.data == 'string' || (filesQuery.isPending && path !== mainDocsFile)
+    typeof filesQuery.data == 'string' || (filesQuery.isPending && path !== mainDocsFilePath)
       ? filesQuery.data
       : readmeQuery.data
 
@@ -333,7 +335,7 @@ function DocsPage({
   }
   const paramsJson = paramsJsonQuery.data
   const profile = profileQuery.data
-  const videoCard = path?.join('/') === mainDocsFile?.join('/') && paramsJson?.docs.youtube && (
+  const videoCard = path?.join('/') === mainDocsFilePath?.join('/') && paramsJson?.docs.youtube && (
     <Modal>
       <Modal.Trigger>
         <View

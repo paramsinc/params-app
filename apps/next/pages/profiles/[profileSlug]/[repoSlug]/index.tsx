@@ -101,7 +101,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
           },
         } satisfies Metadata,
       },
-      revalidate: 30,
+      revalidate: 1,
     }
   } catch {
     return {

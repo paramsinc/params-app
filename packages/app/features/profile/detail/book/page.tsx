@@ -389,7 +389,7 @@ const SlotPicker = ({
       </Text>
       <View gap="$1">
         {slotsQuery.data.slots.length === 0 && (
-          <Text>Bookings are currently closed for this profile.</Text>
+          <Text>Bookings are currently unavailable for this profile.</Text>
         )}
         {entries(slotsByDate).map(([date, slots]) => {
           let dateObj = DateTime.fromISO(date, { zone: profileTimezone })

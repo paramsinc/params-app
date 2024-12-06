@@ -2550,7 +2550,7 @@ export const appRouter = router({
 
       const amount = plan.price
       const currency = plan.currency
-      const application_fee_amount = plan.price * 0.1 // TODO calculate
+      const application_fee_amount = plan.price * 0 // TODO calculate
 
       let receiptEmail = ctx.auth.userEmail
 

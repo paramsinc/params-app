@@ -368,6 +368,8 @@ const profile = {
           throw new TRPCError({ code: 'NOT_FOUND' })
         }
 
+        await ctx.revalidate(`/profiles/${profile.slug}`)
+
         return profile
       }
     ),
@@ -1230,6 +1232,10 @@ const repository = router({
           return result
         }
       })
+
+      if (result) {
+        await ctx.revalidate(`/profiles/${first.profile.slug}/${result.slug}`)
+      }
 
       return result
     }),

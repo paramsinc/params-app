@@ -380,6 +380,7 @@ const SlotPicker = ({
       timezoneShiftedDateObj,
     }
   })
+
   return (
     <View gap="$3">
       <Text color="$color11">
@@ -387,6 +388,9 @@ const SlotPicker = ({
         timezone.
       </Text>
       <View gap="$1">
+        {slotsQuery.data.slots.length === 0 && (
+          <Text>Bookings are currently unavailable for this profile.</Text>
+        )}
         {entries(slotsByDate).map(([date, slots]) => {
           let dateObj = DateTime.fromISO(date, { zone: profileTimezone })
           if (!dateObj.isValid) {

@@ -39,7 +39,7 @@ export function MarkdownRenderer({
   children: string
   linkPrefix: string
 }) {
-  const md = autoLinkMd(children)
+  const md = children
   console.log('[markdown]', md)
   return (
     <Markdown

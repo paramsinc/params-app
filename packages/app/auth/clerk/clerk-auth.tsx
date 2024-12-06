@@ -48,7 +48,7 @@ function UserTrigger({ children }: { children?: React.ReactElement }) {
         <UserButton.MenuItems>
           <UserButton.Link
             label="Home"
-            href="/"
+            href="/home"
             labelIcon={<Lucide.Home size={16} color="var(--accent)" />}
           />
           {links.map((link) => (

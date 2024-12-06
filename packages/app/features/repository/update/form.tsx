@@ -161,7 +161,7 @@ export function UpdateRepositoryForm({
                       name="integration_patch.path_to_code"
                       render={({ field }) => (
                         <Input
-                          value={field.value ?? repo.githubRepoIntegration.path_to_code ?? ''}
+                          value={field.value ?? repo.githubRepoIntegration?.path_to_code ?? ''}
                           onChangeText={(next) => {
                             field.onChange(next satisfies typeof field.value)
                           }}

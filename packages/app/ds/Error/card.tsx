@@ -22,7 +22,7 @@ export const ErrorCard = function ErrorCard({
     function scroll() {
       if (shouldScroll) {
         scrollTo(name, {
-          offset: -100,
+          offset: -150,
         })
       }
     },

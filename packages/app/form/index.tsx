@@ -75,15 +75,9 @@ const makeForm = <FormState extends object>(options: { scrollToError?: boolean }
       useImperativeHandle(!disableScrollToError ? controller.field.ref : undefined, () => {
         return {
           focus() {
-            // could this lead to infinite loops?
-            // if (
-            //   controller.field.ref &&
-            //   'focus' in controller.field.ref &&
-            //   typeof controller.field.ref.focus === 'function'
-            // ) {
-            //   controller.field.ref?.focus?.()
-            // }
-            scrollTo(props.name)
+            scrollTo(props.name, {
+              offset: -200,
+            })
           },
         }
       })

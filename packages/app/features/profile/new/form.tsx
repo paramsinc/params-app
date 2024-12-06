@@ -110,7 +110,7 @@ export function NewProfileForm({
 
                     <Form.Controller
                       name="slug"
-                      rules={{ required: 'Please enter a slug' }}
+                      rules={{ required: field.value ? false : 'Please enter a slug' }}
                       disableScrollToError
                       render={({ field, fieldState }) => (
                         <ProfileSlugField

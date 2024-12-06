@@ -490,13 +490,23 @@ const profile = {
     return profiles
   }),
 
-  allProfiles_admin: authedProcedure.query(async ({ ctx }) => {
-    // TODO admin
-    const profiles = await db.query.profiles.findMany({
-      columns: publicSchema.profiles.ProfileInternal,
-    })
-    return profiles
-  }),
+  allProfiles_public: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().max(100),
+        offset: z.number(),
+      })
+    )
+    .query(async ({ ctx, input: { limit, offset } }) => {
+      // TODO admin
+      const profiles = await db.query.profiles.findMany({
+        columns: publicSchema.profiles.ProfileInternal,
+        limit,
+        offset,
+        orderBy: (profiles, { desc }) => [desc(profiles.created_at)],
+      })
+      return profiles
+    }),
 
   profileConnectAccountSession: authedProcedure
     .input(z.object({ profile_slug: z.string() }))

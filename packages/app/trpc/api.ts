@@ -2552,6 +2552,16 @@ export const appRouter = router({
       const currency = plan.currency
       const application_fee_amount = plan.price * 0.1 // TODO calculate
 
+      let receiptEmail = ctx.auth.userEmail
+
+      if (!receiptEmail) {
+        receiptEmail = await db.query.users
+          .findFirst({
+            where: (fields, { and, eq }) => and(eq(fields.id, ctx.auth.userId)),
+          })
+          .then((r) => r?.email)
+      }
+
       const paymentIntent = await stripe.paymentIntents.create(
         {
           amount,
@@ -2566,6 +2576,7 @@ export const appRouter = router({
             offer_id: offer.id,
           },
           payment_method_types: ['card'],
+          receipt_email: receiptEmail,
         },
         {
           // is this correct?
@@ -2805,6 +2816,8 @@ export const appRouter = router({
             }),
             profile_id: profileMembershipSubquery.profile_id,
             organization_id: organizationMembershipSubquery.organization_id,
+            profile_name: schema.profiles.name,
+            organization_name: schema.organizations.name,
           })
           .from(schema.bookings)
           .where(d.and(d.eq(schema.bookings.id, input.id)))

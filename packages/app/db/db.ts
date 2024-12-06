@@ -12,6 +12,7 @@ import { drizzle } from 'drizzle-orm/neon-serverless'
 
 const pool = new Pool({ connectionString: serverEnv.DATABASE_URL })
 export const db = drizzle(pool, { schema, logger: true })
+export { schema }
 
 // import * as schema from './schema'
 // import { serverEnv } from 'app/env/env.server'
@@ -24,5 +25,3 @@ export const db = drizzle(pool, { schema, logger: true })
 
 // const sql = neon(serverEnv.DATABASE_URL)
 // export const db = drizzle(sql, { schema })
-
-// export { schema }

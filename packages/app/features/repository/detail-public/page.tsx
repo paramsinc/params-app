@@ -316,9 +316,7 @@ function DocsPage({
   const filePath = path?.join('/')
 
   const file =
-    typeof filesQuery.data == 'string' || (filesQuery.isPending && path !== mainDocsFilePath)
-      ? filesQuery.data
-      : readmeQuery.data
+    typeof filesQuery.data == 'string' || filesQuery.isPending ? filesQuery.data : readmeQuery.data
 
   const fileKeys = Object.keys(paramsJsonQuery.data?.docs.sidebar ?? {})
 
@@ -645,14 +643,13 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   let pages = Object.keys(paramsJson.docs.sidebar ?? {}) // TODO support nested pages
 
   return (
-    <Card p={0} py="$2">
-      <Text px="$3" bold py="$2" pt="$2">
+    <Card p={0} gap={0}>
+      <Text px="$3" bold py="$3">
         Documentation
       </Text>
       {pages.length > 0 && (
         <>
-          <View bbw={1} bbc="$borderColor" />
-          <View>
+          <View btw={1} boc="$borderColor" py="$2">
             {pages.map((page) => {
               const pagePath = paramsJson.docs.sidebar?.[page]
               const isSelected = pagePath === selectedPage
@@ -670,8 +667,9 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
                     lineHeight={18}
                     animation="200ms"
                     animateOnly={['color']}
+                    textTransform="capitalize"
                   >
-                    {page}
+                    {page.replace(/_/g, ' ')}
                   </Text>
                 </Link>
               )

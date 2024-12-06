@@ -42,13 +42,11 @@ export const getStaticProps = (async () => {
   let cards: Array<{
     repo_slug: string
     profile_slug: string
-    socialLinks:
-      | {
-          github: string
-          twitter: string
-          linkedin: string
-        }
-      | undefined
+    socialLinks?: {
+      github: string
+      twitter: string
+      linkedin: string
+    }
     title: string
   }> = [
     {
@@ -60,7 +58,6 @@ export const getStaticProps = (async () => {
     {
       profile_slug: 'the-architects',
       repo_slug: 'arc-prize-2024',
-      socialLinks: undefined,
       title: 'Build a solution to ARC-AGI with Test-Time Training',
     },
     {
@@ -158,9 +155,9 @@ export default function Home({ sections }: InferGetStaticPropsType<typeof getSta
             Find curated ML templates
             {'\n'}& book a call with the creators
           </H1>
-          <LinkButton href="/new" als="flex-start">
+          {/* <LinkButton href="/new" als="flex-start">
             <ButtonText>Submit your repo</ButtonText>
-          </LinkButton>
+          </LinkButton> */}
         </View>
 
         <View gap="$4" $gtSm={{ gap: '$5' }}>

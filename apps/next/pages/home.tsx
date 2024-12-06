@@ -1,13 +1,7 @@
 'use client'
-import { Button, ButtonIcon, ButtonText } from 'app/ds/Button'
-import { Card } from 'app/ds/Form/layout'
-import { Logo } from 'app/ds/Logo'
+import { ButtonText } from 'app/ds/Button'
 import { Text } from 'app/ds/Text'
 import { View } from 'app/ds/View'
-import { Image } from 'app/ds/Image'
-import { Lucide } from 'app/ds/Lucide'
-import { Link } from 'app/ds/Link'
-import { Theme } from 'app/ds/Theme'
 import { LinkButton } from 'app/ds/Button/link'
 import { styled } from 'app/ds/styled'
 import { Page } from 'app/ds/Page'
@@ -15,7 +9,6 @@ import { RepoCardSection } from 'app/features/home/RepoCardSection'
 import { Heading } from 'app/features/home/Heading'
 import type { GetStaticProps, InferGetStaticPropsType } from 'next'
 import type { Metadata } from '../metadata'
-import { db } from 'app/db/db'
 import { repoBySlug } from 'app/trpc/api'
 import { imageLoader } from 'app/image/loader'
 import { TextLink } from 'app/ds/TextLink'
@@ -25,9 +18,6 @@ const H1 = styled(Heading, {
   tag: 'h1',
   fontSize: 24,
 
-  //   $gtXs: {
-  //     fontSize: 24,
-  //   },
   $gtSm: {
     fontSize: 40,
   },
@@ -68,8 +58,8 @@ export const getStaticProps = (async () => {
       title: 'Build a churn prediction model',
     },
     {
-      repo_slug: 'the-architects',
       profile_slug: 'arc-prize-2024',
+      repo_slug: 'the-architects',
       socialLinks: undefined,
       title: 'Build a solution to ARC-AGI with Test-Time Training',
     },

@@ -22,5 +22,6 @@ export const paramsJsonShape = z
       })
       .optional(),
     notebook_url: z.string().optional(),
+    enable_notebook: z.boolean().optional(),
   })
   .describe('Describe your Params repository and auto-generate docs.')

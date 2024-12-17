@@ -274,6 +274,13 @@
       "when": 1733341594338,
       "tag": "0038_lyrical_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1733505476569,
+      "tag": "0039_faulty_nighthawk",
+      "breakpoints": true
     }
   ]
 }

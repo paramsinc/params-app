@@ -41,15 +41,16 @@ const getToken = async (): Promise<string | null> => {
 
 function UserTrigger({ children }: { children?: React.ReactElement }) {
   const links = useDashboardLinks()
+  if (links.isPending) return null
   return (
     <Font>
       <UserButton>
         {children}
         <UserButton.MenuItems>
           <UserButton.Link
-            label="Home"
-            href="/home"
-            labelIcon={<Lucide.Home size={16} color="var(--accent)" />}
+            label="Dashboard"
+            href="/dashboard"
+            labelIcon={<Lucide.Database size={16} color="var(--accent)" />}
           />
           {links.map((link) => (
             <UserButton.Link

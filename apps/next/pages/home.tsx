@@ -42,32 +42,29 @@ export const getStaticProps = (async () => {
   let cards: Array<{
     repo_slug: string
     profile_slug: string
-    socialLinks:
-      | {
-          github: string
-          twitter: string
-          linkedin: string
-        }
-      | undefined
+    socialLinks?: {
+      github: string
+      twitter: string
+      linkedin: string
+    }
     title: string
   }> = [
     {
-      repo_slug: 'churn',
-      profile_slug: 'jeremy-berman',
-      socialLinks: jeremySocials,
-      title: 'Build a churn prediction model',
-    },
-    {
-      profile_slug: 'arc-prize-2024',
-      repo_slug: 'the-architects',
-      socialLinks: undefined,
-      title: 'Build a solution to ARC-AGI with Test-Time Training',
+      profile_slug: 'the-architects',
+      repo_slug: 'arc-prize-2024',
+      title: 'Achieve SoTA on ARC-AGI with Test-Time Training',
     },
     {
       repo_slug: 'arc-agi',
       profile_slug: 'jeremy-berman',
       socialLinks: jeremySocials,
       title: 'Build a solution to ARC-AGI with Evolutionary Test-Time Compute',
+    },
+    {
+      repo_slug: 'churn',
+      profile_slug: 'jeremy-berman',
+      socialLinks: jeremySocials,
+      title: 'Build a churn prediction model',
     },
   ]
   if (process.env.VERCEL_ENV !== 'production') {
@@ -105,7 +102,7 @@ export const getStaticProps = (async () => {
     authorBio: repo.profile.short_bio ?? '',
     profileSlug: repo.profile.slug,
     title: repo.title,
-    socialLinks: repo.socialLinks,
+    socialLinks: repo.socialLinks ?? null,
   }))
   return {
     props: {
@@ -158,9 +155,9 @@ export default function Home({ sections }: InferGetStaticPropsType<typeof getSta
             Find curated ML templates
             {'\n'}& book a call with the creators
           </H1>
-          <LinkButton href="/new" als="flex-start">
+          {/* <LinkButton href="/new" als="flex-start">
             <ButtonText>Submit your repo</ButtonText>
-          </LinkButton>
+          </LinkButton> */}
         </View>
 
         <View gap="$4" $gtSm={{ gap: '$5' }}>

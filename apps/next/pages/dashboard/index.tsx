@@ -1,1 +1,1 @@
-export { default } from './repos'
+export { default } from './bookings'

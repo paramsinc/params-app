@@ -29,14 +29,35 @@ const imageVendor = z.enum([firstCdn!, ...restCdns])
 const user = {
   // me
   me: authedProcedure.query(async ({ ctx }) => {
-    const user = await db.query.users
-      .findFirst({
-        where: (users, { eq }) => eq(users.id, ctx.auth.userId),
-        columns: publicSchema.users.UserPublic,
+    // const user = await db.query.users
+    //   .findFirst({
+    //     where: (users, { eq }) => eq(users.id, ctx.auth.userId),
+    //     columns: publicSchema.users.UserPublic,
+    //   })
+    //   .execute()
+    const [first] = await db
+      .select({
+        user: pick('users', publicSchema.users.UserPublic),
+        can_create_profiles: schema.users.can_create_profiles,
+        is_banned: schema.users.is_banned,
+        membership_id: schema.profileMembers.id,
       })
+      .from(schema.users)
+      .where(d.eq(schema.users.id, ctx.auth.userId))
+      .leftJoin(schema.profileMembers, d.eq(schema.profileMembers.user_id, schema.users.id))
+      .limit(1)
       .execute()
 
-    return user ?? null
+    if (first) {
+      const { user, can_create_profiles, is_banned, membership_id } = first
+      return {
+        ...user,
+        can_create_profiles: !is_banned && (can_create_profiles || membership_id !== null),
+        is_banned,
+      }
+    }
+
+    return null
   }),
   createMe: authedProcedure
     .input(
@@ -3284,6 +3305,23 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return getRepoFiles(input)
       }),
+
+    generateNotebook: publicProcedure
+      .input(
+        z.object({
+          profile_slug: z.string(),
+          repo_slug: z.string(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { query } = await getOctokitFromRepo(input)
+        const { github_repo } = query
+
+        const githubUrl = `https://github.com/${github_repo.github_repo_owner}/${github_repo.github_repo_name}.git`
+        const repoName = github_repo.github_repo_name
+
+        return generateNotebookJson(githubUrl, repoName)
+      }),
   }),
   email: router({
     ping: publicProcedure.query(async () => {
@@ -3291,7 +3329,7 @@ export const appRouter = router({
         return 'pong'
       }
       const r = await sendEmailHTML({
-        to: 'fernando@params.com',
+        to: ['fernando@params.com'],
         subject: 'Test email',
         html: '<p>Test email</p>',
       })
@@ -3387,3 +3425,59 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
 }
 
 export type AppRouter = typeof appRouter
+
+// Add this helper function near the top of the file
+function generateNotebookJson(githubUrl: string, repoName: string) {
+  const notebook = {
+    cells: [
+      {
+        cell_type: 'code',
+        execution_count: null,
+        metadata: {},
+        outputs: [],
+        source: [
+          `# Clone repository and set up Python path\n`,
+          `import sys\n`,
+          `!git clone ${githubUrl}\n`,
+          `%cd ${repoName}\n`,
+          `sys.path.append(".")`,
+        ],
+      },
+      {
+        cell_type: 'code',
+        execution_count: null,
+        metadata: {},
+        outputs: [],
+        source: [
+          `# Example poetry setup\n`,
+          `# !pip install poetry\n`,
+          `# !poetry export --without-hashes --format=requirements.txt > requirements.txt\n\n\n`,
+          `# Example requirements.txt setup\n`,
+          `# !pip install -r requirements.txt`,
+        ],
+      },
+    ],
+    metadata: {
+      kernelspec: {
+        display_name: 'Python 3',
+        language: 'python',
+        name: 'python3',
+      },
+      language_info: {
+        codemirror_mode: {
+          name: 'ipython',
+          version: 3,
+        },
+        file_extension: '.py',
+        mimetype: 'text/x-python',
+        name: 'python',
+        nbconvert_exporter: 'python',
+        pygments_lexer: 'ipython3',
+        version: '3.8',
+      },
+    },
+    nbformat: 4,
+    nbformat_minor: 4,
+  }
+  return notebook
+}

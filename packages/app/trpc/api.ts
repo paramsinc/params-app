@@ -3305,6 +3305,23 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return getRepoFiles(input)
       }),
+
+    generateNotebook: authedProcedure
+      .input(
+        z.object({
+          profile_slug: z.string(),
+          repo_slug: z.string(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { query } = await getOctokitFromRepo(input)
+        const { github_repo } = query
+
+        const githubUrl = `https://github.com/${github_repo.github_repo_owner}/${github_repo.github_repo_name}.git`
+        const repoName = github_repo.github_repo_name
+
+        return generateNotebookJson(githubUrl, repoName)
+      }),
   }),
   email: router({
     ping: publicProcedure.query(async () => {
@@ -3312,7 +3329,7 @@ export const appRouter = router({
         return 'pong'
       }
       const r = await sendEmailHTML({
-        to: 'fernando@params.com',
+        to: ['fernando@params.com'],
         subject: 'Test email',
         html: '<p>Test email</p>',
       })
@@ -3408,3 +3425,66 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
 }
 
 export type AppRouter = typeof appRouter
+
+// Add this helper function near the top of the file
+function generateNotebookJson(githubUrl: string, repoName: string) {
+  return {
+    cells: [
+      {
+        cell_type: 'code',
+        execution_count: null,
+        metadata: {},
+        outputs: [],
+        source: [
+          `# Clone repository and set up Python path\n`,
+          `import sys\n`,
+          `!git clone ${githubUrl}\n`,
+          `%cd ${repoName}\n`,
+          `sys.path.append(".")\n\n`,
+          `# Example poetry setup\n`,
+          `# !pip install poetry\n`,
+          `# !poetry export --without-hashes --format=requirements.txt > requirements.txt\n\n`,
+          `# Example wandb setup\n`,
+          `# import os\n`,
+          `# from google.colab import userdata\n`,
+          `# os.environ['WANDB_API_KEY'] = userdata.get('WANDB_API_KEY')\n\n`,
+          `# Example training setup\n`,
+          `# from transformers import AutoTokenizer\n`,
+          `# from src.config import LANGJEPAConfig\n`,
+          `# from src.train import train\n`,
+          `#\n`,
+          `# # Load and validate config\n`,
+          `# config = LANGJEPAConfig.from_yaml("configs/base_lang_config.yaml")\n`,
+          `#\n`,
+          `# # Initialize tokenizer\n`,
+          `# tokenizer = AutoTokenizer.from_pretrained(config.data.tokenizer_path)\n`,
+          `# config.data.tokenizer = tokenizer\n`,
+          `#\n`,
+          `# # Train with validated config\n`,
+          `# train(config)\n`,
+        ],
+      },
+    ],
+    metadata: {
+      kernelspec: {
+        display_name: 'Python 3',
+        language: 'python',
+        name: 'python3',
+      },
+      language_info: {
+        codemirror_mode: {
+          name: 'ipython',
+          version: 3,
+        },
+        file_extension: '.py',
+        mimetype: 'text/x-python',
+        name: 'python',
+        nbconvert_exporter: 'python',
+        pygments_lexer: 'ipython3',
+        version: '3.8',
+      },
+    },
+    nbformat: 4,
+    nbformat_minor: 4,
+  }
+}

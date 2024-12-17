@@ -3428,7 +3428,7 @@ export type AppRouter = typeof appRouter
 
 // Add this helper function near the top of the file
 function generateNotebookJson(githubUrl: string, repoName: string) {
-  return {
+  const notebook = {
     cells: [
       {
         cell_type: 'code',
@@ -3440,28 +3440,20 @@ function generateNotebookJson(githubUrl: string, repoName: string) {
           `import sys\n`,
           `!git clone ${githubUrl}\n`,
           `%cd ${repoName}\n`,
-          `sys.path.append(".")\n\n`,
+          `sys.path.append(".")`,
+        ],
+      },
+      {
+        cell_type: 'code',
+        execution_count: null,
+        metadata: {},
+        outputs: [],
+        source: [
           `# Example poetry setup\n`,
           `# !pip install poetry\n`,
-          `# !poetry export --without-hashes --format=requirements.txt > requirements.txt\n\n`,
-          `# Example wandb setup\n`,
-          `# import os\n`,
-          `# from google.colab import userdata\n`,
-          `# os.environ['WANDB_API_KEY'] = userdata.get('WANDB_API_KEY')\n\n`,
-          `# Example training setup\n`,
-          `# from transformers import AutoTokenizer\n`,
-          `# from src.config import LANGJEPAConfig\n`,
-          `# from src.train import train\n`,
-          `#\n`,
-          `# # Load and validate config\n`,
-          `# config = LANGJEPAConfig.from_yaml("configs/base_lang_config.yaml")\n`,
-          `#\n`,
-          `# # Initialize tokenizer\n`,
-          `# tokenizer = AutoTokenizer.from_pretrained(config.data.tokenizer_path)\n`,
-          `# config.data.tokenizer = tokenizer\n`,
-          `#\n`,
-          `# # Train with validated config\n`,
-          `# train(config)\n`,
+          `# !poetry export --without-hashes --format=requirements.txt > requirements.txt\n\n\n`,
+          `# Example requirements.txt setup\n`,
+          `# !pip install -r requirements.txt`,
         ],
       },
     ],
@@ -3487,4 +3479,5 @@ function generateNotebookJson(githubUrl: string, repoName: string) {
     nbformat: 4,
     nbformat_minor: 4,
   }
+  return notebook
 }

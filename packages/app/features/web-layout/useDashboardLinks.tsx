@@ -22,9 +22,6 @@ export function useDashboardLinks() {
     },
   ]
 
-  if (me.data) {
-  }
-
   if (me.data?.can_create_profiles) {
     links.push(
       {

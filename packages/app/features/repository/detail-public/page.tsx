@@ -23,6 +23,7 @@ import { Link } from 'app/ds/Link'
 import { Modal } from 'app/ds/Modal'
 import { ErrorCard } from 'app/ds/Error/card'
 import { MarkdownRenderer } from 'app/features/repository/detail-public/MarkdownRenderer'
+import useToast from 'app/ds/Toast'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -127,15 +128,11 @@ function RepositoryDetailPublicPageContent({
               </Text>
             </View>
             <View row flexWrap="wrap" gap="$2">
+              {!!paramsJson?.enable_notebook && (
+                <RunNotebookButton profileSlug={profileSlug} repoSlug={repoSlug} />
+              )}
               {repo.github_url != null && (
                 <>
-                  {!!paramsJson?.notebook_url && (
-                    <Button theme="yellow">
-                      <ButtonIcon icon={ColabIcon} />
-                      <ButtonText>Notebook</ButtonText>
-                    </Button>
-                  )}
-
                   <LinkButton
                     theme="blue"
                     href={(() => {
@@ -289,6 +286,51 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
         )
       })}
     </View>
+  )
+}
+
+function RunNotebookButton({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
+  const { toast } = useToast()
+
+  const mutation = api.github.generateNotebook.useMutation({
+    onSuccess(notebook, variables, context) {
+      toast({
+        title: 'Notebook generated',
+        message: 'Downloading...',
+        preset: 'done',
+      })
+      // Create a blob from the notebook JSON
+      const blob = new Blob([JSON.stringify(notebook, null, 2)], {
+        type: 'application/x-ipynb+json',
+      })
+
+      // Create a URL for the blob
+      const url = URL.createObjectURL(blob)
+
+      // Create a temporary link element
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${variables.repo_slug}.ipynb` // Use repo slug for filename
+
+      // Append link to body, click it, and clean up
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // Release the blob URL
+      URL.revokeObjectURL(url)
+    },
+  })
+
+  return (
+    <Button
+      theme="yellow"
+      onPress={() => mutation.mutate({ profile_slug: profileSlug, repo_slug: repoSlug })}
+      loading={mutation.isPending}
+    >
+      <ButtonIcon icon={ColabIcon} />
+      <ButtonText>Notebook</ButtonText>
+    </Button>
   )
 }
 

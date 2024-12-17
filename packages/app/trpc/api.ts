@@ -3306,7 +3306,7 @@ export const appRouter = router({
         return getRepoFiles(input)
       }),
 
-    generateNotebook: authedProcedure
+    generateNotebook: publicProcedure
       .input(
         z.object({
           profile_slug: z.string(),

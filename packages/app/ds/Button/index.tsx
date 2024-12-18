@@ -66,6 +66,12 @@ const Frame = styled(View, {
         bg: '$color12',
         boc: '$color9',
         '--icon-color': 'var(--color1)',
+        hoverStyle: {
+          // bg: '$color4',
+          scale: 1.02,
+          // @ts-ignore
+          '--icon-color': 'var(--color2)',
+        },
       },
     },
   } as const,

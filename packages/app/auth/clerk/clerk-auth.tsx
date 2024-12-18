@@ -105,7 +105,12 @@ function SignUp({
     )
   }
   return (
-    <SignUpButton mode="modal" key={redirectUrl} forceRedirectUrl={redirectUrl}>
+    <SignUpButton
+      mode="modal"
+      key={redirectUrl}
+      forceRedirectUrl={redirectUrl}
+      fallbackRedirectUrl={redirectUrl}
+    >
       {children}
     </SignUpButton>
   )

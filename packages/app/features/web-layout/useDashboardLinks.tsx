@@ -47,6 +47,6 @@ export function useDashboardLinks() {
   }
 
   return Object.assign(links, {
-    isPending: !me.data,
+    isPending: me.data === undefined,
   })
 }

@@ -375,7 +375,7 @@ function ParamsJson() {
                   video_id: '0lnbdRweJtA',
                 },
               },
-              notebook_url: '',
+              enable_notebook: true,
             } satisfies Zod.infer<typeof paramsJsonShape>,
             null,
             2

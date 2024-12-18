@@ -35,23 +35,19 @@ export function UserApplyPage() {
             <Card>
               <Card.Title>Apply as an expert</Card.Title>
               <Card.Description>
-                {env.APP_NAME} is invite-only for experts. To apply, please follow &{' '}
-                <a target="_blank" href={`https://x.com/@${env.TWITTER_HANDLE}`}>
-                  <Card.Description bold textDecorationLine="underline">
-                    DM @{env.TWITTER_HANDLE}
-                  </Card.Description>
-                </a>{' '}
-                on X (aka Twitter) with the GitHub repository you'd like to share.
+                To apply as an expert, please submit a pull-request to the Params monorepo with your
+                open source project. Your project should follow the format of other templates in the
+                templates/ folder. If it passes code review, you will be given access to Params.
               </Card.Description>
 
               <LinkButton
                 target="_blank"
                 als="flex-start"
                 inverse
-                href={`https://x.com/@${env.TWITTER_HANDLE}`}
+                href="https://github.com/paramsinc/all"
               >
-                {/* <ButtonIcon icon={TwitterIcon} /> */}
-                <ButtonText>Apply via X</ButtonText>
+                <ButtonIcon icon={Lucide.Github} />
+                <ButtonText>Submit PR on GitHub</ButtonText>
               </LinkButton>
             </Card>
           )}

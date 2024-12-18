@@ -31,7 +31,6 @@ export function UserGate({
   const createMe = useMutation({
     onSuccess(data, variables, context) {
       const key = getQueryKey(api.me, undefined, 'query')
-      queryClient.setQueryData(key, data satisfies GetQueryData<typeof api.me>)
     },
   })
   if (me.data) {

@@ -21,6 +21,7 @@ import { Link } from 'app/ds/Link'
 import { AnimatePresence, MotiView } from 'moti'
 import { UserGate } from 'app/features/user/gate'
 import { usePrevious } from 'app/helpers/use-previous'
+import { useMe } from 'app/features/user/me/create/use-me'
 
 const { useParams } = createParam<{
   profileSlug: string
@@ -36,15 +37,13 @@ export function ProfileDetailBookPage() {
   } = useParams()
 
   return (
-    <UserGate>
-      <Page.Root>
-        <Page.Scroll>
-          <Page.Content>
-            <Booker profileSlug={profileSlug} repoSlug={repoSlug} />
-          </Page.Content>
-        </Page.Scroll>
-      </Page.Root>
-    </UserGate>
+    <Page.Root>
+      <Page.Scroll>
+        <Page.Content>
+          <Booker profileSlug={profileSlug} repoSlug={repoSlug} />
+        </Page.Content>
+      </Page.Scroll>
+    </Page.Root>
   )
 }
 
@@ -122,7 +121,7 @@ function Booker({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: stri
     return <ErrorCard error={profileQuery.error} />
   }
 
-  const backHref = `/@${[profile.slug, repoSlug].filter(Boolean).join('/')}`
+  const backHref = `/@${[profileSlug, repoSlug].filter(Boolean).join('/')}`
 
   return (
     <View gap="$3">
@@ -130,7 +129,7 @@ function Booker({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: stri
 
       <View center gap="$3">
         <Link href={backHref}>
-          {profile.image_vendor && profile.image_vendor_id ? (
+          {profile?.image_vendor && profile.image_vendor_id ? (
             <View w={250}>
               <View aspectRatio={16 / 9} bg="$color2">
                 <Image
@@ -190,79 +189,82 @@ function Booker({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: stri
               const dateTimeLocal = dateTime.setZone('local')
               return (
                 <StripeProvider_ConfirmOnBackend amountCents={plan.price} currency="usd">
-                  <Card
-                    maw={760}
-                    w="100%"
-                    als="center"
-                    x={0}
-                    o={1}
-                    enterStyle={{
-                      x: 10,
-                      o: 0,
-                    }}
-                    animation="quick"
-                  >
-                    <View p="$3" bg="$color1" gap="$3">
-                      <Button onPress={() => setSlot(null)} als="flex-start">
-                        <ButtonIcon icon={Lucide.ChevronLeft} />
-                        <ButtonText>Back</ButtonText>
-                      </Button>
-                      <View>
-                        <Text>
-                          {dateTime.toLocaleString({
-                            weekday: 'long',
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </Text>
-                        <Text bold>
-                          {[
-                            dateTime.toLocaleString({
-                              hour: 'numeric',
-                              minute: 'numeric',
-                            }),
-
-                            dateTime.plus({ minutes: plan.duration_mins }).toLocaleString({
-                              hour: 'numeric',
-                              minute: 'numeric',
-                            }),
-                          ].join(' - ')}{' '}
-                          ({dateTime.toFormat('ZZZZ')})
-                        </Text>
-                        {dateTimeLocal.zoneName !== dateTime.zoneName && (
-                          <Text mt="$2">
-                            (
-                            {dateTimeLocal.day !== dateTime.day &&
-                              dateTimeLocal.toLocaleString({
-                                month: 'long',
-                                day: 'numeric',
-                              }) + ' '}
-                            {dateTimeLocal.toLocaleString({
-                              timeStyle: 'short',
-                            })}{' '}
-                            {dateTimeLocal.toFormat('ZZZZ')})
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                    <OfferCheckoutForm_ConfirmOnBackend
-                      profile_id={profile.id}
-                      organization_id={null}
-                      amount={plan.price}
-                      plan_id={plan.id}
-                      insert={{
-                        start_datetime: {
-                          year: dateTime.year,
-                          month: dateTime.month,
-                          day: dateTime.day,
-                          hour: dateTime.hour,
-                          minute: dateTime.minute,
-                        },
-                        timezone: profile.timezone,
+                  <UserGate grow={false}>
+                    <Card
+                      maw={760}
+                      w="100%"
+                      als="center"
+                      x={0}
+                      o={1}
+                      enterStyle={{
+                        x: 10,
+                        o: 0,
                       }}
-                    />
-                  </Card>
+                      animation="quick"
+                    >
+                      <View p="$3" bg="$color1" gap="$3">
+                        <Button onPress={() => setSlot(null)} als="flex-start">
+                          <ButtonIcon icon={Lucide.ChevronLeft} />
+                          <ButtonText>Back</ButtonText>
+                        </Button>
+                        <View>
+                          <Text>
+                            {dateTime.toLocaleString({
+                              weekday: 'long',
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </Text>
+                          <Text bold>
+                            {[
+                              dateTime.toLocaleString({
+                                hour: 'numeric',
+                                minute: 'numeric',
+                              }),
+
+                              dateTime.plus({ minutes: plan.duration_mins }).toLocaleString({
+                                hour: 'numeric',
+                                minute: 'numeric',
+                              }),
+                            ].join(' - ')}{' '}
+                            ({dateTime.toFormat('ZZZZ')})
+                          </Text>
+                          {dateTimeLocal.zoneName !== dateTime.zoneName && (
+                            <Text mt="$2">
+                              (
+                              {dateTimeLocal.day !== dateTime.day &&
+                                dateTimeLocal.toLocaleString({
+                                  month: 'long',
+                                  day: 'numeric',
+                                }) + ' '}
+                              {dateTimeLocal.toLocaleString({
+                                timeStyle: 'short',
+                              })}{' '}
+                              {dateTimeLocal.toFormat('ZZZZ')})
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+
+                      <OfferCheckoutForm_ConfirmOnBackend
+                        profile_id={profile.id}
+                        organization_id={null}
+                        amount={plan.price}
+                        plan_id={plan.id}
+                        insert={{
+                          start_datetime: {
+                            year: dateTime.year,
+                            month: dateTime.month,
+                            day: dateTime.day,
+                            hour: dateTime.hour,
+                            minute: dateTime.minute,
+                          },
+                          timezone: profile.timezone,
+                        }}
+                      />
+                    </Card>
+                  </UserGate>
                 </StripeProvider_ConfirmOnBackend>
               )
             })()

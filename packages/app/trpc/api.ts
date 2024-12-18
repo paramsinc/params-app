@@ -3427,7 +3427,7 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
 export type AppRouter = typeof appRouter
 
 // Add this helper function near the top of the file
-function generateNotebookJson(githubUrl: string, repoName: string) {
+function generateNotebookJson(githubUrl: string, repoName: string, pathToCode: string) {
   const notebook = {
     cells: [
       {

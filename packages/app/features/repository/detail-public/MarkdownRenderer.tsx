@@ -44,6 +44,7 @@ export function MarkdownRenderer({
   return (
     <Markdown
       className="markdown-body"
+      data-theme="dark"
       components={{
         a(props) {
           const isAbsolute = props.href?.startsWith('http')

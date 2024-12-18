@@ -48,12 +48,12 @@ export async function POST(req: Request) {
     }
 
     // disable webhook user creation
-    // await createUser({
-    //   id,
-    //   email,
-    //   first_name: first_name ?? 'New User',
-    //   last_name: last_name ?? '',
-    // })
+    await createUser({
+      id,
+      email,
+      first_name: first_name ?? email,
+      last_name: last_name ?? '',
+    })
   } else if (evt.type === 'user.updated') {
     const user = evt.data
     const { email_addresses, first_name, last_name, id } = user

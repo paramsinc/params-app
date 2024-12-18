@@ -1,6 +1,7 @@
 import './github-markdown.css'
 import Markdown from 'react-markdown'
 import Link from 'next/link'
+import { useThemeName } from 'app/ds/useThemeName'
 
 // https://github.com/react18-tools/react-markdown-autolink/blob/main/lib/src/index.ts
 export const autoLinkMd = (str: string) => {
@@ -41,10 +42,11 @@ export function MarkdownRenderer({
 }) {
   const md = children
   console.log('[markdown]', md)
+  const theme = useThemeName()
   return (
     <Markdown
       className="markdown-body"
-      data-theme="dark"
+      data-theme={theme.includes('light') ? 'light' : 'dark'}
       components={{
         a(props) {
           const isAbsolute = props.href?.startsWith('http')

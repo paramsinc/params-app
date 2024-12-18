@@ -20,9 +20,11 @@ const Form = makeForm<Parameters<ReturnType<typeof useMutation>['mutate']>[0]>()
 export function UserGate({
   children,
   loading = null,
+  grow = true,
 }: {
   children: React.ReactNode
   loading?: React.ReactElement | null
+  grow?: boolean
 }) {
   const auth = Auth.useUser()
   const me = api.me.useQuery(undefined, {
@@ -33,6 +35,8 @@ export function UserGate({
       const key = getQueryKey(api.me, undefined, 'query')
     },
   })
+  console.log('[me-gate][me]', me.data)
+  console.log('[me-gate][auth]', auth)
   if (me.data) {
     return <>{children}</>
   }
@@ -41,69 +45,66 @@ export function UserGate({
       return loading
     }
     return (
-      <View grow>
-        <Scroll centerContent>
-          <View p="$3" w="100%" maw={700} gap="$3" als="center">
-            <Text>Confirming your account details...</Text>
-            <Form.RootProvider
-              defaultValues={{
-                first_name: auth.userFirstName ?? '',
-                last_name: auth.userLastName ?? '',
+      <View grow={grow} jc="center">
+        <View p="$3" w="100%" maw={700} gap="$3" als="center">
+          <Text>Confirming your account details...</Text>
+          <Form.RootProvider
+            defaultValues={{
+              first_name: auth.userFirstName ?? '',
+              last_name: auth.userLastName ?? '',
+            }}
+          >
+            <View gap="$2">
+              <Form.Controller
+                name="first_name"
+                rules={{ required: 'First name is required' }}
+                render={({ field, fieldState }) => (
+                  <Input
+                    {...field}
+                    theme={fieldState.error ? 'red' : undefined}
+                    placeholder="First name"
+                  />
+                )}
+              />
+              <Form.Controller
+                name="last_name"
+                rules={{ required: 'Last name is required' }}
+                render={({ field, fieldState }) => (
+                  <Input
+                    {...field}
+                    theme={fieldState.error ? 'red' : undefined}
+                    placeholder="Last name"
+                  />
+                )}
+              />
+            </View>
+            <ErrorCard error={createMe.error} />
+            <Form.Submit>
+              {(form) => {
+                return (
+                  <Button
+                    loading={createMe.isPending ?? me.isPending ?? form.isSubmitting}
+                    onPress={form.handleSubmit(async (data) => {
+                      await createMe.mutateAsync(data)
+                    })}
+                    als="flex-start"
+                    inverse
+                  >
+                    <ButtonText>Save</ButtonText>
+                  </Button>
+                )
               }}
-            >
-              <View gap="$2">
-                <Form.Controller
-                  name="first_name"
-                  rules={{ required: 'First name is required' }}
-                  render={({ field, fieldState }) => (
-                    <Input
-                      {...field}
-                      theme={fieldState.error ? 'red' : undefined}
-                      placeholder="First name"
-                    />
-                  )}
-                />
-                <Form.Controller
-                  name="last_name"
-                  rules={{ required: 'Last name is required' }}
-                  render={({ field, fieldState }) => (
-                    <Input
-                      {...field}
-                      theme={fieldState.error ? 'red' : undefined}
-                      placeholder="Last name"
-                    />
-                  )}
-                />
-              </View>
-              <ErrorCard error={createMe.error} />
-              <Form.Submit>
-                {(form) => {
-                  return (
-                    <Button
-                      loading={createMe.isPending ?? me.isPending ?? form.isSubmitting}
-                      onPress={form.handleSubmit(async (data) => {
-                        await createMe.mutateAsync(data)
-                      })}
-                      als="flex-start"
-                      inverse
-                    >
-                      <ButtonText>Save</ButtonText>
-                    </Button>
-                  )
-                }}
-              </Form.Submit>
-            </Form.RootProvider>
-          </View>
-        </Scroll>
+            </Form.Submit>
+          </Form.RootProvider>
+        </View>
       </View>
     )
   }
 
   if (auth.hasLoaded) {
     return (
-      <View grow>
-        <BackgroundGradient />
-        <Scroll centerContent p="$3">
+      <View grow={grow} jc="center">
+        <View p="$3">
           <View
             p="$4"
             py="$5"
@@ -134,7 +135,7 @@ export function UserGate({
               </Auth.AuthFlowTrigger>
             </View>
           </View>
-        </Scroll>
+        </View>
       </View>
     )
   }

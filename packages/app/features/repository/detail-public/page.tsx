@@ -220,8 +220,8 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
       {bookableProfilesQuery.data?.map((profile) => {
         return (
           <Card>
-            <View gap="$3" $lg={{ row: true, ai: 'center' }}>
-              <View ai="center">
+            <View gap="$3" $lg={{ row: true }}>
+              <View ai="center" $lg={{ w: 100 }}>
                 <View
                   als="center"
                   ov="hidden"
@@ -243,12 +243,12 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
                 </View>
               </View>
 
-              <View gap="$3" $lg={{ grow: true }}>
+              <View gap="$3" $lg={{ flex: 1 }}>
                 <Text bold $gtLg={{ center: true }}>
                   {profile.name}
                 </Text>
 
-                <Text $gtLg={{ center: true }}>{profile.short_bio}</Text>
+                {!!profile.short_bio && <Text $gtLg={{ center: true }}>{profile.short_bio}</Text>}
 
                 <View gap="$1" row>
                   <LinkButton $gtLg={{ grow: true }} href={`/@${profile.slug}`}>

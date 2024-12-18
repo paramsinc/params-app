@@ -66,7 +66,6 @@
   --color-prettylights-syntax-meta-diff-range: #d2a8ff;
   --color-prettylights-syntax-sublimelinter-gutter-mark: #3d444d;
 }
-.markdown-body,
 [data-theme='light'] {
   /* light */
   color-scheme: light;

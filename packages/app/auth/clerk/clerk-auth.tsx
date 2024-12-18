@@ -88,6 +88,7 @@ function SignUp({
   action?: 'sign in' | 'sign up'
 }) {
   const path = useCurrentPath()
+
   const [redirectUrl = path, setRedirectUrl] = useState<string>()
   useServerEffect(() => {
     setRedirectUrl(window.location.pathname + window.location.search)
@@ -105,7 +106,12 @@ function SignUp({
     )
   }
   return (
-    <SignUpButton mode="modal" key={redirectUrl} forceRedirectUrl={redirectUrl}>
+    <SignUpButton
+      mode="modal"
+      key={redirectUrl + 'sign_up'}
+      forceRedirectUrl={redirectUrl}
+      fallbackRedirectUrl={redirectUrl}
+    >
       {children}
     </SignUpButton>
   )

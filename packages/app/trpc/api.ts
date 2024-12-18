@@ -3320,7 +3320,7 @@ export const appRouter = router({
         const githubUrl = `https://github.com/${github_repo.github_repo_owner}/${github_repo.github_repo_name}.git`
         const repoName = github_repo.github_repo_name
 
-        return generateNotebookJson(githubUrl, repoName)
+        return generateNotebookJson(githubUrl, repoName, github_repo.path_to_code)
       }),
   }),
   email: router({
@@ -3427,7 +3427,7 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
 export type AppRouter = typeof appRouter
 
 // Add this helper function near the top of the file
-function generateNotebookJson(githubUrl: string, repoName: string) {
+function generateNotebookJson(githubUrl: string, repoName: string, pathToCode: string) {
   const notebook = {
     cells: [
       {
@@ -3439,7 +3439,7 @@ function generateNotebookJson(githubUrl: string, repoName: string) {
           `# Clone repository and set up Python path\n`,
           `import sys\n`,
           `!git clone ${githubUrl}\n`,
-          `%cd ${repoName}\n`,
+          `%cd ${[repoName, pathToCode].filter(Boolean).join('/')}\n`,
           `sys.path.append(".")`,
         ],
       },

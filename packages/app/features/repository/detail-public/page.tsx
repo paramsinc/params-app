@@ -359,11 +359,18 @@ function DocsPage({
     path = mainDocsFilePath
   }
 
-  const filesQuery = api.github.repoFiles.useQuery({
-    profile_slug: profileSlug,
-    repo_slug: repoSlug,
-    path: path?.join('/'),
-  })
+  const filesQuery = api.github.repoFiles.useQuery(
+    {
+      profile_slug: profileSlug,
+      repo_slug: repoSlug,
+      path: path?.join('/'),
+    },
+    {
+      trpc: {
+        context: { batch: false },
+      },
+    }
+  )
 
   const filePath = path?.join('/')
 

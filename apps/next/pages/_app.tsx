@@ -140,6 +140,7 @@ function ThemeProvider({ children }: { children: ReactNode }) {
       onChangeTheme={(next) => {
         setTheme(next as ColorScheme)
       }}
+      forcedTheme="dark"
     >
       {children}
     </NextThemeProvider>

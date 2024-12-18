@@ -4,6 +4,7 @@ export default function Privacy() {
   return (
     <div
       className="markdown-body"
+      data-theme="dark"
       style={{ width: '100%', maxWidth: '800px', margin: '0 auto', padding: '32px 16px' }}
       dangerouslySetInnerHTML={{
         __html: `<h1>Privacy Policy</h1>

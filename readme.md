@@ -3,4 +3,8 @@
 
 # [params.com](https://params.com)
 
-This is the repo for the Params Next.js website. [Params](https://params.com) lets you your GitHub repo, and get booked for a phone call to discuss it. 
+This is the repo for the Params Next.js website. 
+
+[Params](https://params.com) lets developers share their GitHub projects and get paid to take phone calls to discuss it.
+
+For now, Params is a curated list of repositories focused on machine learning starter templates. To submit yours, head to [paramsinc/params-templates](https://github.com/paramsinc/params-templates)

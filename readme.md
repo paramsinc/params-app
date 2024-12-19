@@ -3,4 +3,4 @@
 
 # [params.com](https://params.com)
 
-This is the repo for the Params Next.js website. [params.com](https://params.com) lets you your GitHub repo, and get booked for a phone call to discuss it. 
+This is the repo for the Params Next.js website. [Params](https://params.com) lets you your GitHub repo, and get booked for a phone call to discuss it. 

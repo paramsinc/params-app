@@ -47,7 +47,7 @@ export function UserApplyPage() {
                   target="_blank"
                   als="flex-start"
                   inverse
-                  href="https://github.com/paramsinc/all"
+                  href="https://github.com/paramsinc/params-templates"
                 >
                   <ButtonIcon icon={Lucide.Github} />
                   <ButtonText>Submit PR on GitHub</ButtonText>

@@ -33,14 +33,11 @@ export function NewProfileForm({
   })
   const myProfiles = api.myProfiles.useQuery()
 
-  // TODO loading state
   if (me.data === undefined || myProfiles.data === undefined) {
     return <ErrorCard error={me.error ?? myProfiles.error} m="$3" />
   }
 
   const hasPersonalProfile = myProfiles.data.some((profile) => profile.personal_profile_user_id)
-
-  // TODO if me.data is undefined...throw
 
   return (
     <View grow>

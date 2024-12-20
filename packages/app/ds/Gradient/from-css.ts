@@ -1,3 +1,4 @@
+// @ts-nocheck
 // From https://github.com/niklasvh/html2canvas/tree/eeda86bd5e81fb4e97675fe9bee3d4d15899997f
 
 type Bounds = { width: number; height: number }
@@ -44,7 +45,6 @@ const parseGradient = (
   if (method === 'linear-gradient') {
     return parseLinearGradient(args, bounds, !!prefix)
   } else if (method === 'gradient' && args[0] === 'linear') {
-    // TODO handle correct angle
     return parseLinearGradient(
       ['to bottom'].concat(transformObsoleteColorStops(args.slice(3))),
       bounds,

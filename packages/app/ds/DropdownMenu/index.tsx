@@ -194,7 +194,6 @@ const Sub = Menu.create(
       children: React.ReactNode
     }
   ) => {
-    // TODO tix-web fix sub
     return createElement(Menu.Sub, props as any)
   },
   'Sub'

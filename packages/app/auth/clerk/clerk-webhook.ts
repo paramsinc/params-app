@@ -3,9 +3,14 @@ import { WebhookEvent } from '@clerk/nextjs/server'
 import { serverEnv } from 'app/env/env.server'
 import { d, db, schema } from 'app/db/db'
 import { createUser } from 'app/trpc/routes/user'
+import { createClerkClient } from '@clerk/nextjs/server'
+import { Octokit } from '@octokit/rest'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = serverEnv.CLERK_WEBHOOK_SECRET
+  const clerkClient = createClerkClient({
+    secretKey: serverEnv.CLERK_SECRET_KEY,
+  })
 
   // Get the Svix headers for verification
   const svix_id = req.headers.get('svix-id') as string
@@ -48,12 +53,36 @@ export async function POST(req: Request) {
     }
 
     // disable webhook user creation
-    await createUser({
+    const { user } = await createUser({
       id,
       email,
       first_name: first_name ?? email,
       last_name: last_name ?? '',
     })
+
+    const githubToken = (
+      await clerkClient.users.getUserOauthAccessToken(user.id, 'oauth_github')
+    ).data.at(-1)?.token
+
+    if (githubToken) {
+      const octokit = new Octokit({
+        auth: githubToken,
+      })
+
+      const githubUser = await octokit.rest.users.getAuthenticated().catch(() => null)
+
+      if (!githubUser) {
+        return
+      }
+
+      await db.insert(schema.githubIntegrations).values({
+        access_token: githubToken,
+        user_id: user.id,
+        github_user_id: githubUser.data.id,
+        github_username: githubUser.data.login,
+        avatar_url: githubUser.data.avatar_url,
+      })
+    }
   } else if (evt.type === 'user.updated') {
     const user = evt.data
     const { email_addresses, first_name, last_name, id } = user

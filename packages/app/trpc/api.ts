@@ -3134,7 +3134,7 @@ export const appRouter = router({
 
         const octokit = githubOauth.fromUser({ accessToken: integration.access_token })
         const { data: repos } = await octokit.repos.listForAuthenticatedUser({
-          visibility: 'all',
+          visibility: 'public',
           sort: 'updated',
           per_page: input.limit,
           page: input.page,

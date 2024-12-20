@@ -288,9 +288,6 @@ export const githubIntegrations = pgTable('github_integrations', {
     .primaryKey(),
   github_user_id: bigint('github_user_id', { mode: 'number' }).notNull(),
   github_username: text('github_username').notNull(),
-  /**
-   * TODO encrypt & have decryption env var?
-   */
   access_token: text('access_token').notNull(),
   avatar_url: text('avatar_url'),
   ...timestampMixin(),

@@ -26,7 +26,7 @@ export default () => {
   const [, response, promptAsync] = useAuthRequest(
     {
       clientId: env.GITHUB_OAUTH_CLIENT_ID,
-      scopes: ['repo'],
+      scopes: [],
       redirectUri: env.GITHUB_OAUTH_REDIRECT_URL,
       state: JSON.stringify({ redirect: authRedirectUrl }),
       extraParams: {

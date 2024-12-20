@@ -118,27 +118,6 @@ const user = {
 
     return true
   }),
-
-  // users
-  users: authedProcedure
-    .input(
-      z.object({
-        limit: z.number().min(1).max(100).optional().default(20),
-        offset: z.number().optional().default(0),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      // TODO check that i'm an admin
-      throw new TRPCError({ code: 'METHOD_NOT_SUPPORTED' })
-      const users = await db.query.users
-        .findMany({
-          limit: input.limit,
-          offset: input.offset,
-        })
-        .execute()
-
-      return users
-    }),
 }
 
 const profileInsert = inserts.profiles
@@ -521,7 +500,6 @@ const profile = {
       })
     )
     .query(async ({ ctx, input: { limit, offset } }) => {
-      // TODO admin
       const profiles = await db.query.profiles.findMany({
         columns: publicSchema.profiles.ProfileInternal,
         limit,
@@ -2000,8 +1978,6 @@ const availability = {
           })
 
           calendarEvents.items?.forEach(({ start, end }) => {
-            // TODO test this
-            // cache? probably not...
             if (!start?.dateTime) return
             if (!end?.dateTime) return
             if (!start.timeZone) return
@@ -3343,7 +3319,6 @@ async function getRepoFiles(input: { profile_slug: string; repo_slug: string; pa
 
   const { github_repo } = query
 
-  // TODO: Implement getting files from GitHub API
   const files = await octokit.repos
     .getContent({
       owner: github_repo.github_repo_owner,

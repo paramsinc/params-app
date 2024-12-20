@@ -1470,26 +1470,36 @@ const repository = router({
     .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
     .output(paramsJsonShape.nullable())
     .query(async ({ input }) => {
-      let paramsJson: string | null = null
-      const files = await getRepoFiles({
-        profile_slug: input.profile_slug,
-        repo_slug: input.repo_slug,
-        path: 'params.json',
-      }).catch((e) => {
-        console.log('[getRepoFiles][error]', e.message)
+      const octokitQuery = await getOctokitFromRepo(input).catch(() => null)
+
+      if (!octokitQuery) {
         return null
-      })
-      if (typeof files === 'string') {
-        paramsJson = files
-      } else {
-        paramsJson = null
       }
+
+      const {
+        octokit,
+        query: { github_repo },
+      } = octokitQuery
+
+      const paramsJson = await octokit.repos
+        .getContent({
+          owner: github_repo.github_repo_owner,
+          repo: github_repo.github_repo_name,
+          path: [github_repo.path_to_code, 'params.json'].filter(Boolean).join('/'),
+        })
+        .then((r) => r.data)
+        .catch((e) => null)
+
       if (typeof paramsJson !== 'string') {
         return null
       }
-      const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
-      if (parsed.success) {
-        return parsed.data
+      try {
+        const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
+        if (parsed.success) {
+          return parsed.data
+        }
+      } catch {
+        return null
       }
       return null
     }),

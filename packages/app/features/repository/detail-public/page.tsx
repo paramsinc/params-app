@@ -131,23 +131,11 @@ function RepositoryDetailPublicPageContent({
               {!!paramsJson?.enable_notebook && (
                 <RunNotebookButton profileSlug={profileSlug} repoSlug={repoSlug} />
               )}
-              {repo.github_url != null && (
+              {repo.github_repo != null && (
                 <>
                   <LinkButton
                     theme="blue"
-                    href={(() => {
-                      let url = repo.github_url
-
-                      try {
-                        const urlClass = new URL(repo.github_url)
-
-                        // add /fork
-                        urlClass.pathname += '/fork'
-                        url = urlClass.toString()
-                      } catch {}
-
-                      return url
-                    })()}
+                    href={`https://github.com/${repo.github_repo.github_repo_owner}/${repo.github_repo.github_repo_name}/fork`}
                   >
                     <ButtonIcon icon={Lucide.GitFork} />
                     <ButtonText>Fork</ButtonText>

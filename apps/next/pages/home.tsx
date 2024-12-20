@@ -160,44 +160,12 @@ export default function Home({ sections }: InferGetStaticPropsType<typeof getSta
             Find curated ML templates
             {'\n'}& book a call with the creators
           </H1>
-          {/* <LinkButton href="/new" als="flex-start">
-            <ButtonText>Submit your repo</ButtonText>
-          </LinkButton> */}
         </View>
 
         <View gap="$4" $gtSm={{ gap: '$5' }}>
           {sections.map((section) => (
             <RepoCardSection key={section.repoSlug} {...section} />
           ))}
-          {/* <RepoCardSection
-            title="Build a recommendation system"
-            repoSlug="recommendation-system"
-            description="A scalable recommendation engine built with TensorFlow, featuring collaborative filtering, content-based filtering, and hybrid approaches. Includes pre-trained models and example datasets."
-            profileImage="https://upload.wikimedia.org/wikipedia/commons/7/71/Fchollet.jpg"
-            authorName="François Chollet"
-            authorBio="AI @ Google, Creator of Keras, Cofounder of ARC Prize"
-            socialLinks={{
-              github: 'https://github.com/fchollet',
-              twitter: 'https://x.com/fchollet',
-              linkedin: 'https://linkedin.com/in/fchollet',
-            }}
-            profileSlug="francois"
-          />
-
-          <RepoCardSection
-            title="Build a churn prediction model"
-            repoSlug="churn"
-            description="Production-grade churn prediction using transformers. Features sequence modeling of user events, time-aware attention mechanisms, and automated feature engineering. Includes pre-built data pipelines and evaluation framework."
-            profileImage="https://pbs.twimg.com/profile_images/1856206784458883072/6q8Vrp59_400x400.jpg"
-            authorName="Jeremy Berman"
-            authorBio="AI @ Params, Previously Cofounder @ BeatGig"
-            socialLinks={{
-              github: 'https://github.com/jerber',
-              twitter: 'https://x.com/jerber888',
-              linkedin: 'https://linkedin.com/in/jeremyberman1',
-            }}
-            profileSlug="jeremy"
-          /> */}
         </View>
         <View p="$2">
           <TextLink href="/privacy">

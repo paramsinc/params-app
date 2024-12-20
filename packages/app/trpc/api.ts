@@ -1437,34 +1437,31 @@ const repository = router({
       z.object({ profile_slug: z.string(), repo_slug: z.string(), path: z.string().optional() })
     )
     .query(async ({ input }) => {
-      if (true) {
-        const {
-          octokit,
-          query: { github_repo },
-        } = await getOctokitFromRepo(input)
-        const tree = await octokit.rest.git
-          .getTree({
-            owner: github_repo.github_repo_owner,
-            repo: github_repo.github_repo_name,
-            tree_sha: github_repo.default_branch,
-            recursive: 'true',
-          })
-          .then((r) => r.data.tree)
-        if (github_repo.path_to_code) {
-          for (let i = 0; i < tree.length; i++) {
-            const item = tree[i]!
-            if (item.path?.startsWith(github_repo.path_to_code)) {
-              item.path = item.path?.replace(github_repo.path_to_code + '/', '') || ''
-              item.type ??= ''
-            } else {
-              tree.splice(i, 1)
-              i--
-            }
+      const {
+        octokit,
+        query: { github_repo },
+      } = await getOctokitFromRepo(input)
+      const tree = await octokit.rest.git
+        .getTree({
+          owner: github_repo.github_repo_owner,
+          repo: github_repo.github_repo_name,
+          tree_sha: github_repo.default_branch,
+          recursive: 'true',
+        })
+        .then((r) => r.data.tree)
+      if (github_repo.path_to_code) {
+        for (let i = 0; i < tree.length; i++) {
+          const item = tree[i]!
+          if (item.path?.startsWith(github_repo.path_to_code)) {
+            item.path = item.path?.replace(github_repo.path_to_code + '/', '') || ''
+            item.type ??= ''
+          } else {
+            tree.splice(i, 1)
+            i--
           }
         }
-        return tree
       }
-      return []
+      return tree
     }),
   paramsJson: publicProcedure
     .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))

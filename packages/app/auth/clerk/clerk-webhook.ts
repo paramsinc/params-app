@@ -71,17 +71,15 @@ export async function POST(req: Request) {
 
       const githubUser = await octokit.rest.users.getAuthenticated().catch(() => null)
 
-      if (!githubUser) {
-        return
+      if (githubUser) {
+        await db.insert(schema.githubIntegrations).values({
+          access_token: githubToken,
+          user_id: user.id,
+          github_user_id: githubUser.data.id,
+          github_username: githubUser.data.login,
+          avatar_url: githubUser.data.avatar_url,
+        })
       }
-
-      await db.insert(schema.githubIntegrations).values({
-        access_token: githubToken,
-        user_id: user.id,
-        github_user_id: githubUser.data.id,
-        github_username: githubUser.data.login,
-        avatar_url: githubUser.data.avatar_url,
-      })
     }
   } else if (evt.type === 'user.updated') {
     const user = evt.data

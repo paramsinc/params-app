@@ -1,3 +1,4 @@
+import useAreYouSure from 'app/ds/AreYouSure/use-are-you-sure'
 import { Button, ButtonIcon, ButtonText } from 'app/ds/Button'
 import { ErrorCard } from 'app/ds/Error/card'
 import { getErrorMessages } from 'app/ds/Error/error'
@@ -118,8 +119,8 @@ export function GitHubRepoPicker({
         />
       </View>
       <Text>
-        If you don't see the repo you're looking for, you might need to grant GitHub access to your
-        organization by signing out and back in below.
+        If you want to delete your GitHub integration, you can do so below. Proceed with caution;
+        this will break all existing Params repositories.
       </Text>
       <SignOutOfGithub />
     </>
@@ -137,9 +138,21 @@ function SignOutOfGithub() {
       })
     },
   })
+  const areYouSure = useAreYouSure()
   return (
-    <Button als="flex-start" onPress={() => mutation.mutate()} loading={mutation.isPending}>
-      <Button.Text>Sign out of GitHub</Button.Text>
+    <Button
+      als="flex-start"
+      onPress={() =>
+        areYouSure(() => mutation.mutate(), {
+          title: `Are you sure you want to delete your GitHub integration?`,
+          message: `You will have to reconnect GitHub to any Params repositories.`,
+        })
+      }
+      loading={mutation.isPending}
+      theme="red"
+    >
+      <ButtonIcon icon={Lucide.X} />
+      <Button.Text>Delete GitHub Integration</Button.Text>
     </Button>
   )
 }

@@ -54,7 +54,6 @@ export const publicProcedure = t.procedure
 export const authedProcedure = t.procedure.use(isAuthed)
 
 export const userProcedure = t.procedure.use(isAuthed).use(async ({ next, ctx }) => {
-  // TODO should we upsert a user based on their auth...? eh
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.id, ctx.auth.userId),
   })

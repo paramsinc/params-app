@@ -49,11 +49,6 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   const trpcState = ssgApi.dehydrate()
 
-  console.log(
-    '[trpcState]',
-    trpcState.queries.map((q) => q.queryKey)
-  )
-
   return {
     props: {
       trpcState,

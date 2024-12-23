@@ -61,7 +61,8 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
     }),
   ])
 
-  const trpcState = ssgApi.dehydrate()
+  // remove undefined values
+  const trpcState = JSON.parse(JSON.stringify(ssgApi.dehydrate()))
 
   console.log(
     '[trpcState]',

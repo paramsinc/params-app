@@ -11,6 +11,11 @@ if (typeof window !== 'undefined' && typeof (Deno as any) === 'undefined') {
 const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL
 const DATABASE_URL = NEON_DATABASE_URL!
 
+console.log(
+  '[env.server.tsx] GITHUB_ACCESS_TOKEN_FOR_PUBLIC_REPOS',
+  process.env.GITHUB_ACCESS_TOKEN_FOR_PUBLIC_REPOS
+)
+
 export const serverEnv = z
   .object({
     CLERK_SECRET_KEY: z.string(),
@@ -39,6 +44,7 @@ export const serverEnv = z
     RECAPTCHA_SECRET_KEY: z.string(),
     GITHUB_OAUTH_CLIENT_SECRET: z.string(),
     RESEND_KEY: z.string(),
+    GITHUB_ACCESS_TOKEN_FOR_PUBLIC_REPOS: z.string(),
   })
   .parse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
@@ -56,4 +62,5 @@ export const serverEnv = z
     RECAPTCHA_SECRET_KEY: process.env.CAPTCHA_SECRET_KEY,
     GITHUB_OAUTH_CLIENT_SECRET: process.env.GITHUB_OAUTH_CLIENT_SECRET,
     RESEND_KEY: process.env.RESEND_KEY,
+    GITHUB_ACCESS_TOKEN_FOR_PUBLIC_REPOS: process.env.GITHUB_ACCESS_TOKEN_FOR_PUBLIC_REPOS,
   })

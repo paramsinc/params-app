@@ -1470,22 +1470,29 @@ const repository = router({
       const octokitQuery = await getOctokitFromRepo(input).catch(() => null)
 
       if (!octokitQuery) {
+        console.log('[params.json] MISSING OCTOKIT')
         return null
       }
 
-      const {
-        octokit,
-        query: { github_repo },
-      } = octokitQuery
+      console.log('[params.json] OCTOKIT FOUND...')
+
+      const { octokit, query } = octokitQuery
+
+      if (!query) {
+        console.log('[params.json][]')
+        return null
+      }
 
       const paramsJson = await octokit.repos
         .getContent({
-          owner: github_repo.github_repo_owner,
-          repo: github_repo.github_repo_name,
-          path: [github_repo.path_to_code, 'params.json'].filter(Boolean).join('/'),
+          owner: query.github_repo.github_repo_owner,
+          repo: query.github_repo.github_repo_name,
+          path: [query.github_repo.path_to_code, 'params.json'].filter(Boolean).join('/'),
         })
         .then((r) => r.data)
         .catch((e) => null)
+
+      console.log('[params.json][]')
 
       if (typeof paramsJson !== 'string') {
         return null
@@ -3381,7 +3388,7 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
       schema.githubRepoIntegrations,
       d.eq(schema.githubRepoIntegrations.repo_id, schema.repositories.id)
     )
-    .innerJoin(
+    .leftJoin(
       schema.githubIntegrations,
       d.eq(
         schema.githubIntegrations.user_id,
@@ -3391,18 +3398,19 @@ async function getOctokitFromRepo(input: { profile_slug: string; repo_slug: stri
     .limit(1)
     .execute()
 
-  if (!first) {
+  if (!first?.github_repo) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: `Repository not found.`,
+      message: `GitHub repo not found.`,
     })
   }
 
-  const { github_integration } = first
+  const accessToken =
+    first.github_integration?.access_token ?? serverEnv.GITHUB_ACCESS_TOKEN_FOR_PUBLIC_REPOS
 
   return {
     query: first,
-    octokit: githubOauth.fromUser({ accessToken: github_integration.access_token }),
+    octokit: githubOauth.fromUser({ accessToken }),
   }
 }
 

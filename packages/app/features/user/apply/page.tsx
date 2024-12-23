@@ -37,7 +37,7 @@ export function UserApplyPage() {
               <Card>
                 <Card.Title>Apply as an expert</Card.Title>
                 <Card.Description>
-                  To apply as an expert, please submit a pull-request to the Params monorepo with
+                  To apply as an expert, please submit a pull request to the Params monorepo with
                   your open source project. Your project should follow the format of other templates
                   in the templates/ folder. If it passes code review, you will be given access to
                   Params.

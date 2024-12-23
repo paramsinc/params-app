@@ -1437,59 +1437,66 @@ const repository = router({
       z.object({ profile_slug: z.string(), repo_slug: z.string(), path: z.string().optional() })
     )
     .query(async ({ input }) => {
-      if (true) {
-        const {
-          octokit,
-          query: { github_repo },
-        } = await getOctokitFromRepo(input)
-        const tree = await octokit.rest.git
-          .getTree({
-            owner: github_repo.github_repo_owner,
-            repo: github_repo.github_repo_name,
-            tree_sha: github_repo.default_branch,
-            recursive: 'true',
-          })
-          .then((r) => r.data.tree)
-        if (github_repo.path_to_code) {
-          for (let i = 0; i < tree.length; i++) {
-            const item = tree[i]!
-            if (item.path?.startsWith(github_repo.path_to_code)) {
-              item.path = item.path?.replace(github_repo.path_to_code + '/', '') || ''
-              item.type ??= ''
-            } else {
-              tree.splice(i, 1)
-              i--
-            }
+      const {
+        octokit,
+        query: { github_repo },
+      } = await getOctokitFromRepo(input)
+      const tree = await octokit.rest.git
+        .getTree({
+          owner: github_repo.github_repo_owner,
+          repo: github_repo.github_repo_name,
+          tree_sha: github_repo.default_branch,
+          recursive: 'true',
+        })
+        .then((r) => r.data.tree)
+      if (github_repo.path_to_code) {
+        for (let i = 0; i < tree.length; i++) {
+          const item = tree[i]!
+          if (item.path?.startsWith(github_repo.path_to_code)) {
+            item.path = item.path?.replace(github_repo.path_to_code + '/', '') || ''
+            item.type ??= ''
+          } else {
+            tree.splice(i, 1)
+            i--
           }
         }
-        return tree
       }
-      return []
+      return tree
     }),
   paramsJson: publicProcedure
     .input(z.object({ profile_slug: z.string(), repo_slug: z.string() }))
     .output(paramsJsonShape.nullable())
     .query(async ({ input }) => {
-      let paramsJson: string | null = null
-      const files = await getRepoFiles({
-        profile_slug: input.profile_slug,
-        repo_slug: input.repo_slug,
-        path: 'params.json',
-      }).catch((e) => {
-        console.log('[getRepoFiles][error]', e.message)
+      const octokitQuery = await getOctokitFromRepo(input).catch(() => null)
+
+      if (!octokitQuery) {
         return null
-      })
-      if (typeof files === 'string') {
-        paramsJson = files
-      } else {
-        paramsJson = null
       }
+
+      const {
+        octokit,
+        query: { github_repo },
+      } = octokitQuery
+
+      const paramsJson = await octokit.repos
+        .getContent({
+          owner: github_repo.github_repo_owner,
+          repo: github_repo.github_repo_name,
+          path: [github_repo.path_to_code, 'params.json'].filter(Boolean).join('/'),
+        })
+        .then((r) => r.data)
+        .catch((e) => null)
+
       if (typeof paramsJson !== 'string') {
         return null
       }
-      const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
-      if (parsed.success) {
-        return parsed.data
+      try {
+        const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
+        if (parsed.success) {
+          return parsed.data
+        }
+      } catch {
+        return null
       }
       return null
     }),
@@ -1978,8 +1985,6 @@ const availability = {
           })
 
           calendarEvents.items?.forEach(({ start, end }) => {
-            // TODO test this
-            // cache? probably not...
             if (!start?.dateTime) return
             if (!end?.dateTime) return
             if (!start.timeZone) return
@@ -3136,7 +3141,7 @@ export const appRouter = router({
 
         const octokit = githubOauth.fromUser({ accessToken: integration.access_token })
         const { data: repos } = await octokit.repos.listForAuthenticatedUser({
-          visibility: 'all',
+          visibility: 'public',
           sort: 'updated',
           per_page: input.limit,
           page: input.page,
@@ -3321,7 +3326,6 @@ async function getRepoFiles(input: { profile_slug: string; repo_slug: string; pa
 
   const { github_repo } = query
 
-  // TODO: Implement getting files from GitHub API
   const files = await octokit.repos
     .getContent({
       owner: github_repo.github_repo_owner,

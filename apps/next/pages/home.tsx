@@ -57,7 +57,7 @@ export const getStaticProps = (async () => {
     {
       profile_slug: 'the-architects',
       repo_slug: 'arc-prize-2024',
-      title: 'Achieve SoTA on ARC-AGI with Test-Time Training',
+      title: 'Build an Offline Solution to ARC-AGI with Test-Time Training',
     },
     {
       repo_slug: 'arc-agi',

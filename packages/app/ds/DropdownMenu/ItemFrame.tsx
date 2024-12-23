@@ -37,11 +37,10 @@ export const ItemFrame = ({
   return (
     <Theme name={theme}>
       <focusedItemContext.Provider value={focused}>
-        <Container cursor='pointer' height={height} row={row} px={px}>
+        <Container cursor="pointer" height={height} row={row} px={px}>
           <View
             zi={-1}
             fullscreen
-            // TODO tix-web light mode?
             bg={destructive ? '$color4' : 'rgba(124, 124, 163, 0.125)'}
             $theme-light={{
               bg: destructive ? '$color4' : 'rgba(216, 216, 216, 0.125)',
@@ -50,7 +49,7 @@ export const ItemFrame = ({
             left={4}
             right={4}
             opacity={focused ? 1 : 0}
-            className='dropdown-menu-item-frame-focus-indicator context-menu-item-frame-focus-indicator'
+            className="dropdown-menu-item-frame-focus-indicator context-menu-item-frame-focus-indicator"
           />
           {children}
         </Container>

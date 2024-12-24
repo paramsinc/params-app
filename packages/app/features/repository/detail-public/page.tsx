@@ -75,9 +75,22 @@ function RepositoryDetailPublicPageContent({
   })
   let profileCard = <ProfileCards profileSlug={profileSlug} repoSlug={repoSlug} />
 
-  const paramsJsonQuery = api.repo.paramsJson.useQuery({
-    profile_slug: profileSlug,
-    repo_slug: repoSlug,
+  const paramsJsonQuery = api.repo.paramsJson.useQuery(
+    {
+      profile_slug: profileSlug,
+      repo_slug: repoSlug,
+    },
+    {
+      trpc: {
+        context: { batch: false },
+      },
+    }
+  )
+  console.log('[repoQuery]', {
+    profileSlug,
+    repoSlug,
+    repo: repoQuery.data,
+    json: paramsJsonQuery.data,
   })
 
   if (!repoQuery.data) {
@@ -490,6 +503,7 @@ function DocsPage({
 }
 
 function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoSlug: string }) {
+  console.log('[GitHubFilesPage]')
   const {
     params: { path },
   } = useParams()
@@ -516,21 +530,29 @@ function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoS
 
   const sidebar = useMedia().gtSm
 
+  console.log('[filesQuery]', filesQuery)
+
   if (!treeQuery.data) {
     return <ErrorCard error={filesQuery.error ?? treeQuery.error} />
   }
   const tree = treeQuery.data
 
-  const readmeFileName = tree.find((r) => r.path.toLowerCase() === 'readme.md')?.path
+  const readmeFileName = tree.find((r) => r.path?.toLowerCase() === 'readme.md')?.path
 
   console.log('[files]', { selectedFileName: selectedFilePath, readmeFileName, tree })
   const filesNode = (
     <View>
       {tree
-        .sort((a, b) => a.path.split('/').pop()!.localeCompare(b.path.split('/').pop()!))
+        .sort(
+          (a, b) =>
+            a.path
+              ?.split('/')
+              .pop()
+              ?.localeCompare(b.path?.split('/').pop() ?? '') ?? 0
+        )
         .map((file) => {
-          const FileIcon = getFileIcon(file.path)
-          const filename = file.path.split('/').pop()
+          const FileIcon = getFileIcon(file.path ?? '')
+          const filename = file.path?.split('/').pop()
 
           const isInCurrentDirectory = (filePath: string, urlPath: string[] | undefined) => {
             if (!urlPath?.length) {
@@ -557,7 +579,7 @@ function GitHubFilesPage({ profileSlug, repoSlug }: { profileSlug: string; repoS
               filePath !== currentDir
             )
           }
-          if (!isInCurrentDirectory(file.path, path)) {
+          if (!isInCurrentDirectory(file.path ?? '', path)) {
             return null
           }
 

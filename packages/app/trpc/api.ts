@@ -990,6 +990,7 @@ const repository = router({
   bySlug_public: publicProcedure
     .input(z.object({ repo_slug: z.string(), profile_slug: z.string() }))
     .query(async ({ input: { repo_slug, profile_slug } }) => {
+      console.log('[bySlug_public]', repo_slug, profile_slug)
       return repoBySlug({ repo_slug, profile_slug })
     }),
 
@@ -1479,27 +1480,40 @@ const repository = router({
       const { octokit, query } = octokitQuery
 
       if (!query) {
-        console.log('[params.json][]')
+        console.log('[params.json][missing-query]')
         return null
       }
 
-      const paramsJson = await octokit.repos
+      console.log('[params.json][has-repo]', query.github_repo)
+
+      let paramsJson = await octokit.repos
         .getContent({
           owner: query.github_repo.github_repo_owner,
           repo: query.github_repo.github_repo_name,
           path: [query.github_repo.path_to_code, 'params.json'].filter(Boolean).join('/'),
         })
-        .then((r) => r.data)
+        .then((r) => {
+          if (Array.isArray(r.data)) {
+            return null
+          }
+          if (r.data.type !== 'file') {
+            return null
+          }
+          return r.data.content
+        })
         .catch((e) => null)
 
-      console.log('[params.json][]')
+      console.log('[params.json][has-params-json]', typeof paramsJson)
 
       if (typeof paramsJson !== 'string') {
         return null
       }
+      paramsJson = Buffer.from(paramsJson, 'base64').toString('utf-8')
+      console.log('[params.json][has-params-json-base]', paramsJson)
       try {
         const parsed = paramsJsonShape.safeParse(JSON.parse(paramsJson))
         if (parsed.success) {
+          console.log('[params.json][parsed]', parsed.data)
           return parsed.data
         }
       } catch {
@@ -3293,6 +3307,7 @@ export const appRouter = router({
       )
       .output(z.string().or(z.array(z.string())).nullable())
       .query(async ({ input }) => {
+        return null
         return getRepoFiles(input)
       }),
 
@@ -3329,8 +3344,10 @@ export const appRouter = router({
 })
 
 async function getRepoFiles(input: { profile_slug: string; repo_slug: string; path: string }) {
+  console.log('[repoFiles] input', input)
   const { query, octokit } = await getOctokitFromRepo(input)
 
+  console.log('[repoFiles] found')
   const { github_repo } = query
 
   const files = await octokit.repos

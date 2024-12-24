@@ -3307,7 +3307,6 @@ export const appRouter = router({
       )
       .output(z.string().or(z.array(z.string())).nullable())
       .query(async ({ input }) => {
-        return null
         return getRepoFiles(input)
       }),
 

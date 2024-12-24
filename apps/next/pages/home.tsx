@@ -50,11 +50,6 @@ export const getStaticProps = (async () => {
     title: string
   }> = [
     {
-      profile_slug: 'fchollet',
-      repo_slug: 'recommendations',
-      title: 'Build a recommendation system',
-    },
-    {
       profile_slug: 'the-architects',
       repo_slug: 'arc-prize-2024',
       title: 'Build an Offline Solution to ARC-AGI with Test-Time Training',
@@ -64,6 +59,11 @@ export const getStaticProps = (async () => {
       profile_slug: 'jeremy-berman',
       socialLinks: jeremySocials,
       title: 'Build a solution to ARC-AGI with Evolutionary Test-Time Compute',
+    },
+    {
+      profile_slug: 'fchollet',
+      repo_slug: 'recommendations',
+      title: 'Build a recommendation system',
     },
     {
       repo_slug: 'churn',

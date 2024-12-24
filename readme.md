@@ -17,3 +17,5 @@ This repo is built using:
 - Postgres (Neon)
 - Drizzle
 - Tamagui
+- Doppler
+- Clerk

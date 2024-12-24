@@ -10,6 +10,8 @@ const eslint = {
   rules: {
     'drizzle/enforce-update-with-where': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
+    'react/jsx-key': 'error',
+    'react/no-array-index-key': 'error',
   },
   root: true,
   plugins: ['drizzle'],

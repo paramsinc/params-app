@@ -220,7 +220,7 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
     <View gap="$2">
       {bookableProfilesQuery.data?.map((profile) => {
         return (
-          <Card>
+          <Card key={profile.id}>
             <View gap="$3" $lg={{ row: true }}>
               <View ai="center" $lg={{ w: 100 }}>
                 <View
@@ -704,6 +704,7 @@ function DocsSidebar({ profileSlug, repoSlug }: { profileSlug: string; repoSlug:
   }
 
   if (!paramsJsonQuery.data) {
+    console.log('[paramsJsonQuery.error]', paramsJsonQuery.error)
     return <ErrorCard error={paramsJsonQuery.error} />
   }
   const paramsJson = paramsJsonQuery.data

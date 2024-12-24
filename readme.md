@@ -4,7 +4,7 @@
 
 This is the repo for the Params Next.js website.
 
-[Params](https://params.com) lets developers share their GitHub projects and get paid to take phone calls to discuss it.
+[Params](https://params.com) lets developers share their GitHub projects and get booked for consulting calls to discuss it.
 
 For now, Params is a curated list of repositories focused on machine learning starter templates. To submit yours, head to [paramsinc/params-templates](https://github.com/paramsinc/params-templates).
 

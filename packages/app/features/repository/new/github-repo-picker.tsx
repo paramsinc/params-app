@@ -30,10 +30,15 @@ export function GitHubRepoPicker({
     }
   ) => void
 }) {
-  const myReposQuery = api.github.myRepos.useQuery({
-    limit: 100,
-    page: 1,
-  })
+  const myReposQuery = api.github.myRepos.useQuery(
+    {
+      limit: 100,
+      page: 1,
+    },
+    {
+      staleTime: 0,
+    }
+  )
   const [search, setSearch] = useState('')
 
   const searchedResult = useMemo(() => {

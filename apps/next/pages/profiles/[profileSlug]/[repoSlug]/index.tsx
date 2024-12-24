@@ -38,6 +38,10 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
     repo_slug: repoSlug,
   })
   const [profile, repo] = await Promise.all([
+    ssgApi.repo.bySlug_public.prefetch({
+      profile_slug: profileSlug,
+      repo_slug: repoSlug,
+    }),
     ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
     repoPromise,
     ssgApi.repo.paramsJson
@@ -45,7 +49,10 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       .then(async (paramsJson) => {
         const mainDocsFile = paramsJson?.docs.main
         if (mainDocsFile && !mainDocsFile.toLowerCase().endsWith('readme.md')) {
-          const repo = await repoPromise
+          const repo = await ssgApi.repo.bySlug_public.fetch({
+            profile_slug: profileSlug,
+            repo_slug: repoSlug,
+          })
           await ssgApi.github.repoFiles.prefetch({
             profile_slug: profileSlug,
             repo_slug: repoSlug,

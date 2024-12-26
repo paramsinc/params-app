@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@intercom/messenger-js-sdk": "^0.0.14",
     "@sentry/nextjs": "^8",
     "@tamagui/font-inter": "1.116.14",
     "@tamagui/next-plugin": "1.116.14",

@@ -21,6 +21,7 @@ import fonts from 'app/ds/tamagui/font/fonts'
 import { fontVars } from 'app/ds/tamagui/font/font-vars'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet'
 import { Analytics } from '@vercel/analytics/next'
+import Intercom from '@intercom/messenger-js-sdk'
 
 // pages/_app.js
 import posthog from 'posthog-js'
@@ -44,8 +45,6 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
 }
 
-const { APP_NAME } = env
-
 function MyApp({ Component, pageProps, router }: SolitoAppProps) {
   const Layout =
     router.pathname.startsWith('/dashboard') ||
@@ -55,6 +54,17 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
       : Fragment
 
   const metadata = (pageProps as any)?.metadata as React.ComponentProps<typeof NextSeo> | undefined
+
+  const user = Auth.useUser()
+
+  useEffect(() => {
+    Intercom({
+      app_id: 'ft7lyc08',
+      email: user.userEmail ?? undefined,
+      name: user.userFirstName ?? undefined,
+      user_id: user.userId ?? undefined,
+    })
+  }, [user])
 
   return (
     <>

@@ -3619,6 +3619,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@intercom/messenger-js-sdk@npm:^0.0.14":
+  version: 0.0.14
+  resolution: "@intercom/messenger-js-sdk@npm:0.0.14"
+  checksum: 10/49a95cdb701553df45e8c526596ab7ae9b44f462ef3317e9397b44e9358c5e9cbd556f49722984a714f7052645998876aa8721d43c5f77479e3b9ba94699c7ed
+  languageName: node
+  linkType: hard
+
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
   resolution: "@isaacs/cliui@npm:8.0.2"
@@ -17114,6 +17121,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "next-app@workspace:apps/next"
   dependencies:
+    "@intercom/messenger-js-sdk": "npm:^0.0.14"
     "@next/bundle-analyzer": "npm:^14.2.11"
     "@sentry/nextjs": "npm:^8"
     "@tamagui/font-inter": "npm:1.116.14"

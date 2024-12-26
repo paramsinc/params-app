@@ -55,17 +55,6 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
 
   const metadata = (pageProps as any)?.metadata as React.ComponentProps<typeof NextSeo> | undefined
 
-  const user = Auth.useUser()
-
-  useEffect(() => {
-    Intercom({
-      app_id: 'ft7lyc08',
-      email: user.userEmail ?? undefined,
-      name: user.userFirstName ?? undefined,
-      user_id: user.userId ?? undefined,
-    })
-  }, [user])
-
   return (
     <>
       <DefaultSeo
@@ -105,6 +94,7 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
                     <Component {...pageProps} />
                   </ActionSheetProvider>
                   <Identify />
+                  <IntercomOpener />
                 </Layout>
               </GlobalWebLayout>
             </Provider>
@@ -114,6 +104,21 @@ function MyApp({ Component, pageProps, router }: SolitoAppProps) {
       <Analytics />
     </>
   )
+}
+
+function IntercomOpener() {
+  const user = Auth.useUser()
+
+  useEffect(() => {
+    Intercom({
+      app_id: 'ft7lyc08',
+      email: user.userEmail ?? undefined,
+      name: user.userFirstName ?? undefined,
+      user_id: user.userId ?? undefined,
+    })
+  }, [user])
+
+  return null
 }
 
 function DashboardSeo() {

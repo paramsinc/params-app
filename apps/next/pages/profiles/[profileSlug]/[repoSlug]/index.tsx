@@ -65,12 +65,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   ])
 
   // remove undefined values
-  const trpcState = JSON.parse(JSON.stringify(ssgApi.dehydrate()))
-
-  console.log(
-    '[trpcState]',
-    trpcState.queries.map((q) => q.queryKey)
-  )
+  const trpcState = ssgApi.dehydrate()
 
   return {
     props: {

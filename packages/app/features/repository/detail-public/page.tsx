@@ -258,7 +258,7 @@ function ProfileCards({ profileSlug, repoSlug }: { profileSlug: string; repoSlug
 
                   <LinkButton
                     $gtLg={{ grow: true }}
-                    href={`/@${profile.slug}/book?repoSlug=${repoSlug}`}
+                    href={`/book/${profileSlug}?repoSlug=${repoSlug}`}
                     inverse
                   >
                     <ButtonText>Book a Call</ButtonText>

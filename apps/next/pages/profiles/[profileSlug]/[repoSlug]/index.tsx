@@ -38,10 +38,6 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
     repo_slug: repoSlug,
   })
   const [profile, repo] = await Promise.all([
-    ssgApi.repo.bySlug_public.prefetch({
-      profile_slug: profileSlug,
-      repo_slug: repoSlug,
-    }),
     ssgApi.profileBySlug_public.fetch({ profile_slug: profileSlug }),
     repoPromise,
     ssgApi.repo.paramsJson

@@ -19,3 +19,4 @@ This repo is built using:
 - Tamagui
 - Doppler
 - Clerk
+- Vercel

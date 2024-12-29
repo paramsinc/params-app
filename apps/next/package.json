@@ -36,6 +36,7 @@
     "@types/node": "17.0.21",
     "autoprefixer": "^10.4.20",
     "eslint-config-next": "13.2.0",
+    "eslint-plugin-drizzle": "^0.2.3",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.12"
   }

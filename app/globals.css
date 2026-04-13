@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Inter', 'Inter Fallback', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', monospace;
+  --font-heading: 'Nunito', 'Nunito Fallback', ui-rounded, sans-serif;
+
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(0 0% 9%);
+  --color-card: hsl(300 20% 99%);
+  --color-card-foreground: hsl(0 0% 9%);
+  --color-popover: hsl(300 20% 99%);
+  --color-popover-foreground: hsl(0 0% 9%);
+  --color-primary: hsl(0 0% 9%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(0 0% 97.3%);
+  --color-secondary-foreground: hsl(0 0% 9%);
+  --color-muted: hsl(0 0% 95.1%);
+  --color-muted-foreground: hsl(0 0% 42.5%);
+  --color-accent: hsl(0 0% 94%);
+  --color-accent-foreground: hsl(0 0% 9%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(0 0% 92%);
+  --color-input: hsl(0 0% 89.5%);
+  --color-ring: hsl(0 0% 56.1%);
+
+  --color-brand: hsl(0 72% 51%);
+
+  --color-surface1: hsl(300 20% 99%);
+  --color-surface2: hsl(0 0% 97.3%);
+  --color-surface3: hsl(0 0% 95.1%);
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 7px;
+  --radius-xl: 9px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.085);
+
+  --animate-fade-in: fade-in 200ms ease-out;
+  --animate-slide-up: slide-up 200ms ease-out;
+  --animate-scale-in: scale-in 150ms ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.dark {
+  --color-background: hsl(0 0% 2%);
+  --color-foreground: hsl(0 0% 100%);
+  --color-card: hsl(0 0% 5.5%);
+  --color-card-foreground: hsl(0 0% 100%);
+  --color-popover: hsl(0 0% 5.5%);
+  --color-popover-foreground: hsl(0 0% 100%);
+  --color-primary: hsl(0 0% 100%);
+  --color-primary-foreground: hsl(0 0% 2%);
+  --color-secondary: hsl(0 0% 9.8%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+  --color-muted: hsl(0 0% 13.7%);
+  --color-muted-foreground: hsl(0 0% 64.7%);
+  --color-accent: hsl(0 0% 15.7%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(0 0% 19.6%);
+  --color-input: hsl(0 0% 26.3%);
+  --color-ring: hsl(0 0% 38.4%);
+
+  --color-brand: hsl(0 72% 51%);
+
+  --color-surface1: hsl(0 0% 5.5%);
+  --color-surface2: hsl(0 0% 9.8%);
+  --color-surface3: hsl(0 0% 13.7%);
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.2);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.3);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+* {
+  border-color: var(--color-border);
+}
